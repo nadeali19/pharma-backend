@@ -748,6 +748,7 @@
       <button class="lbtn" onclick="doLogin()">LOGIN</button>
       <div class="lerr" id="lerr"></div>
       <p style="font-size:10px;color:#555;margin-top:8px;text-align:center;">admin/admin123 | user1/1234</p>
+      <p id="f-warn" style="font-size:9px;color:#a33;margin-top:4px;text-align:center;display:none;">Security check: Use localhost:5000 for full features.</p>
     </div>
   </div>
   <div id="app" style="display:none;height:100vh;flex-direction:column;">
@@ -919,7 +920,17 @@
     </div>
 
     <script>
-      var G = { items: [], bills: [], users: [], parties: [], sess: {}, bi: [], nbn: 10001 };
+      const API_BASE = window.location.protocol === 'file:' ? "https://pharma-backend-production-c984.up.railway.app" : "";
+      if (window.location.protocol === 'file:') document.addEventListener('DOMContentLoaded', () => { var e = document.getElementById('f-warn'); if(e) e.style.display='block'; });
+      var G = { 
+        items: [], 
+        bills: [], 
+        users: [{ u: 'admin', p: 'admin123', r: 'admin' }, { u: 'user1', p: '1234', r: 'user' }], 
+        parties: [], 
+        sess: {}, 
+        bi: [], 
+        nbn: 10001 
+      };
       function ld(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
       function sv(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
       G.sess = ld('mg2_sess', {});
@@ -1100,7 +1111,7 @@
         G.nbn++;
         G.bi.forEach(function (r) { var idx = G.items.findIndex(function (i) { return i.name === r.name; }); if (idx >= 0) G.items[idx].stock = Math.max(0, G.items[idx].stock - r.q); });
 
-        fetch('/api/saveBill', {
+        fetch(API_BASE + '/api/saveBill', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ bill: newB, items: G.items })
         }).then(function (r) { return r.json() }).then(function (d) {
@@ -1178,7 +1189,7 @@
       }
       function showPurch() { var e = g('pd'); if (e) e.value = tds(); document.getElementById('pm').classList.add('show'); }
       window.onload = function () {
-        fetch('/api/data')
+        fetch(API_BASE + '/api/data')
           .then(function (r) { return r.json(); })
           .then(function (d) {
             if (d.items) G.items = d.items;
@@ -1192,8 +1203,10 @@
             console.warn("MongoDB offline, falling back to local storage.", e);
             // FALLBACK TO LOCAL STORAGE
             var li = ld('mg2_items', null); if (li) G.items = li;
-            G.bills = ld('mg2_bills', []); G.nbn = 10001 + G.bills.length;
-            G.users = ld('mg2_users', [{ u: 'admin', p: 'admin123', r: 'admin' }, { u: 'user1', p: '1234', r: 'user' }]);
+            var lb = ld('mg2_bills', null); if (lb) { G.bills = lb; G.nbn = 10001 + G.bills.length; }
+            var lu = ld('mg2_users', null); if (lu) G.users = lu;
+            var lp = ld('mg2_parties', null); if (lp) G.parties = lp;
+            
             var s = ld('mg2_sess', {});
             if (s.on) { document.getElementById('ls').style.display = 'none'; var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN') + ' (Local Mode)'; showDash(); }
           });

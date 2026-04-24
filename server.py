@@ -1,13 +1,23 @@
 from flask import Flask, jsonify, request, send_file
 from pymongo import MongoClient
 from flask_cors import CORS
+import os
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
 
 MONGO_URI = "mongodb+srv://nadeali426:Alinade1926@cluster0.wml3oa4.mongodb.net/?appName=Cluster0"
-client = MongoClient(MONGO_URI)
-db = client['pharma_db']
+try:
+    print("Connecting to MongoDB Atlas...")
+    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    # Trigger a connection to verify
+    client.admin.command('ismaster')
+    db = client['pharma_db']
+    print("SUCCESS: Connected to MongoDB!")
+except Exception as e:
+    print(f"CRITICAL ERROR: Could not connect to MongoDB: {e}")
+    db = None # We will handle this in routes
 
 initial_items = [
   {"id":"I001","name":"Paracetamol 500mg","salt":"Paracetamol","company":"Cipla","pack":"10T","rate":25,"mrp":30,"gst":5,"stock":500,"batches":[{"b":"B231","exp":"12/26","qty":200,"cost":18},{"b":"B241","exp":"06/27","qty":300,"cost":19}]},
@@ -26,57 +36,90 @@ initial_users = [{"u":"admin","p":"admin123","r":"admin"},{"u":"user1","p":"1234
 initial_parties = [{"name":"Medico Suppliers","type":"Supplier","bal":15000},{"name":"City General Hospital","type":"Customer","bal":-2300},{"name":"Health Distributor","type":"Supplier","bal":8500}]
 
 def initialize_db():
-    if db.items.count_documents({}) == 0:
-        db.items.insert_many(initial_items)
-    if db.users.count_documents({}) == 0:
-        db.users.insert_many(initial_users)
-    if db.parties.count_documents({}) == 0:
-        db.parties.insert_many(initial_parties)
+    if db is None:
+        print("Skipping DB Init: Connection not available")
+        return
+    try:
+        if db.items.count_documents({}) == 0:
+            db.items.insert_many(initial_items)
+            print("Initialized default items in DB")
+        if db.users.count_documents({}) == 0:
+            db.users.insert_many(initial_users)
+            print("Initialized default users in DB")
+        if db.parties.count_documents({}) == 0:
+            db.parties.insert_many(initial_parties)
+            print("Initialized default parties in DB")
+    except Exception as e:
+        print(f"Error during DB Initialization: {e}")
 
-def sterilize(docs):
-    res = []
-    for doc in docs:
-        if '_id' in doc:
-            doc['_id'] = str(doc['_id'])
-        res.append(doc)
-    return res
 
-@app.before_request
-def setup():
-    initialize_db()
+def sterilize(doc):
+    if isinstance(doc, list):
+        return [sterilize(x) for x in doc]
+    if isinstance(doc, dict):
+        new_doc = {}
+        for k, v in doc.items():
+            if k == '_id':
+                new_doc[k] = str(v)
+            elif isinstance(v, (datetime, bytes)):
+                new_doc[k] = str(v)
+            elif isinstance(v, (dict, list)):
+                new_doc[k] = sterilize(v)
+            else:
+                new_doc[k] = v
+        return new_doc
+    return doc
+
+# Run initialization once on startup
+initialize_db()
 
 @app.route('/')
 def serve_index():
-    return send_file('marg_pharma.html')
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    target = os.path.join(base_dir, 'marg_pharma.html')
+    print(f"Serving: {target}")
+    if not os.path.exists(target):
+        return f"Error: {target} not found!", 404
+    return send_file(target)
 
 @app.route('/api/data', methods=['GET'])
 def get_data():
-    items = sterilize(list(db.items.find({})))
-    bills = sterilize(list(db.bills.find({})))
-    users = sterilize(list(db.users.find({})))
-    parties = sterilize(list(db.parties.find({})))
-    return jsonify({"items": items, "bills": bills, "users": users, "parties": parties})
+    if db is None:
+        return jsonify({"error": "Database not connected"}), 503
+    try:
+        items = sterilize(list(db.items.find({})))
+        bills = sterilize(list(db.bills.find({})))
+        users = sterilize(list(db.users.find({})))
+        parties = sterilize(list(db.parties.find({})))
+        return jsonify({"items": items, "bills": bills, "users": users, "parties": parties})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/saveBill', methods=['POST'])
 def save_bill():
-    data = request.json
-    bill = data.get('bill')
-    updated_items = data.get('items')
-    
-    if not bill or not updated_items:
-        return jsonify({"error": "Missing bill or items data"}), 400
-
-    # Insert bill
-    db.bills.insert_one(bill)
-    
-    # Update stock for items
-    for item in updated_items:
-        db.items.update_one(
-            {"id": item["id"]},
-            {"$set": {"stock": item["stock"]}}
-        )
+    if db is None:
+        return jsonify({"error": "Database not connected"}), 503
+    try:
+        data = request.json
+        bill = data.get('bill')
+        updated_items = data.get('items')
         
-    return jsonify({"success": True})
+        if not bill or not updated_items:
+            return jsonify({"error": "Missing bill or items data"}), 400
+
+        # Insert bill
+        db.bills.insert_one(bill)
+        
+        # Update stock for items
+        for item in updated_items:
+            db.items.update_one(
+                {"id": item["id"]},
+                {"$set": {"stock": item["stock"]}}
+            )
+            
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
