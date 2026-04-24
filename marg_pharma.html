@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Marg ERP 9+ Pharma</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+      font-size: 12px;
+    }
+
+    body {
+      background: #c8dce8;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tb {
+      background: linear-gradient(90deg, #003366, #1a5599, #003366);
+      color: #fff;
+      padding: 5px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 34px;
+    }
+
+    .tb h1 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .tb span {
+      font-size: 11px;
+      color: #aac4ff;
+    }
+
+    .mb {
+      background: #fff;
+      border-bottom: 2px solid #003366;
+      display: flex;
+    }
+
+    .mb li {
+      list-style: none;
+      padding: 4px 12px;
+      cursor: pointer;
+      border-right: 1px solid #ccc;
+      font-weight: 600;
+      color: #003366;
+    }
+
+    .mb li:hover {
+      background: #003366;
+      color: #fff;
+    }
+
+    .ws {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sl {
+      width: 165px;
+      background: #dde8f0;
+      border-right: 1px solid #aabbd0;
+      padding: 8px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .sl h4 {
+      font-size: 11px;
+      color: #555;
+      border-bottom: 1px solid #aabbd0;
+      padding-bottom: 4px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .sl a {
+      display: block;
+      padding: 5px 6px;
+      color: #003366;
+      cursor: pointer;
+      margin-bottom: 2px;
+      font-size: 11px;
+    }
+
+    .sl a:hover {
+      background: #003366;
+      color: #fff;
+    }
+
+    .ma {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #sale-sc {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: #d4e4f0;
+    }
+
+    .sh {
+      background: #3a6a9a;
+      color: #fff;
+      padding: 4px 10px;
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .sh span {
+      font-size: 11px;
+      font-weight: 400;
+      color: #d0e8ff;
+    }
+
+    .bt {
+      background: #c8dce8;
+      padding: 4px 8px;
+      border-bottom: 1px solid #8aabcc;
+    }
+
+    .br {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 3px;
+    }
+
+    .br label {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      white-space: nowrap;
+      font-weight: 600;
+      color: #002244;
+    }
+
+    .br input,
+    .br select {
+      padding: 2px 4px;
+      border: 1px solid #7799bb;
+      background: #fff;
+      height: 21px;
+    }
+
+    .bsm {
+      padding: 2px 8px;
+      border: 1px solid #668;
+      background: linear-gradient(#eee, #ccd);
+      cursor: pointer;
+      height: 21px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .bsm:hover {
+      background: linear-gradient(#dde, #aab);
+    }
+
+    .pt {
+      display: flex;
+      gap: 8px;
+      background: #e8f0f8;
+      border: 1px solid #8aabcc;
+      padding: 2px 8px;
+    }
+
+    .pt label {
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .pib {
+      background: #bbd0e4;
+      border-bottom: 1px solid #8aabcc;
+      padding: 3px 6px;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pib label {
+      font-weight: 600;
+      white-space: nowrap;
+      color: #001133;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .pib input {
+      padding: 1px 3px;
+      border: 1px solid #7799bb;
+      background: #fffde8;
+      height: 20px;
+    }
+
+    .cs {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .bta {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 2px solid #8aabcc;
+      overflow: hidden;
+    }
+
+    .th {
+      background: #3a6a9a;
+      color: #fff;
+      display: flex;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .th div,
+    .tr div {
+      padding: 2px 4px;
+      border-right: 1px solid rgba(200, 220, 240, .3);
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .tb2 {
+      flex: 1;
+      overflow-y: auto;
+      background: #fff;
+    }
+
+    .tr {
+      display: flex;
+      border-bottom: 1px solid #dde8f0;
+    }
+
+    .tr:nth-child(even) {
+      background: #f0f6fc;
+    }
+
+    .tr:hover {
+      background: #fff8d0;
+    }
+
+    .rp {
+      width: 245px;
+      background: #d0e0ee;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .rs {
+      border-bottom: 1px solid #8aabcc;
+      padding: 4px;
+    }
+
+    .rt {
+      background: #3a6a9a;
+      color: #fff;
+      font-weight: 700;
+      padding: 2px 6px;
+      font-size: 11px;
+      margin-bottom: 3px;
+    }
+
+    .rpt {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    .rpt th {
+      background: #c0d8f0;
+      border: 1px solid #8aabcc;
+      padding: 2px 4px;
+    }
+
+    .rpt td {
+      border: 1px solid #aacce0;
+      background: #fff;
+      padding: 2px 4px;
+    }
+
+    .rg {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      padding: 2px;
+    }
+
+    .ri {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ri label {
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .ri input {
+      border: 1px solid #7799bb;
+      padding: 1px 3px;
+      background: #fff;
+      height: 18px;
+      font-size: 11px;
+    }
+
+    .bf {
+      background: #c0d4e8;
+      border-top: 2px solid #8aabcc;
+      display: flex;
+      gap: 0;
+    }
+
+    .fl {
+      padding: 3px 6px;
+      border-right: 1px solid #8aabcc;
+    }
+
+    .fl table {
+      border-collapse: collapse;
+    }
+
+    .fl td,
+    .fl th {
+      border: 1px solid #8aabcc;
+      padding: 2px 5px;
+      font-size: 11px;
+    }
+
+    .fl th {
+      background: #c0d8f0;
+      font-weight: 700;
+    }
+
+    .fm {
+      flex: 1;
+      padding: 4px 8px;
+    }
+
+    .fmr {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      margin-bottom: 3px;
+    }
+
+    .fmr label {
+      font-weight: 700;
+      font-size: 11px;
+      white-space: nowrap;
+      color: #002244;
+    }
+
+    .fmr input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid #7799bb;
+      height: 19px;
+      padding: 1px 3px;
+      background: #fff;
+    }
+
+    .fr {
+      width: 185px;
+      border-left: 1px solid #8aabcc;
+      padding: 4px;
+    }
+
+    .frg {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2px;
+    }
+
+    .fri {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .fri label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #002244;
+    }
+
+    .fri input {
+      border: 1px solid #7799bb;
+      height: 18px;
+      padding: 1px 3px;
+      background: #fff;
+      font-size: 11px;
+    }
+
+    .ab {
+      background: #b0c8de;
+      border-top: 2px solid #8aabcc;
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      padding: 4px;
+    }
+
+    .ab button {
+      padding: 3px 16px;
+      border: 2px outset #88aacc;
+      background: linear-gradient(#eef2ff, #ccd4ee);
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .ab button:hover {
+      background: linear-gradient(#dde6ff, #99b0cc);
+    }
+
+    .ab button:active {
+      border-style: inset;
+    }
+
+    .abg {
+      background: linear-gradient(#c0eec0, #7acc7a) !important;
+    }
+
+    .abr {
+      background: linear-gradient(#ffcccc, #ee8888) !important;
+    }
+
+    #dash-sc {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: #d4e4f0;
+      padding: 10px;
+      overflow-y: auto;
+    }
+
+    .dt {
+      font-size: 18px;
+      font-weight: 700;
+      color: #003366;
+      margin-bottom: 10px;
+      text-align: center;
+      border-bottom: 2px solid #5a7fa8;
+      padding-bottom: 6px;
+    }
+
+    .g4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .cd {
+      background: #fff;
+      border: 1px solid #aabbd0;
+      padding: 12px;
+      text-align: center;
+      border-top: 3px solid #3a6a9a;
+    }
+
+    .cd .cv {
+      font-size: 22px;
+      font-weight: 700;
+      color: #003366;
+      margin: 6px 0;
+    }
+
+    .cd .ct {
+      font-size: 11px;
+      color: #777;
+    }
+
+    .cd.gr {
+      border-top-color: #228822;
+    }
+
+    .cd.gr .cv {
+      color: #228822;
+    }
+
+    .cd.rd {
+      border-top-color: #cc3333;
+    }
+
+    .cd.rd .cv {
+      color: #cc3333;
+    }
+
+    .cd.or {
+      border-top-color: #cc6600;
+    }
+
+    .cd.or .cv {
+      color: #cc6600;
+    }
+
+    .dst {
+      font-size: 13px;
+      font-weight: 700;
+      color: #003366;
+      margin-bottom: 6px;
+      background: #c8dce8;
+      padding: 4px 8px;
+      border-left: 4px solid #3a6a9a;
+    }
+
+    .mo {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .4);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mo.show {
+      display: flex;
+    }
+
+    .mb2 {
+      background: #cce0f0;
+      border: 2px solid #5a7fa8;
+      min-width: 500px;
+      max-width: 90vw;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mh {
+      background: #3a6a9a;
+      color: #fff;
+      padding: 4px 10px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .mh span {
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .mbd {
+      padding: 8px;
+      overflow-y: auto;
+    }
+
+    .mbd input.sb {
+      width: 100%;
+      padding: 4px 6px;
+      border: 1px solid #7799bb;
+      margin-bottom: 6px;
+      background: #ffffcc;
+      font-size: 13px;
+    }
+
+    .mt {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .mt th {
+      background: #3a6a9a;
+      color: #fff;
+      padding: 3px 6px;
+      border: 1px solid #2a5a8a;
+      font-size: 11px;
+    }
+
+    .mt td {
+      border: 1px solid #8aabcc;
+      padding: 3px 6px;
+      background: #fff;
+      font-size: 11px;
+    }
+
+    .mt tr:hover td {
+      background: #ffffc0;
+      cursor: pointer;
+    }
+
+    #ls {
+      position: fixed;
+      inset: 0;
+      background: #c8dce8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .lb {
+      background: #d4e4f0;
+      border: 2px solid #5a7fa8;
+      padding: 24px;
+      width: 300px;
+      box-shadow: 4px 4px 12px rgba(0, 0, 0, .3);
+    }
+
+    .lbt {
+      background: #003366;
+      color: #fff;
+      margin: -24px -24px 16px;
+      padding: 10px 16px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .lf2 {
+      margin-bottom: 10px;
+    }
+
+    .lf2 label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    .lf2 input {
+      width: 100%;
+      padding: 4px 6px;
+      border: 1px solid #7799bb;
+      background: #fff;
+      height: 24px;
+      font-size: 13px;
+    }
+
+    .lbtn {
+      width: 100%;
+      padding: 7px;
+      background: linear-gradient(#3a6adc, #0a3a8c);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    .lerr {
+      color: red;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 7px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #c0d4e8;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #7a9ab8;
+    }
+
+    .c1 {
+      min-width: 30px;
+      max-width: 30px;
+      text-align: center;
+    }
+
+    .c2 {
+      min-width: 145px;
+      flex: 1;
+    }
+
+    .c3 {
+      min-width: 48px;
+      max-width: 48px;
+    }
+
+    .c4 {
+      min-width: 70px;
+      max-width: 70px;
+    }
+
+    .c5 {
+      min-width: 42px;
+      max-width: 42px;
+      text-align: right;
+    }
+
+    .c6 {
+      min-width: 42px;
+      max-width: 42px;
+      text-align: right;
+    }
+
+    .c7 {
+      min-width: 55px;
+      max-width: 55px;
+      text-align: right;
+    }
+
+    .c8 {
+      min-width: 42px;
+      max-width: 42px;
+      text-align: right;
+    }
+
+    .c9 {
+      min-width: 62px;
+      max-width: 62px;
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="ls">
+    <div class="lb">
+      <div class="lbt">&#127973; Marg ERP 9+ [Pharma Special]</div>
+      <div class="lf2"><label>Username:</label><input id="lu" value="admin" onkeydown="if(event.key=='Enter')doLogin()">
+      </div>
+      <div class="lf2"><label>Password:</label><input id="lp" type="password" value="admin123"
+          onkeydown="if(event.key=='Enter')doLogin()"></div>
+      <button class="lbtn" onclick="doLogin()">LOGIN</button>
+      <div class="lerr" id="lerr"></div>
+      <p style="font-size:10px;color:#555;margin-top:8px;text-align:center;">admin/admin123 | user1/1234</p>
+      <p id="f-warn" style="font-size:9px;color:#a33;margin-top:4px;text-align:center;display:none;">Security check: Use localhost:5000 for full features.</p>
+    </div>
+  </div>
+  <div id="app" style="display:none;height:100vh;flex-direction:column;">
+    <div class="tb">
+      <h1>MARG ERP 9+ <span>[Pharma Special]</span></h1><span style="margin-left:auto;" id="hi"></span>
+    </div>
+    <ul class="mb">
+      <li onclick="showDash()">Masters <u style="color:#c00">M</u></li>
+      <li onclick="showSale()">Transactions <u style="color:#c00">T</u></li>
+      <li onclick="showLedger()">Accounts <u style="color:#c00">A</u></li>
+      <li onclick="showStock()">Stocks <u style="color:#c00">S</u></li>
+      <li onclick="showHist()">Reports <u style="color:#c00">R</u></li>
+      <li onclick="showCompanyProfile()" style="color:#003366;">Settings</li>
+      <li onclick="doLogout()" style="margin-left:auto;color:#c00;">Exit</li>
+    </ul>
+    <div class="ws">
+      <nav class="sl">
+        <h4>Quick Access</h4>
+        <a onclick="showSale()">&#128203; Sale Bill (Retail)</a>
+        <a onclick="showPurch()">&#128666; Purchase Bill</a>
+        <a onclick="showHist()">&#128221; Modify Bill</a>
+        <a onclick="showStock()">&#128230; Current Stock</a>
+        <a onclick="showExpiry()">&#9888; Expiry List</a>
+        <a onclick="showLedger()">&#128202; Ledger A/c</a>
+        <a onclick="document.getElementById('rm').classList.add('show')">&#128228; Sales Return</a>
+        <h4 style="margin-top:10px;">Digital</h4>
+        <a onclick="alert('Retailio feature')">&#128722; Retailio</a>
+        <a onclick="alert('Marg Mart feature')">&#128138; Marg Mart</a>
+      </nav>
+      <div class="ma" id="ma"></div>
+    </div>
+  </div>
+  <--help Modals -->
+    <div class="mo" id="im">
+      <div class="mb2" style="min-width:620px;">
+        <div class="mh">Search Medicine (F2) <span onclick="cm('im')">&#10006;</span></div>
+        <div class="mbd">
+          <input class="sb" id="isi" placeholder="Type name, salt, company..." oninput="fi()">
+          <table class="mt">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Product Name</th>
+                <th>Salt</th>
+                <th>Company</th>
+                <th>Pack</th>
+                <th>Stock</th>
+                <th>Rate</th>
+              </tr>
+            </thead>
+            <tbody id="isb"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="mo" id="hm">
+      <div class="mb2" style="min-width:640px;">
+        <div class="mh">Bill History <span onclick="cm('hm')">&#10006;</span></div>
+        <div class="mbd">
+          <table class="mt">
+            <thead>
+              <tr>
+                <th>Bill No</th>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Items</th>
+                <th>Net Amt</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="hb"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="mo" id="sm2">
+      <div class="mb2">
+        <div class="mh">Current Stock <span onclick="cm('sm2')">&#10006;</span></div>
+        <div class="mbd">
+          <input class="sb" id="ssi" placeholder="Search..." oninput="fst()">
+          <table class="mt">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Salt</th>
+                <th>Company</th>
+                <th>Pack</th>
+                <th>Batch</th>
+                <th>Expiry</th>
+                <th>Stock</th>
+                <th>Rate</th>
+              </tr>
+            </thead>
+            <tbody id="stb"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="mo" id="em">
+      <div class="mb2">
+        <div class="mh">Near Expiry List <span onclick="cm('em')">&#10006;</span></div>
+        <div class="mbd">
+          <table class="mt">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Batch</th>
+                <th>Expiry</th>
+                <th>Stock</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="eb"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="mo" id="lm">
+      <div class="mb2">
+        <div class="mh">Ledger Accounts <span onclick="cm('lm')">&#10006;</span></div>
+        <div class="mbd">
+          <table class="mt">
+            <thead>
+              <tr>
+                <th>Party Name</th>
+                <th>Type</th>
+                <th>Balance</th>
+              </tr>
+            </thead>
+            <tbody id="lb2"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="mo" id="pm">
+      <div class="mb2" style="min-width:640px;">
+        <div class="mh">Purchase Bill <span onclick="cm('pm')">&#10006;</span></div>
+        <div class="mbd">
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <label>Supplier: <input id="ps" style="width:150px;border:1px solid #7799bb;padding:2px;"></label>
+            <label>Inv No: <input id="pi2" style="width:80px;border:1px solid #7799bb;padding:2px;"></label>
+            <label>Date: <input id="pd" style="width:80px;border:1px solid #7799bb;padding:2px;"></label>
+          </div>
+          <table class="mt">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Product</th>
+                <th>Batch</th>
+                <th>Expiry</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Amt</th>
+              </tr>
+            </thead>
+            <tbody id="ptb">
+              <tr>
+                <td>1</td>
+                <td><input style="width:130px;border:1px solid #aaa;padding:2px;"></td>
+                <td><input style="width:65px;border:1px solid #aaa;padding:2px;"></td>
+                <td><input style="width:55px;border:1px solid #aaa;padding:2px;"></td>
+                <td><input type="number" value="1" style="width:45px;border:1px solid #aaa;padding:2px;"></td>
+                <td><input type="number" style="width:55px;border:1px solid #aaa;padding:2px;"></td>
+                <td>0.00</td>
+              </tr>
+            </tbody>
+          </table>
+          <button class="bsm" style="margin-top:6px;" onclick="alert('Purchase saved!');cm('pm')">Save Purchase</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mo" id="cpm">
+       <div class="mb2">
+         <div class="mh">Company Profile <span onclick="cm('cpm')">&#10006;</span></div>
+         <div class="mbd">
+           <div class="lf2"><label>Company Name:</label><input id="cp-name" placeholder="e.g. HAMZA MEDICINE COMPANY"></div>
+           <div class="lf2"><label>Phone/Mobile:</label><input id="cp-phone" placeholder="e.g. 061-2079422, 0300-7358302"></div>
+           <div class="lf2"><label>Address:</label><input id="cp-addr" placeholder="e.g. H-NO: 15-16 Shams abad, Multan."></div>
+           <div class="lf2"><label>NTN/STN:</label><input id="cp-ntn" placeholder="e.g. 36102-7250390-3"></div>
+           <button class="bsm" style="width:100%;margin-top:10px;background:linear-gradient(#c0eec0,#7acc7a);" onclick="saveCompanyProfile()">Save Profile</button>
+         </div>
+       </div>
+     </div>
+
+     <div class="mo" id="rm">
+      <div class="mb2">
+        <div class="mh">Sales Return <span onclick="cm('rm')">&#10006;</span></div>
+        <div class="mbd">
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <input class="sb" id="rsi" placeholder="Enter Sale ID (e.g. 10001)" style="flex:1;">
+            <button class="bsm" onclick="findBillForReturn()">Search</button>
+          </div>
+          <div id="rb-detail" style="display:none;">
+            <p id="rb-info" style="font-weight:700;margin-bottom:5px;"></p>
+            <table class="mt">
+              <thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Amt</th></tr></thead>
+              <tbody id="rtb"></tbody>
+            </table>
+            <button class="bsm" style="margin-top:10px;background:linear-gradient(#f88,#d33);color:#fff;" onclick="processReturn()">Confirm Return</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = window.location.protocol === 'file:' ? "https://pharma-backend-production-c984.up.railway.app" : "";
+      if (window.location.protocol === 'file:') document.addEventListener('DOMContentLoaded', () => { var e = document.getElementById('f-warn'); if(e) e.style.display='block'; });
+      var G = { 
+        items: [], 
+        bills: [], 
+        users: [{ u: 'admin', p: 'admin123', r: 'admin' }, { u: 'user1', p: '1234', r: 'user' }], 
+        parties: [], 
+        profile: { name: 'HAMZA MEDICINE COMPANY', phone: '061-2079422, 0300-7358302', addr: 'H-NO: 15-16 Shams abad, Multan.', ntn: '36102-7250390-3' },
+        sess: {}, 
+        bi: [], 
+        nbn: 10001 
+      };
+      function ld(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
+      function sv(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+      G.sess = ld('mg2_sess', {});
+      function doLogin() {
+        var u = document.getElementById('lu').value.trim(), p = document.getElementById('lp').value.trim();
+        var f = G.users.find(function (x) { return x.u === u && x.p === p; });
+        if (f) { G.sess = { u: u, r: f.r, on: true }; sv('mg2_sess', G.sess); document.getElementById('ls').style.display = 'none'; var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; document.getElementById('hi').innerText = 'User: ' + u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN'); showDash(); }
+        else document.getElementById('lerr').innerText = 'Invalid credentials!';
+      }
+      function doLogout() { sv('mg2_sess', {}); location.reload(); }
+      function setMA(h) { document.getElementById('ma').innerHTML = h; }
+      function tds() { var d = new Date(); return d.getDate().toString().padStart(2, '0') + '/' + (d.getMonth() + 1).toString().padStart(2, '0') + '/' + d.getFullYear().toString().slice(2); }
+      function mu(e) { var p = e.split('/'); if (p.length < 2) return 99; return (parseInt(p[1]) + 2000 - new Date().getFullYear()) * 12 + parseInt(p[0]) - (new Date().getMonth() + 1); }
+      function cm(id) { document.getElementById(id).classList.remove('show'); }
+      document.addEventListener('click', function (e) { if (e.target.classList.contains('mo')) e.target.classList.remove('show'); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') document.querySelectorAll('.mo').forEach(function (m) { m.classList.remove('show'); }); if (e.key === 'F2') { e.preventDefault(); openIM(); } });
+
+      function showDash() {
+        var ts = G.bills.filter(function (x) { return x.date === tds(); }).reduce(function (a, x) { return a + parseFloat(x.net || 0); }, 0);
+        var ec = 0; G.items.forEach(function (i) { i.batches.forEach(function (b) { if (mu(b.exp) <= 3) ec++; }); });
+        var ls = G.items.filter(function (i) { return i.stock < 20; }).length;
+        setMA('<div id="dash-sc"><div class="dt">MARG ERP 9+ | Dashboard</div>' +
+          '<div class="g4">' +
+          '<div class="cd gr"><div class="ct">Today Sales</div><div class="cv">Rs.' + ts.toFixed(2) + '</div></div>' +
+          '<div class="cd"><div class="ct">Total Bills</div><div class="cv">' + G.bills.length + '</div></div>' +
+          '<div class="cd rd"><div class="ct">Near Expiry</div><div class="cv">' + ec + '</div></div>' +
+          '<div class="cd or"><div class="ct">Low Stock</div><div class="cv">' + ls + '</div></div>' +
+          '</div><div class="dst">Quick Actions</div>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">' +
+          '<button class="bsm" onclick="showSale()">New Sale Bill</button>' +
+          '<button class="bsm" onclick="showPurch()">Purchase Bill</button>' +
+          '<button class="bsm" onclick="showHist()">Bill History</button>' +
+          '<button class="bsm" onclick="showStock()">Stock Status</button>' +
+          '<button class="bsm" onclick="showExpiry()">Expiry List</button>' +
+          '<button class="bsm" onclick="showLedger()">Ledger</button>' +
+          '</div><div class="dst">Recent Bills</div>' +
+          '<table class="mt"><thead><tr><th>Bill No</th><th>Date</th><th>Customer</th><th>Items</th><th>Net Amt</th></tr></thead><tbody>' +
+          G.bills.slice(-5).reverse().map(function (b) { return '<tr><td>' + b.no + '</td><td>' + b.date + '</td><td>' + b.cust + '</td><td>' + b.items.length + '</td><td>Rs.' + parseFloat(b.net).toFixed(2) + '</td></tr>'; }).join('') +
+          '</tbody></table></div>');
+      }
+
+      function showSale() {
+        var t = tds();
+        setMA('<div id="sale-sc">' +
+          '<div class="sh">Sales Invoice (Auto Batch) &nbsp;<span>Bill No: SI-' + G.nbn + ' | Date: ' + t + '</span></div>' +
+          '<div class="bt">' +
+          '<div class="br"><label>Sale ID <input id="bid" value="SI-' + G.nbn + '" readonly style="width:65px;background:#eee;"></label>' +
+          '<label>Entry Date <input id="bed" value="' + t + '" style="width:72px;"></label>' +
+          '<label>Bill Date <input id="bbd" value="' + t + '" style="width:72px;"></label>' +
+          '<button class="bsm" onclick="alert(\\\'Open Bookings\\\')">Open Bookings</button>' +
+          '<button class="bsm" onclick="alert(\\\'Set Defaults\\\')">Set Defaults</button>' +
+          '<div class="pt"><label><input type="radio" name="pt" value="c" checked> Cash</label><label><input type="radio" name="pt" value="i"> Invoice</label></div>' +
+          '<div style="margin-left:auto;display:flex;gap:1px;">' +
+          '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Batch No</span>' +
+          '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Expiry</span>' +
+          '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Avail-Qty</span>' +
+          '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Qty</span>' +
+          '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Price</span>' +
+          '</div></div>' +
+          '<div class="br"><label>Customer <input id="bcu" style="min-width:200px;" placeholder="Cash / Customer Name" oninput="findParty()"></label>' +
+          '<div id="p-bal" style="font-weight:700;color:#c00;margin-left:10px;">Bal: 0.00</div>' +
+          '<label style="margin-left:10px;"><input type="checkbox" id="bcl"> Is Claimable</label>' +
+          '<label style="margin-left:8px;"><input type="checkbox"> Apply Booking Disc</label></div>' +
+          '<div class="br"><label>Doctor <input id="bdo" style="min-width:160px;"></label><label>Salesman <input id="bsl" style="width:110px;"></label></div>' +
+          '</div>' +
+          '<div class="pib">' +
+          '<label>Product <input id="pn" style="min-width:155px;cursor:pointer;background:#ffe;" onclick="openIM()" readonly placeholder="F2/Click"></label>' +
+          '<label>Pack <input id="ppk" style="width:42px;"></label>' +
+          '<label>Batch <input id="pbt" style="width:58px;"></label>' +
+          '<label>Exp <input id="pex" style="width:50px;"></label>' +
+          '<label>Qty <input id="pqt" type="number" value="1" style="width:42px;" oninput="cpv()"></label>' +
+          '<label>Bonus <input id="pbo" type="number" value="0" style="width:38px;"></label>' +
+          '<label>MRP <input id="pmr" type="number" style="width:52px;" oninput="cpv()"></label>' +
+          '<label>Rate <input id="pra" type="number" style="width:52px;" oninput="cpv()"></label>' +
+          '<label>Disc% <input id="pdi" type="number" value="0" style="width:38px;" oninput="cpv()"></label>' +
+          '<label>GST% <input id="pgs" type="number" value="0" style="width:38px;" oninput="cpv()"></label>' +
+          '<label>Amt <input id="pam" style="width:62px;" readonly></label>' +
+          '<button class="bsm" style="background:linear-gradient(#c0eec0,#7acc7a);font-weight:700;" onclick="addRow()">ADD</button>' +
+          '</div>' +
+          '<div class="cs">' +
+          '<div class="bta">' +
+          '<div class="th"><div class="c1">#</div><div class="c2">Product Name</div><div class="c3">Pack</div><div class="c4">Batch/Exp</div><div class="c5">Qty</div><div class="c6">Bonus</div><div class="c7">Rate</div><div class="c8">Disc%</div><div class="c9">Amount</div></div>' +
+          '<div class="tb2" id="br2"></div></div>' +
+          '<div class="rp">' +
+          '<div class="rs"><div class="rt">Last 5 Purchases</div>' +
+          '<table class="rpt"><thead><tr><th>Date</th><th>Qty</th><th>Rate</th><th>Disc%</th></tr></thead><tbody id="rl5"></tbody></table></div>' +
+          '<div class="rs"><div class="rg">' +
+          '<div class="ri"><label>Last Price</label><input id="rlp" readonly></div>' +
+          '<div class="ri"><label>Disc%</label><input id="rld" readonly></div>' +
+          '<div class="ri"><label>T-Price</label><input id="rtp" readonly></div>' +
+          '<div class="ri"><label>GST%</label><input id="rgs" readonly></div>' +
+          '</div></div>' +
+          '<div class="rs" style="flex:1;"><div class="rt">Batch Info</div>' +
+          '<table class="rpt"><thead><tr><th>Batch</th><th>Expiry</th><th>Qty</th><th>Cost</th></tr></thead><tbody id="rbi"></tbody></table></div>' +
+          '</div></div>' +
+          '<div class="bf">' +
+          '<div class="fl"><table><thead><tr><th>Company</th><th>Value</th><th>Disc%</th></tr></thead><tbody><tr><td><input style="width:85px;border:none;"></td><td><input style="width:55px;border:none;"></td><td><input style="width:38px;border:none;"></td></tr></tbody></table></div>' +
+          '<div class="fm">' +
+          '<div class="fmr"><label>Gross</label><input id="fg" readonly><label>SGST</label><input id="fsg" readonly><label>CGST</label><input id="fcg" readonly><label>Net Amt</label><input id="fn" readonly style="font-weight:700;background:#fffde8;"></div>' +
+          '<div class="fmr"><label>Prev Debit</label><input id="fpd"><label>Spl Disc</label><input id="fsd" oninput="rrf()"><label>Net Recv</label><input id="fnr" readonly><label>Rcvd Amt</label><input id="fra" oninput="rrf()"><label>Due Date</label><input id="fdu" value="' + t + '" style="width:68px;"></div>' +
+          '<button onclick="printBill()" style="margin-top:2px;padding:2px 10px;border:1px solid #668;background:linear-gradient(#eef,#ccf);cursor:pointer;">A4 Print</button>' +
+          '<button onclick="printThermal()" style="margin-top:2px;margin-left:5px;padding:2px 10px;border:1px solid #668;background:linear-gradient(#fef,#fcf);cursor:pointer;">Thermal Print</button>' +
+          '</div>' +
+          '<div class="fr"><div class="rt">Summary</div><div class="frg">' +
+          '<div class="fri"><label>Total Qty</label><input id="ftq" readonly></div>' +
+          '<div class="fri"><label>Avg Cost</label><input id="fac" readonly></div>' +
+          '<div class="fri"><label>Margin%</label><input id="fmg" readonly></div>' +
+          '</div></div></div>' +
+          '<div class="ab">' +
+          '<button class="abg" onclick="saveBill()">Save</button>' +
+          '<button onclick="clearBill()">Clear</button>' +
+          '<button onclick="showHist()">Open</button>' +
+          '<button onclick="openIM()">Search</button>' +
+          '<button onclick="printBill()">A4 Print</button>' +
+          '<button onclick="printThermal()">Thermal</button>' +
+          '<button onclick="remLR()">Remove</button>' +
+          '<button class="abr" onclick="showDash()">Home</button>' +
+          '</div></div>');
+        G.bi = []; rr();
+      }
+
+      function cpv() {
+        var q = parseFloat(g('pqt').value) || 0, r = parseFloat(g('pra').value) || 0, d = parseFloat(g('pdi').value) || 0, gs = parseFloat(g('pgs').value) || 0;
+        var e = g('pam'); if (e) e.value = (q * r * (1 - d / 100) * (1 + gs / 100)).toFixed(2);
+      }
+      function g(id) { return document.getElementById(id); }
+      function se(id, v) { var e = g(id); if (e) e.value = v; }
+
+      function addRow() {
+        var nm = g('pn'); if (!nm || !nm.value.trim()) { alert('Product select karein!'); openIM(); return; }
+        var q = parseFloat(g('pqt').value) || 0; if (q <= 0) { alert('Quantity enter karein!'); return; }
+        var pk = g('ppk').value, bt = g('pbt').value, ex = g('pex').value;
+        var bo = parseFloat(g('pbo').value) || 0, mr = parseFloat(g('pmr').value) || 0;
+        var ra = parseFloat(g('pra').value) || 0, di = parseFloat(g('pdi').value) || 0, gs = parseFloat(g('pgs').value) || 0;
+        var veg = q * ra * (1 - di / 100), ga = veg * gs / 100, am = veg + ga;
+        G.bi.push({ sno: G.bi.length + 1, name: nm.value, pk, bt, ex, q, bo, mr, ra, di, gs, veg, ga, am });
+        rr(); cf();
+        ['pn', 'ppk', 'pbt', 'pex', 'pbo', 'pmr', 'pra', 'pdi', 'pgs', 'pam'].forEach(function (id) { var e = g(id); if (e) e.value = ''; });
+        var qe = g('pqt'); if (qe) qe.value = 1; var de = g('pdi'); if (de) de.value = 0;
+        var ne = g('pn'); if (ne) ne.focus();
+      }
+
+      function rr() {
+        var c = g('br2'); if (!c) return; c.innerHTML = '';
+        G.bi.forEach(function (r, i) {
+          var d = document.createElement('div'); d.className = 'tr';
+          d.innerHTML = '<div class="c1">' + r.sno + '</div><div class="c2">' + r.name + '</div><div class="c3">' + r.pk + '</div>' +
+            '<div class="c4">' + r.bt + ' ' + r.ex + '</div><div class="c5">' + r.q + '</div><div class="c6">' + r.bo + '</div>' +
+            '<div class="c7">' + r.ra.toFixed(2) + '</div><div class="c8">' + r.di + '%</div>' +
+            '<div class="c9" style="font-weight:700;">' + r.am.toFixed(2) + '</div>';
+          d.ondblclick = function () { if (confirm('Remove row ' + r.sno + '?')) { G.bi.splice(i, 1); G.bi.forEach(function (x, j) { x.sno = j + 1; }); rr(); cf(); } };
+          c.appendChild(d);
+        });
+      }
+
+      function cf() {
+        var gr = 0, gt = 0, tq = 0;
+        G.bi.forEach(function (r) { gr += r.veg; gt += r.ga; tq += r.q; });
+        var nt = gr + gt, sg = gt / 2, cg = gt / 2;
+        se('fg', gr.toFixed(2)); se('fsg', sg.toFixed(2)); se('fcg', cg.toFixed(2)); se('fn', nt.toFixed(2));
+        se('fnr', nt.toFixed(2)); se('ftq', tq);
+        se('fac', G.bi.length > 0 ? (gr / G.bi.length).toFixed(2) : '0.00'); se('fmg', '0.00');
+      }
+
+      function rrf() {
+        var nt = parseFloat((g('fn') || { value: 0 }).value) || 0, sd = parseFloat((g('fsd') || { value: 0 }).value) || 0;
+        var fnr = g('fnr'); if (fnr) fnr.value = Math.max(0, nt - sd).toFixed(2);
+      }
+
+      function remLR() { if (G.bi.length > 0) { G.bi.pop(); G.bi.forEach(function (x, i) { x.sno = i + 1; }); rr(); cf(); } }
+
+      function clearBill() { G.bi = []; rr(); cf();['bcu', 'bdo', 'bsl', 'fpd', 'fsd', 'fra'].forEach(function (id) { var e = g(id); if (e) e.value = ''; }); }
+
+      function numToWords(n) {
+        var s = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN'];
+        var t = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY'];
+        n = Math.floor(n);
+        if (n === 0) return 'ZERO ONLY';
+        function convert(n) {
+          if (n < 20) return s[n];
+          if (n < 100) return t[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + s[n % 10] : '');
+          if (n < 1000) return s[Math.floor(n / 100)] + ' HUNDRED' + (n % 100 !== 0 ? ' AND ' + convert(n % 100) : '');
+          if (n < 100000) return convert(Math.floor(n / 1000)) + ' THOUSAND' + (n % 1000 !== 0 ? ' ' + convert(n % 1000) : '');
+          if (n < 10000000) return convert(Math.floor(n / 100000)) + ' LAKH' + (n % 100000 !== 0 ? ' ' + convert(n % 100000) : '');
+          return convert(Math.floor(n / 10000000)) + ' CRORE' + (n % 10000000 !== 0 ? ' ' + convert(n % 10000000) : '');
+        }
+        return convert(n) + ' ONLY';
+      }
+
+      function findParty() {
+        var q = (g('bcu') || {value:''}).value.toLowerCase();
+        var p = G.parties.find(x => x.name.toLowerCase() === q);
+        var be = g('p-bal');
+        if(p && be) {
+          be.innerText = 'Bal: ' + Math.abs(p.bal).toFixed(2) + (p.bal > 0 ? ' Dr' : ' Cr');
+        } else if(be) {
+          be.innerText = 'Bal: 0.00';
+        }
+      }
+
+      function saveBill() {
+        if (G.bi.length === 0) { alert('Koi item nahi!'); return; }
+        var cu = (g('bcu') || { value: 'Cash' }).value || 'Cash';
+        var nt = parseFloat((g('fn') || { value: '0' }).value) || 0;
+        var no = (g('bid') || { value: 'SI-?' }).value;
+        
+        var party = G.parties.find(p => p.name === cu);
+        if(!party && cu !== 'Cash') {
+          party = { name: cu, type: 'Customer', bal: 0, transactions: [] };
+          G.parties.push(party);
+        }
+
+        var newB = { no, date: tds(), cust: cu, items: JSON.parse(JSON.stringify(G.bi)), net: nt };
+        G.bills.push(newB);
+        G.nbn++;
+
+        if(party) {
+          if(!party.transactions) party.transactions = [];
+          party.transactions.push({ date: tds(), desc: 'Sale Bill ' + no, type: 'Dr', amt: nt });
+          party.bal += nt;
+        }
+
+        G.bi.forEach(function (r) { 
+          var idx = G.items.findIndex(function (i) { return i.name === r.name; }); 
+          if (idx >= 0) G.items[idx].stock = Math.max(0, G.items[idx].stock - r.q); 
+        });
+
+        fetch(API_BASE + '/api/saveBill', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bill: newB, items: G.items, party: party })
+        }).then(function (r) { return r.json() }).then(function (d) {
+          alert('Bill ' + no + ' saved successfully!');
+          clearBill(); showDash();
+        }).catch(function (e) {
+          sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+          alert('Saved Locally!');
+          clearBill(); showDash();
+        });
+      }
+
+      function printBill() {
+        if (G.bi.length === 0) { alert('Koi item nahi!'); return; }
+        var cu = (g('bcu') || { value: 'Cash' }).value || 'Cash', no = (g('bid') || { value: 'SI-?' }).value;
+        var dt = tds(), tm = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        
+        var rows = G.bi.map(function (r, i) { 
+          var advTax = (r.am * 0.005).toFixed(2); // Example 0.5% adv tax
+          var gstUnt = (r.ga / r.q).toFixed(2);
+          return '<tr>' +
+            '<td>' + r.q + '</td>' +
+            '<td>' + (r.bo || 0) + '</td>' +
+            '<td style="text-align:left;">' + r.name + '</td>' +
+            '<td>' + r.pk + '</td>' +
+            '<td>' + r.bt + '</td>' +
+            '<td>' + r.ex + '</td>' +
+            '<td>' + r.ra.toFixed(2) + '</td>' +
+            '<td>' + r.di.toFixed(2) + '</td>' +
+            '<td>' + gstUnt + '</td>' +
+            '<td>' + advTax + '</td>' +
+            '<td>' + r.am.toFixed(2) + '</td>' +
+            '</tr>'; 
+        }).join('');
+
+        var gr = parseFloat((g('fg') || { value: '0' }).value) || 0;
+         var nt = parseFloat((g('fn') || { value: '0' }).value) || 0;
+         var gt = parseFloat(((parseFloat((g('fsg') || { value: 0 }).value) || 0) * 2).toFixed(2)) || 0;
+         var sd = parseFloat((g('fsd') || { value: 0 }).value) || 0;
+         
+         var party = G.parties.find(p => p.name === cu);
+         var prevBal = party ? party.bal - nt : 0;
+         var totalAdvTax = G.bi.reduce((a, b) => a + (b.am * 0.005), 0).toFixed(2);
+         var netWithTax = (nt + parseFloat(totalAdvTax)).toFixed(2);
+         var inWords = numToWords(Math.round(netWithTax));
+
+        var w = window.open('', '_blank');
+        w.document.write('<!DOCTYPE html><html><head><title>Invoice ' + no + '</title>' +
+          '<style>' +
+          '@page { size: A4; margin: 10mm; }' +
+          'body { font-family: Arial, sans-serif; font-size: 10pt; margin: 0; padding: 0; color: #000; -webkit-print-color-adjust: exact; }' +
+          '.a4-container { width: 190mm; margin: auto; padding: 5mm; }' +
+          '.header { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #000; padding-bottom: 10px; }' +
+          '.company-info h1 { font-size: 18pt; margin: 0; color: #000; }' +
+          '.company-info p { margin: 2px 0; font-size: 9pt; }' +
+          '.invoice-title { text-align: right; }' +
+          '.invoice-title h1 { font-size: 22pt; margin: 0; color: #000; }' +
+          '.invoice-title p { margin: 2px 0; font-size: 9pt; }' +
+          '.customer-box { border: 1px solid #000; padding: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; background: #f9f9f9 !important; }' +
+          '.customer-box div { flex: 1; }' +
+          '.customer-box p { margin: 3px 0; font-size: 9pt; }' +
+          'table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }' +
+          'th, td { border: 1px solid #000; padding: 5px 3px; text-align: center; font-size: 8.5pt; word-wrap: break-word; }' +
+          'th { background: #eee !important; font-weight: bold; }' +
+          '.subtotal-row td { border: none; border-top: 1px solid #000; border-bottom: 1px solid #000; font-weight: bold; background: #fff !important; }' +
+          '.footer { display: flex; justify-content: space-between; margin-top: 20px; page-break-inside: avoid; }' +
+          '.footer-left { width: 62%; }' +
+          '.footer-right { width: 35%; }' +
+          '.footer-right table { border: none; margin: 0; }' +
+          '.footer-right td { border: none; text-align: right; padding: 3px; font-size: 9.5pt; }' +
+          '.net-amount { font-size: 14pt; font-weight: bold; border-top: 2.5px double #000 !important; border-bottom: 2.5px double #000 !important; }' +
+          '.warranty { font-size: 7.5pt; margin-top: 15px; border-top: 1px solid #000; padding-top: 8px; line-height: 1.3; }' +
+          '.signature { margin-top: 30px; text-align: right; }' +
+          '.signature p { margin: 0; font-weight: bold; }' +
+          '.print-footer { font-size: 14pt; text-align: center; margin-top: 40px; border-top: 3px solid #000; padding-top: 15px; color: #000; position: fixed; bottom: 10mm; width: 190mm; font-weight: bold; text-transform: uppercase; background: #fff !important; }' +
+          '@media print { .no-print { display: none; } body { padding: 0; } .a4-container { width: 100%; padding: 0; } }' +
+          '</style></head><body>' +
+          '<div class="a4-container">' +
+          '<div class="header"><div class="company-info"><h1>' + G.profile.name + '</h1><p>Ph: ' + G.profile.phone + '</p><p>' + G.profile.addr + '</p></div>' +
+          '<div class="invoice-title"><h1>INVOICE</h1><p>Invoice No: <b>' + no.replace('SI-', '') + '</b></p><p>Cash Invoice | Duplicate</p><p>Invoice Date: ' + dt + '</p><p>Due Date: ' + dt + '</p></div></div>' +
+          '<div class="customer-box"><div><p><b>Customer:</b> ' + cu + '</p><p><b>Address:</b> , MATI TILL ROAD, MULTAN-1</p></div><div style="text-align: right;"><p>NTN: ' + G.profile.ntn + ', STN: </p><p>Filer <span style="margin-left: 20px;">Page 1 of 1</span></p></div></div>' +
+          '<table><colgroup><col style="width:7%"><col style="width:7%"><col style="width:30%"><col style="width:8%"><col style="width:10%"><col style="width:8%"><col style="width:8%"><col style="width:6%"><col style="width:8%"><col style="width:8%"><col style="width:10%"></colgroup>' +
+          '<thead><tr><th>QTY</th><th>BNS</th><th>PRODUCT NAME</th><th>PACK</th><th>BATCH NO</th><th>EXPIRY</th><th>T.RATE</th><th>DISC%</th><th>GST/UNT</th><th>ADV TAX</th><th>VALUE</th></tr></thead><tbody>' + rows + 
+          '<tr class="subtotal-row"><td colspan="2" style="text-align: left;">GROSS :</td><td style="text-align: left;">' + gr.toFixed(2) + '</td><td>DISC 1 :</td><td>' + sd.toFixed(2) + '</td><td>C-DISC :</td><td>(0.00%)</td><td>0</td><td>NET :</td><td colspan="2" style="text-align: right;">' + nt.toFixed(2) + '</td></tr></tbody></table>' +
+          '<div class="footer"><div class="footer-left"><p>Total Items : ' + G.bi.length + ' of ' + G.bi.length + '</p><p><b>Printed At :</b> ' + dt + ' ' + tm + '</p><p style="margin-top: 12px; font-size: 11pt;"><b>' + inWords + '</b></p>' +
+          '<div class="warranty"><p>Form 2A (See Rules 19 & 30), <b>Warranty</b> under section 23(1)(i) of the Drug Act 1976.</p>' +
+          '<p>I <b>M. Akhtar Hayyat</b> being a person resident in Pakistan carrying on business at Company Address ' + G.profile.addr + ' under the name ' + G.profile.name + ' and being an authorised agent, do hereby give this warranty that the drugs sold by me donot contravene in anyway the provisions of section 23 of the drug act 1976.</p>' +
+          '<p><b>Note:</b> This Warranty doesn\'t apply to Unani, Homeopathic, Bio Chemic System of Medicine and General Items, if any mentioned in this bill/cash memo</p></div></div>' +
+          '<div class="footer-right"><table><tr><td>Gross Amount :</td><td>' + gr.toFixed(2) + '</td></tr><tr><td>Discount + Sp. Disc :</td><td>' + sd.toFixed(2) + ' + 0.00</td></tr><tr><td>GST + Ftax :</td><td>' + gt.toFixed(2) + ' + 0.00</td></tr><tr><td>Advance Inc Tax :</td><td>' + totalAdvTax + '</td></tr><tr><td>Previous Balance :</td><td>' + prevBal.toFixed(2) + '</td></tr><tr class="net-amount"><td>Net Amount :</td><td>' + netWithTax + '</td></tr></table>' +
+          '<div class="signature"><p>___________________</p><p>For ' + G.profile.name + '</p></div></div></div>' +
+          '<div class="print-footer">SOFTWARE DEVELOPED BY: SMART BUSINESS SOFTWARE | 0322 3729770</div>' +
+          '</div></body></html>');
+        w.document.close(); w.print();
+       }
+
+       function printThermal() {
+         if (G.bi.length === 0) { alert('Koi item nahi!'); return; }
+         var cu = (g('bcu') || { value: 'Cash' }).value || 'Cash', no = (g('bid') || { value: 'SI-?' }).value;
+         var dt = tds(), tm = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+         
+         var rows = G.bi.map(function (r) { 
+           return '<tr>' +
+             '<td>' + r.q + '</td>' +
+             '<td>' + (r.bo || 0) + '</td>' +
+             '<td style="text-align:left;">' + r.name + '</td>' +
+             '<td>' + r.ra.toFixed(2) + '</td>' +
+             '<td>' + r.di.toFixed(2) + '</td>' +
+             '<td>' + r.am.toFixed(2) + '</td>' +
+             '</tr>'; 
+         }).join('');
+
+         var gr = parseFloat((g('fg') || { value: '0' }).value) || 0;
+         var nt = parseFloat((g('fn') || { value: '0' }).value) || 0;
+         var sd = parseFloat((g('fsd') || { value: '0' }).value) || 0;
+         
+         var party = G.parties.find(p => p.name === cu);
+         var prevBal = party ? party.bal - nt : 0;
+         var totalItems = G.bi.length;
+
+         var w = window.open('', '_blank');
+         w.document.write('<!DOCTYPE html><html><head><title>Thermal Receipt ' + no + '</title>' +
+           '<style>' +
+           '@page { size: 80mm auto; margin: 0; }' +
+           'body { font-family: "Courier New", Courier, monospace; font-size: 10pt; width: 72mm; margin: 0 auto; padding: 5mm 2mm; color: #000; }' +
+           '.header { border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }' +
+           '.header-row { display: flex; justify-content: space-between; font-size: 9pt; margin-bottom: 2px; }' +
+           'table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }' +
+           'th, td { padding: 2px 1px; text-align: center; font-size: 8.5pt; border-bottom: 0.5px solid #eee; }' +
+           'th { border-bottom: 1px solid #000; font-weight: bold; }' +
+           '.totals { border-top: 1px solid #000; padding-top: 5px; margin-top: 5px; }' +
+           '.total-row { display: flex; justify-content: space-between; font-size: 9pt; margin-bottom: 2px; }' +
+           '.grand-total-box { border: 1px solid #000; padding: 5px; margin-top: 5px; }' +
+           '.footer-text { text-align: center; font-size: 11pt; margin-top: 15px; border-top: 2px solid #000; padding-top: 8px; font-weight: bold; text-transform: uppercase; }' +
+          '@media print { body { width: 100%; } }' +
+          '</style></head><body>' +
+          '<div class="header">' +
+          '<div style="text-align:center;border-bottom:2px solid #000;margin-bottom:10px;padding-bottom:5px;">' +
+          '<h2 style="margin:0;font-size:16pt;">' + G.profile.name + '</h2>' +
+          '<p style="margin:2px 0;font-size:9pt;">' + G.profile.addr + '</p>' +
+          '<p style="margin:2px 0;font-size:9pt;">Ph: ' + G.profile.phone + '</p>' +
+          '</div>' +
+          '<div class="header-row"><span>Estimate #:</span><b>' + no.replace('SI-', '') + '</b><span>Date:</span><b>' + dt + '</b></div>' +
+          '<div class="header-row"><span>Party Code:</span><b>1251</b><span>Time:</span><b>' + tm + '</b></div>' +
+          '<div class="header-row"><span>Party Name:</span><b>' + cu.toUpperCase() + '</b></div>' +
+          '<div class="header-row"><span>City:</span><b>...</b></div>' +
+          '</div>' +
+          '<table><thead><tr><th>Qty</th><th>Bns</th><th style="text-align:left;">Description</th><th>Rate</th><th>Dis%</th><th>Amount</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+          '<div class="header-row"><span>NO. OF ITEMS: ' + totalItems + '</span><span>SALES TAX: 0.00</span></div>' +
+          '<div class="grand-total-box">' +
+          '<div class="total-row"><span>GROSS:</span><b>' + gr.toFixed(2) + '</b><span>BILL AMOUNT:</span><b>' + nt.toFixed(2) + '</b></div>' +
+          '<div class="total-row"><span>DISCOUNT:</span><b>' + sd.toFixed(2) + '</b><span>PREVIOUS:</span><b>' + prevBal.toFixed(2) + '</b></div>' +
+          '<div class="total-row"><span>CR.NOTE:</span><b>0.00</b><span>Cash Received:</span><b>' + nt.toFixed(2) + '</b></div>' +
+          '<div class="total-row"><span>ADD/LESS:</span><b>0.00</b><span>NET BALANCE:</span><b>0.00</b></div>' +
+          '</div>' +
+          '<div class="footer-text">SOFTWARE DEVELOPED BY: SMART BUSINESS SOFTWARE | 0322 3729770</div>' +
+          '</body></html>');
+         w.document.close(); w.print();
+       }
+
+      function openIM() { document.getElementById('im').classList.add('show'); g('isi').value = ''; fi(); setTimeout(function () { g('isi').focus(); }, 100); }
+      function fi() {
+        var q = g('isi').value.toLowerCase(), tb = g('isb'); tb.innerHTML = '';
+        G.items.filter(function (i) { return i.name.toLowerCase().includes(q) || i.salt.toLowerCase().includes(q) || i.id.toLowerCase().includes(q) || i.company.toLowerCase().includes(q); })
+          .forEach(function (i) { var tr = document.createElement('tr'); tr.innerHTML = '<td>' + i.id + '</td><td>' + i.name + '</td><td>' + i.salt + '</td><td>' + i.company + '</td><td>' + i.pack + '</td><td>' + i.stock + '</td><td>' + i.rate + '</td>'; tr.onclick = function () { si(i); }; g('isb').appendChild(tr); });
+      }
+      function si(item) {
+        se('pn', item.name); se('ppk', item.pack); se('pmr', item.mrp); se('pra', item.rate); se('pgs', item.gst);
+        if (item.batches && item.batches.length > 0) {
+          var bt = item.batches[0]; se('pbt', bt.b); se('pex', bt.exp);
+          var rb = g('rbi'); if (rb) rb.innerHTML = item.batches.map(function (b) { return '<tr><td>' + b.b + '</td><td>' + b.exp + '</td><td>' + b.qty + '</td><td>' + b.cost + '</td></tr>'; }).join('');
+          se('rlp', bt.cost); se('rtp', item.rate); se('rgs', item.gst + '%');
+        }
+        cpv(); cm('im'); var e = g('pqt'); if (e) { e.focus(); e.select(); }
+      }
+      function showHist() {
+        var tb = g('hb'); tb.innerHTML = '';
+        if (G.bills.length === 0) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">No bills yet</td></tr>'; }
+        G.bills.slice().reverse().forEach(function (b) {
+          tb.innerHTML += '<tr><td>' + b.no + '</td><td>' + b.date + '</td><td>' + b.cust + '</td><td>' + b.items.length + '</td><td>Rs.' + parseFloat(b.net).toFixed(2) + '</td>' +
+            '<td><button class="bsm" onclick="loadB(\\\'' + b.no + '\\\')">Load</button> <button class="bsm" style="background:linear-gradient(#f88,#d33);color:#fff;" onclick="delB(\\\'' + b.no + '\\\')">Del</button></td></tr>';
+        });
+        document.getElementById('hm').classList.add('show');
+      }
+      function loadB(no) {
+        var b = G.bills.find(function (x) { return x.no === no; }); if (!b) return;
+        showSale(); setTimeout(function () { G.bi = JSON.parse(JSON.stringify(b.items)); var e = g('bcu'); if (e) e.value = b.cust; rr(); cf(); }, 120);
+        cm('hm');
+      }
+      function delB(no) { if (!confirm('Delete ' + no + '?')) return; G.bills = G.bills.filter(function (b) { return b.no !== no; }); showHist(); alert('Deleted from UI (MongoDB API for delete pending)'); }
+      function showStock() {
+        var tb = g('stb'); tb.innerHTML = '';
+        G.items.forEach(function (i) { i.batches.forEach(function (b) { tb.innerHTML += '<tr><td>' + i.name + '</td><td>' + i.salt + '</td><td>' + i.company + '</td><td>' + i.pack + '</td><td>' + b.b + '</td><td>' + b.exp + '</td><td style="color:' + (b.qty < 20 ? 'red' : 'green') + ';font-weight:700;">' + b.qty + '</td><td>' + i.rate + '</td></tr>'; }); });
+        document.getElementById('sm2').classList.add('show');
+      }
+      function fst() { var q = g('ssi').value.toLowerCase(); document.querySelectorAll('#stb tr').forEach(function (tr) { tr.style.display = tr.innerText.toLowerCase().includes(q) ? '' : 'none'; }); }
+      function showExpiry() {
+        var tb = g('eb'); tb.innerHTML = '';
+        G.items.forEach(function (i) { i.batches.forEach(function (b) { var m = mu(b.exp); if (m <= 6) { var s = m <= 0 ? 'EXPIRED' : m <= 2 ? 'CRITICAL' : m <= 4 ? 'WARNING' : 'NEAR EXPIRY'; var c = m <= 0 ? '#c00' : m <= 2 ? '#e00' : m <= 4 ? '#e60' : '#990'; tb.innerHTML += '<tr><td>' + i.name + '</td><td>' + b.b + '</td><td>' + b.exp + '</td><td>' + b.qty + '</td><td style="color:' + c + ';font-weight:700;">' + s + '</td></tr>'; } }); });
+        if (!tb.innerHTML) tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:green;padding:15px;">No near-expiry items</td></tr>';
+        document.getElementById('em').classList.add('show');
+      }
+      function showLedger() {
+        var tb = g('lb2'); tb.innerHTML = '';
+        G.parties.forEach(function (p) { 
+          var c = p.bal > 0 ? '#cc3300' : '#228822'; 
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + p.name + '</td><td>' + p.type + '</td><td style="font-weight:700;color:' + c + ';">Rs.' + Math.abs(p.bal).toFixed(2) + (p.bal > 0 ? ' (Dr)' : ' (Cr)') + '</td>';
+          tr.onclick = function() { showPartyDetail(p.name); };
+          tb.appendChild(tr);
+        });
+        document.getElementById('lm').classList.add('show');
+      }
+
+      function showPartyDetail(name) {
+        var p = G.parties.find(x => x.name === name);
+        if(!p) return;
+        var html = '<div class="mb2" style="min-width:700px;"><div class="mh">Ledger: ' + name + ' <span onclick="cm(\'pdm\')">&#10006;</span></div>' +
+          '<div class="mbd"><table class="mt"><thead><tr><th>Date</th><th>Description</th><th>Debit (Dr)</th><th>Credit (Cr)</th><th>Balance</th></tr></thead><tbody>';
+        
+        var bal = 0;
+        var txs = p.transactions || [];
+        if(txs.length === 0) {
+          html += '<tr><td colspan="5" style="text-align:center;">No transactions found</td></tr>';
+        } else {
+          txs.forEach(t => {
+            if(t.type === 'Dr') bal += t.amt; else bal -= t.amt;
+            html += '<tr><td>' + t.date + '</td><td>' + t.desc + '</td><td>' + (t.type === 'Dr' ? t.amt.toFixed(2) : '-') + '</td><td>' + (t.type === 'Cr' ? t.amt.toFixed(2) : '-') + '</td><td style="font-weight:700;">' + Math.abs(bal).toFixed(2) + (bal > 0 ? ' Dr' : ' Cr') + '</td></tr>';
+          });
+        }
+        html += '</tbody></table></div></div>';
+        var m = document.getElementById('pdm');
+        if(!m) {
+          m = document.createElement('div'); m.id = 'pdm'; m.className = 'mo';
+          document.body.appendChild(m);
+        }
+        m.innerHTML = html;
+        m.classList.add('show');
+      }
+      function findBillForReturn() {
+        var id = g('rsi').value.trim();
+        if(!id.startsWith('SI-')) id = 'SI-' + id;
+        var b = G.bills.find(x => x.no === id);
+        if(!b) { alert('Bill nahi mila!'); return; }
+        g('rb-detail').style.display = 'block';
+        g('rb-info').innerText = 'Bill: ' + b.no + ' | Cust: ' + b.cust + ' | Date: ' + b.date;
+        var tb = g('rtb'); tb.innerHTML = '';
+        b.items.forEach(i => {
+          tb.innerHTML += '<tr><td>' + i.name + '</td><td>' + i.q + '</td><td>' + i.ra.toFixed(2) + '</td><td>' + i.am.toFixed(2) + '</td></tr>';
+        });
+        window._currReturnBill = b;
+      }
+
+      function processReturn() {
+        var b = window._currReturnBill;
+        if(!b) return;
+        if(!confirm('Kya aap waqai ye bill return karna chahte hain? Stock aur Ledger update ho jayenge.')) return;
+
+        // 1. Update Stock
+        b.items.forEach(r => {
+          var idx = G.items.findIndex(i => i.name === r.name);
+          if(idx >= 0) G.items[idx].stock += r.q;
+        });
+
+        // 2. Update Party Ledger
+        var party = G.parties.find(p => p.name === b.cust);
+        if(party) {
+          if(!party.transactions) party.transactions = [];
+          var nt = parseFloat(b.net);
+          party.transactions.push({ date: tds(), desc: 'Return Bill ' + b.no, type: 'Cr', amt: nt });
+          party.bal -= nt;
+        }
+
+        // 3. Remove/Mark Bill (Deleting for now as per simple logic)
+        G.bills = G.bills.filter(x => x.no !== b.no);
+
+        // 4. Sync with Server
+        fetch(API_BASE + '/api/saveBill', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bill_delete: b.no, items: G.items, party: party })
+        }).then(r => r.json()).then(d => {
+          alert('Return processed successfully!');
+          cm('rm'); showDash();
+        }).catch(e => {
+           sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+           alert('Return processed locally!');
+           cm('rm'); showDash();
+         });
+       }
+       function showPurch() { var e = g('pd'); if (e) e.value = tds(); document.getElementById('pm').classList.add('show'); }
+      function showCompanyProfile() {
+         g('cp-name').value = G.profile.name || '';
+         g('cp-phone').value = G.profile.phone || '';
+         g('cp-addr').value = G.profile.addr || '';
+         g('cp-ntn').value = G.profile.ntn || '';
+         document.getElementById('cpm').classList.add('show');
+       }
+
+       function saveCompanyProfile() {
+         var name = g('cp-name').value.trim();
+         if(!name) { alert('Company Name zaroori hai!'); return; }
+         G.profile = {
+           name: name,
+           phone: g('cp-phone').value.trim(),
+           addr: g('cp-addr').value.trim(),
+           ntn: g('cp-ntn').value.trim()
+         };
+         
+         fetch(API_BASE + '/api/saveProfile', {
+           method: 'POST', headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ profile: G.profile })
+         }).then(r => r.json()).then(d => {
+           alert('Profile saved successfully!');
+           cm('cpm');
+         }).catch(e => {
+           sv('mg2_profile', G.profile);
+           alert('Profile saved locally!');
+           cm('cpm');
+         });
+       }
+
+       window.onload = function () {
+        fetch(API_BASE + '/api/data')
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (d.items) G.items = d.items;
+            if (d.bills) { G.bills = d.bills; G.nbn = 10001 + G.bills.length; }
+            if (d.users) G.users = d.users;
+            if (d.parties) G.parties = d.parties;
+            if (d.profile) G.profile = d.profile;
+
+            var s = ld('mg2_sess', {});
+            if (s.on) { document.getElementById('ls').style.display = 'none'; var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN'); showDash(); }
+          }).catch(function (e) {
+            console.warn("MongoDB offline, falling back to local storage.", e);
+            // FALLBACK TO LOCAL STORAGE
+            var li = ld('mg2_items', null); if (li) G.items = li;
+            var lb = ld('mg2_bills', null); if (lb) { G.bills = lb; G.nbn = 10001 + G.bills.length; }
+            var lu = ld('mg2_users', null); if (lu) G.users = lu;
+            var lp = ld('mg2_parties', null); if (lp) G.parties = lp;
+            var lcp = ld('mg2_profile', null); if (lcp) G.profile = lcp;
+            
+            var s = ld('mg2_sess', {});
+            if (s.on) { document.getElementById('ls').style.display = 'none'; var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN') + ' (Local Mode)'; showDash(); }
+          });
+      };
+    </script>
+</body>
+
+</html>
