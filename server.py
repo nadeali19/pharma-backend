@@ -10,13 +10,15 @@ CORS(app)
 MONGO_URI = "mongodb+srv://nadeali426:Alinade1926@cluster0.wml3oa4.mongodb.net/?appName=Cluster0"
 try:
     print("Connecting to MongoDB Atlas...")
-    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000, tlsAllowInvalidCertificates=True)
     # Trigger a connection to verify
     client.admin.command('ismaster')
     db = client['pharma_db']
     print("SUCCESS: Connected to MongoDB!")
+    db_err = None
 except Exception as e:
-    print(f"CRITICAL ERROR: Could not connect to MongoDB: {e}")
+    db_err = str(e)
+    print(f"CRITICAL ERROR: Could not connect to MongoDB: {db_err}")
     db = None # We will handle this in routes
 
 initial_items = [
@@ -85,7 +87,7 @@ def serve_index():
 @app.route('/api/data', methods=['GET'])
 def get_data():
     if db is None:
-        return jsonify({"error": "Database not connected"}), 503
+        return jsonify({"error": "Database not connected", "details": db_err}), 503
     try:
         items = sterilize(list(db.items.find({})))
         bills = sterilize(list(db.bills.find({})))
