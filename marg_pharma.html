@@ -61,6 +61,110 @@
       color: #fff;
     }
 
+    /* MDI Workspace Styles */
+    #desktop {
+      flex: 1;
+      position: relative;
+      background: #c8dce8 url('https://www.transparenttextures.com/patterns/cubes.png');
+      overflow: hidden;
+    }
+
+    .window {
+      position: absolute;
+      background: #eee;
+      border: 2px solid #003366;
+      box-shadow: 4px 4px 10px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      min-width: 300px;
+      min-height: 200px;
+      z-index: 10;
+    }
+
+    .window-header {
+      background: linear-gradient(90deg, #003366, #1a5599);
+      color: white;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      cursor: move;
+      user-select: none;
+      font-weight: bold;
+    }
+
+    .window-title {
+      flex: 1;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 4px;
+    }
+
+    .win-btn {
+      width: 18px;
+      height: 18px;
+      background: #ddd;
+      border: 1px solid #777;
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      cursor: pointer;
+    }
+
+    .win-btn:hover {
+      background: #fff;
+    }
+
+    .win-btn.close:hover {
+      background: #c00;
+      color: #fff;
+    }
+
+    .window-body {
+      flex: 1;
+      overflow: auto;
+      padding: 0;
+      background: #fff;
+    }
+
+    .window.active {
+      z-index: 100;
+      border-color: #ff9900;
+    }
+
+    .window.active .window-header {
+      background: linear-gradient(90deg, #ff9900, #ffcc33);
+      color: #000;
+    }
+
+    .taskbar {
+      background: #333;
+      height: 30px;
+      display: flex;
+      gap: 2px;
+      padding: 2px;
+    }
+
+    .task-item {
+      background: #555;
+      color: #fff;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-size: 11px;
+      border: 1px solid #777;
+    }
+
+    .task-item.active {
+      background: #ff9900;
+      color: #000;
+      font-weight: bold;
+    }
+
     .ws {
       display: flex;
       flex: 1;
@@ -764,19 +868,35 @@
       <li onclick="doLogout()" style="margin-left:auto;color:#c00;">Exit</li>
     </ul>
     <div class="ws">
-      <nav class="sl">
-        <h4>Quick Access</h4>
-        <a onclick="showSale()">&#128203; Sale Bill (Retail)</a>
-        <a onclick="showPurch()">&#128666; Purchase Bill</a>
-        <a onclick="showHist()">&#128221; Modify Bill</a>
-        <a onclick="showStock()">&#128230; Current Stock</a>
-        <a onclick="showExpiry()">&#9888; Expiry List</a>
-        <a onclick="showLedger()">&#128202; Ledger A/c</a>
-        <h4 style="margin-top:10px;">Digital</h4>
-        <a onclick="alert('Retailio feature')">&#128722; Retailio</a>
-        <a onclick="alert('Marg Mart feature')">&#128138; Marg Mart</a>
+      <nav class="sl" id="sidebar">
+        <h4>Masters</h4>
+        <a onclick="ow('im', 'Item Master', 850, 500)">&#128138; Item Master (F2)</a>
+        <a onclick="ow('lm', 'Ledger Master', 800, 500)">&#128202; Ledger Master</a>
+        
+        <h4>Transactions</h4>
+        <a onclick="ow('sale', 'Sale Bill (Retail)', 1000, 600)">&#128203; Sale Bill (Retail)</a>
+        <a onclick="ow('purch', 'Purchase Entry', 900, 550)">&#128666; Purchase Bill</a>
+        
+        <h4>Stocks & Reports</h4>
+        <a onclick="ow('stock', 'Current Stock', 850, 500)">&#128230; Current Stock</a>
+        <a onclick="ow('expiry', 'Expiry List', 800, 500)">&#9888; Expiry List</a>
+        <a onclick="ow('hist', 'Bill History', 850, 500)">&#128221; Modify/View Bills</a>
+
+        <h4>System</h4>
+        <a onclick="ntf('Retailio: No pending orders.')">&#128722; Retailio</a>
+        <a onclick="ntf('Marg Mart: Sync Complete.')">&#128138; Marg Mart</a>
+        <a onclick="doLogout()">&#128682; Logout</a>
       </nav>
-      <div class="ma" id="ma"></div>
+
+      <div class="ma">
+        <div id="desktop">
+            <div id="welcome-msg" style="position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#5a7fa8;pointer-events:none;z-index:1;">
+                <h2 style="font-size:38px;opacity:0.3;letter-spacing:4px;">MARG ERP 9+</h2>
+                <p style="font-size:14px;opacity:0.4;">Advanced Pharma Management Suite</p>
+            </div>
+        </div>
+        <div class="taskbar" id="taskbar"></div>
+      </div>
     </div>
   </div>
   <--help Modals -->
@@ -922,6 +1042,7 @@
     <script>
       const API_BASE = window.location.protocol === 'file:' ? "https://pharma-backend-production-c984.up.railway.app" : "";
       if (window.location.protocol === 'file:') document.addEventListener('DOMContentLoaded', () => { var e = document.getElementById('f-warn'); if(e) e.style.display='block'; });
+      
       var G = { 
         items: [], 
         bills: [], 
@@ -929,288 +1050,317 @@
         parties: [], 
         sess: {}, 
         bi: [], 
-        nbn: 10001 
+        nbn: 10001,
+        wins: {} // Active windows
       };
+
       function ld(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
       function sv(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
-      G.sess = ld('mg2_sess', {});
-      function doLogin() {
-        var u = document.getElementById('lu').value.trim(), p = document.getElementById('lp').value.trim();
-        var f = G.users.find(function (x) { return x.u === u && x.p === p; });
-        if (f) { G.sess = { u: u, r: f.r, on: true }; sv('mg2_sess', G.sess); document.getElementById('ls').style.display = 'none'; var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; document.getElementById('hi').innerText = 'User: ' + u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN'); showDash(); }
-        else document.getElementById('lerr').innerText = 'Invalid credentials!';
-      }
-      function doLogout() { sv('mg2_sess', {}); location.reload(); }
-      function setMA(h) { document.getElementById('ma').innerHTML = h; }
-      function tds() { var d = new Date(); return d.getDate().toString().padStart(2, '0') + '/' + (d.getMonth() + 1).toString().padStart(2, '0') + '/' + d.getFullYear().toString().slice(2); }
-      function mu(e) { var p = e.split('/'); if (p.length < 2) return 99; return (parseInt(p[1]) + 2000 - new Date().getFullYear()) * 12 + parseInt(p[0]) - (new Date().getMonth() + 1); }
-      function cm(id) { document.getElementById(id).classList.remove('show'); }
-      document.addEventListener('click', function (e) { if (e.target.classList.contains('mo')) e.target.classList.remove('show'); });
-      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') document.querySelectorAll('.mo').forEach(function (m) { m.classList.remove('show'); }); if (e.key === 'F2') { e.preventDefault(); openIM(); } });
+      function g(id) { return document.getElementById(id); }
+      function se(id, v) { var e = g(id); if (e) e.value = v; }
+      function tds() { return new Date().toLocaleDateString('en-IN'); }
+      function mu(ed) { if (!ed) return 99; var p = ed.split('/'); var d = new Date(p[1] + '/' + p[0] + '/' + p[2]); return (d - new Date()) / (1000 * 60 * 60 * 24 * 30.41); }
 
-      function showDash() {
-        var ts = G.bills.filter(function (x) { return x.date === tds(); }).reduce(function (a, x) { return a + parseFloat(x.net || 0); }, 0);
-        var ec = 0; G.items.forEach(function (i) { i.batches.forEach(function (b) { if (mu(b.exp) <= 3) ec++; }); });
-        var ls = G.items.filter(function (i) { return i.stock < 20; }).length;
-        setMA('<div id="dash-sc"><div class="dt">MARG ERP 9+ | Dashboard</div>' +
-          '<div class="g4">' +
-          '<div class="cd gr"><div class="ct">Today Sales</div><div class="cv">Rs.' + ts.toFixed(2) + '</div></div>' +
-          '<div class="cd"><div class="ct">Total Bills</div><div class="cv">' + G.bills.length + '</div></div>' +
-          '<div class="cd rd"><div class="ct">Near Expiry</div><div class="cv">' + ec + '</div></div>' +
-          '<div class="cd or"><div class="ct">Low Stock</div><div class="cv">' + ls + '</div></div>' +
-          '</div><div class="dst">Quick Actions</div>' +
-          '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">' +
-          '<button class="bsm" onclick="showSale()">New Sale Bill</button>' +
-          '<button class="bsm" onclick="showPurch()">Purchase Bill</button>' +
-          '<button class="bsm" onclick="showHist()">Bill History</button>' +
-          '<button class="bsm" onclick="showStock()">Stock Status</button>' +
-          '<button class="bsm" onclick="showExpiry()">Expiry List</button>' +
-          '<button class="bsm" onclick="showLedger()">Ledger</button>' +
-          '</div><div class="dst">Recent Bills</div>' +
-          '<table class="mt"><thead><tr><th>Bill No</th><th>Date</th><th>Customer</th><th>Items</th><th>Net Amt</th></tr></thead><tbody>' +
-          G.bills.slice(-5).reverse().map(function (b) { return '<tr><td>' + b.no + '</td><td>' + b.date + '</td><td>' + b.cust + '</td><td>' + b.items.length + '</td><td>Rs.' + parseFloat(b.net).toFixed(2) + '</td></tr>'; }).join('') +
-          '</tbody></table></div>');
+      /* --- WINDOW MANAGER CORE --- */
+      function ow(id, title, w, h) {
+        if (G.wins[id]) { foc(id); return; }
+        
+        var win = document.createElement('div');
+        win.id = 'win-' + id;
+        win.className = 'window active';
+        win.style.width = w + 'px';
+        win.style.height = h + 'px';
+        win.style.left = (Math.random() * 50 + 50) + 'px';
+        win.style.top = (Math.random() * 50 + 50) + 'px';
+        win.onmousedown = function() { foc(id); };
+
+        win.innerHTML = `
+            <div class="window-header" onmousedown="dragStart(event, '${id}')">
+                <div class="window-title">${title}</div>
+                <div class="window-controls">
+                    <div class="win-btn" onclick="cw('${id}')">_</div>
+                    <div class="win-btn close" onclick="cw('${id}')">X</div>
+                </div>
+            </div>
+            <div class="window-body" id="body-${id}"></div>
+        `;
+
+        g('desktop').appendChild(win);
+        G.wins[id] = { title: title };
+        
+        // Add to taskbar
+        var ti = document.createElement('div');
+        ti.id = 'task-' + id;
+        ti.className = 'task-item active';
+        ti.innerText = title;
+        ti.onclick = function() { foc(id); };
+        g('taskbar').appendChild(ti);
+
+        foc(id);
+        loadWinBody(id);
       }
 
-      function showSale() {
+      function cw(id) {
+        var win = g('win-' + id);
+        if (win) win.remove();
+        var ti = g('task-' + id);
+        if (ti) ti.remove();
+        delete G.wins[id];
+      }
+
+      function foc(id) {
+        document.querySelectorAll('.window').forEach(w => w.classList.remove('active'));
+        document.querySelectorAll('.task-item').forEach(t => t.classList.remove('active'));
+        var win = g('win-' + id);
+        if (win) win.classList.add('active');
+        var ti = g('task-' + id);
+        if (ti) ti.classList.add('active');
+      }
+
+      function ntf(m) {
+        var n = document.createElement('div');
+        n.style.position = 'fixed'; n.style.bottom = '40px'; n.style.right = '20px';
+        n.style.background = '#333'; n.style.color = '#fff'; n.style.padding = '8px 15px';
+        n.style.borderRadius = '4px'; n.style.zIndex = '9999'; n.style.fontSize = '12px'; n.style.boxShadow = '0 2px 10px rgba(0,0,0,0.5)';
+        n.innerText = m;
+        document.body.appendChild(n);
+        setTimeout(() => n.remove(), 3000);
+      }
+
+      /* --- DRAG LOGIC --- */
+      var curWin = null, offsetX, offsetY;
+      function dragStart(e, id) {
+        curWin = g('win-' + id);
+        offsetX = e.clientX - curWin.offsetLeft;
+        offsetY = e.clientY - curWin.offsetTop;
+        document.onmousemove = dragMove;
+        document.onmouseup = dragEnd;
+        foc(id);
+      }
+      function dragMove(e) { if (curWin) { curWin.style.left = (e.clientX - offsetX) + 'px'; curWin.style.top = (e.clientY - offsetY) + 'px'; } }
+      function dragEnd() { curWin = null; document.onmousemove = null; document.onmouseup = null; }
+
+
+
+      /* --- WINDOW CONTENT LOADERS --- */
+      function loadWinBody(id) {
+        var b = g('body-' + id);
+        if (id === 'sale') renderSale(b);
+        if (id === 'im') renderIM(b);
+        if (id === 'hist') renderHist(b);
+        if (id === 'stock') renderStock(b);
+        if (id === 'expiry') renderExpiry(b);
+        if (id === 'lm') renderLedger(b);
+        if (id === 'purch') renderPurch(b);
+      }
+
+      /* --- COMPONENT RENDERS --- */
+      function renderSale(b) {
         var t = tds();
-        setMA('<div id="sale-sc">' +
-          '<div class="sh">Sales Invoice (Auto Batch) &nbsp;<span>Bill No: SI-' + G.nbn + ' | Date: ' + t + '</span></div>' +
-          '<div class="bt">' +
-          '<div class="br"><label>Sale ID <input id="bid" value="SI-' + G.nbn + '" readonly style="width:65px;background:#eee;"></label>' +
-          '<label>Entry Date <input id="bed" value="' + t + '" style="width:72px;"></label>' +
-          '<label>Bill Date <input id="bbd" value="' + t + '" style="width:72px;"></label>' +
-          '<button class="bsm" onclick="alert(\\\'Open Bookings\\\')">Open Bookings</button>' +
-          '<button class="bsm" onclick="alert(\\\'Set Defaults\\\')">Set Defaults</button>' +
-          '<div class="pt"><label><input type="radio" name="pt" value="c" checked> Cash</label><label><input type="radio" name="pt" value="i"> Invoice</label></div>' +
-          '<div style="margin-left:auto;display:flex;gap:1px;">' +
-          '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Batch No</span>' +
-          '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Expiry</span>' +
-          '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Avail-Qty</span>' +
-          '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Qty</span>' +
-          '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Price</span>' +
-          '</div></div>' +
-          '<div class="br"><label>Customer <input id="bcu" style="min-width:200px;" placeholder="Cash / Customer Name"></label>' +
-          '<label><input type="checkbox" id="bcl"> Is Claimable</label>' +
-          '<label style="margin-left:8px;"><input type="checkbox"> Apply Booking Disc</label></div>' +
-          '<div class="br"><label>Doctor <input id="bdo" style="min-width:160px;"></label><label>Salesman <input id="bsl" style="width:110px;"></label></div>' +
-          '</div>' +
-          '<div class="pib">' +
-          '<label>Product <input id="pn" style="min-width:155px;cursor:pointer;background:#ffe;" onclick="openIM()" readonly placeholder="F2/Click"></label>' +
-          '<label>Pack <input id="ppk" style="width:42px;"></label>' +
-          '<label>Batch <input id="pbt" style="width:58px;"></label>' +
-          '<label>Exp <input id="pex" style="width:50px;"></label>' +
-          '<label>Qty <input id="pqt" type="number" value="1" style="width:42px;" oninput="cpv()"></label>' +
-          '<label>Bonus <input id="pbo" type="number" value="0" style="width:38px;"></label>' +
-          '<label>MRP <input id="pmr" type="number" style="width:52px;" oninput="cpv()"></label>' +
-          '<label>Rate <input id="pra" type="number" style="width:52px;" oninput="cpv()"></label>' +
-          '<label>Disc% <input id="pdi" type="number" value="0" style="width:38px;" oninput="cpv()"></label>' +
-          '<label>GST% <input id="pgs" type="number" value="0" style="width:38px;" oninput="cpv()"></label>' +
-          '<label>Amt <input id="pam" style="width:62px;" readonly></label>' +
-          '<button class="bsm" style="background:linear-gradient(#c0eec0,#7acc7a);font-weight:700;" onclick="addRow()">ADD</button>' +
-          '</div>' +
-          '<div class="cs">' +
-          '<div class="bta">' +
-          '<div class="th"><div class="c1">#</div><div class="c2">Product Name</div><div class="c3">Pack</div><div class="c4">Batch/Exp</div><div class="c5">Qty</div><div class="c6">Bonus</div><div class="c7">Rate</div><div class="c8">Disc%</div><div class="c9">Amount</div></div>' +
-          '<div class="tb2" id="br2"></div></div>' +
-          '<div class="rp">' +
-          '<div class="rs"><div class="rt">Last 5 Purchases</div>' +
-          '<table class="rpt"><thead><tr><th>Date</th><th>Qty</th><th>Rate</th><th>Disc%</th></tr></thead><tbody id="rl5"></tbody></table></div>' +
-          '<div class="rs"><div class="rg">' +
-          '<div class="ri"><label>Last Price</label><input id="rlp" readonly></div>' +
-          '<div class="ri"><label>Disc%</label><input id="rld" readonly></div>' +
-          '<div class="ri"><label>T-Price</label><input id="rtp" readonly></div>' +
-          '<div class="ri"><label>GST%</label><input id="rgs" readonly></div>' +
-          '</div></div>' +
-          '<div class="rs" style="flex:1;"><div class="rt">Batch Info</div>' +
-          '<table class="rpt"><thead><tr><th>Batch</th><th>Expiry</th><th>Qty</th><th>Cost</th></tr></thead><tbody id="rbi"></tbody></table></div>' +
-          '</div></div>' +
-          '<div class="bf">' +
-          '<div class="fl"><table><thead><tr><th>Company</th><th>Value</th><th>Disc%</th></tr></thead><tbody><tr><td><input style="width:85px;border:none;"></td><td><input style="width:55px;border:none;"></td><td><input style="width:38px;border:none;"></td></tr></tbody></table></div>' +
-          '<div class="fm">' +
-          '<div class="fmr"><label>Gross</label><input id="fg" readonly><label>SGST</label><input id="fsg" readonly><label>CGST</label><input id="fcg" readonly><label>Net Amt</label><input id="fn" readonly style="font-weight:700;background:#fffde8;"></div>' +
-          '<div class="fmr"><label>Prev Debit</label><input id="fpd"><label>Spl Disc</label><input id="fsd" oninput="rrf()"><label>Net Recv</label><input id="fnr" readonly><label>Rcvd Amt</label><input id="fra" oninput="rrf()"><label>Due Date</label><input id="fdu" value="' + t + '" style="width:68px;"></div>' +
-          '<button onclick="printBill()" style="margin-top:2px;padding:2px 10px;border:1px solid #668;background:linear-gradient(#eef,#ccf);cursor:pointer;">Print Preview</button>' +
-          '</div>' +
-          '<div class="fr"><div class="rt">Summary</div><div class="frg">' +
-          '<div class="fri"><label>Total Qty</label><input id="ftq" readonly></div>' +
-          '<div class="fri"><label>Avg Cost</label><input id="fac" readonly></div>' +
-          '<div class="fri"><label>Margin%</label><input id="fmg" readonly></div>' +
-          '</div></div></div>' +
-          '<div class="ab">' +
-          '<button class="abg" onclick="saveBill()">Save</button>' +
-          '<button onclick="clearBill()">Clear</button>' +
-          '<button onclick="showHist()">Open</button>' +
-          '<button onclick="openIM()">Search</button>' +
-          '<button onclick="printBill()">Print</button>' +
-          '<button onclick="remLR()">Remove</button>' +
-          '<button class="abr" onclick="showDash()">Home</button>' +
-          '</div></div>');
+        b.innerHTML = `
+          <div id="sale-sc">
+            <div class="sh">RETAIL INVOICE <span>City Medical Store</span> <span id="hib" style="margin-left:auto;"></span></div>
+            <div class="bt">
+              <div class="br"><label>Bill No <input id="bid" value="SI-${G.nbn}" readonly style="width:75px;background:#eee;"></label>
+              <label>Date <input id="bed" value="${t}" style="width:85px;"></label>
+              <div class="pt" style="margin-left:10px;"><label><input type="radio" name="pt" value="c" checked> Cash</label><label><input type="radio" name="pt" value="i"> Credit</label></div></div>
+              <div class="br"><label>Customer <input id="bcu" style="min-width:300px;" placeholder="Search Customer / Cash"></label></div>
+            </div>
+            <div class="pib">
+              <label>Product <input id="pn" style="min-width:200px;cursor:pointer;background:#ffe;" onclick="ow('im','Item Search',600,400)" readonly placeholder="F2/Click to search"></label>
+              <label>Batch <input id="pbt" style="width:70px;"></label>
+              <label>Exp <input id="pex" style="width:60px;"></label>
+              <label>Qty <input id="pqt" type="number" value="1" style="width:50px;" oninput="cpv()"> / <span id="paq" style="color:#c00;font-weight:700;">0</span></label>
+              <label>Rate <input id="pra" type="number" style="width:65px;" oninput="cpv()"></label>
+              <label>Amt <input id="pam" style="width:80px;" readonly style="background:#eee;"></label>
+              <button class="bsm" style="background:linear-gradient(#c0eec0,#7acc7a);" onclick="addRow()">ADD (↵)</button>
+            </div>
+            <div class="cs">
+              <div class="bta"><div class="th"><div class="c1">#</div><div class="c2">Product</div><div class="c3">Batch</div><div class="c5">Qty</div><div class="c7">Rate</div><div class="c9">Total</div></div><div class="tb2" id="br2"></div></div>
+            </div>
+            <div class="bf">
+              <div style="flex:1;padding:8px;">
+                <div class="fmr"><label>Net Amount</label><input id="fn" readonly style="font-weight:700;font-size:18px;background:#fffde8;height:35px;color:#c00;text-align:right;"></div>
+              </div>
+            </div>
+            <div class="ab">
+              <button class="abg" onclick="saveBill()">SAVE (F10)</button>
+              <button onclick="cw('sale')">CLOSE (ESC)</button>
+            </div>
+          </div>
+        `;
         G.bi = []; rr();
       }
 
-      function cpv() {
-        var q = parseFloat(g('pqt').value) || 0, r = parseFloat(g('pra').value) || 0, d = parseFloat(g('pdi').value) || 0, gs = parseFloat(g('pgs').value) || 0;
-        var e = g('pam'); if (e) e.value = (q * r * (1 - d / 100) * (1 + gs / 100)).toFixed(2);
+      function renderIM(b) {
+        b.innerHTML = `
+          <div style="padding:10px;">
+            <input class="sb" id="isi" placeholder="Type name, salt, company..." oninput="fi()" style="width:100%;margin-bottom:10px;padding:8px;border:2px solid #003366;">
+            <table class="mt">
+              <thead><tr><th>ID</th><th>Product Name</th><th>Stock</th><th>Rate</th></tr></thead>
+              <tbody id="isb"></tbody>
+            </table>
+          </div>
+        `;
+        fi();
       }
-      function g(id) { return document.getElementById(id); }
-      function se(id, v) { var e = g(id); if (e) e.value = v; }
+
+      function fi() {
+        var q = (g('isi')||{value:''}).value.toLowerCase(), tb = g('isb'); if(!tb) return; tb.innerHTML = '';
+        G.items.filter(i => i.name.toLowerCase().includes(q) || i.company.toLowerCase().includes(q))
+          .forEach(i => {
+            var tr = document.createElement('tr');
+            tr.innerHTML = `<td>${i.id}</td><td><b>${i.name}</b></td><td>${i.stock}</td><td>${i.rate}</td>`;
+            tr.onclick = () => { si(i); };
+            tb.appendChild(tr);
+          });
+      }
+
+      function si(item) {
+        if (G.wins['sale']) {
+            se('pn', item.name); se('pra', item.rate);
+            if (item.batches && item.batches.length > 0) {
+              se('pbt', item.batches[0].b); se('pex', item.batches[0].exp);
+              var aq = g('paq'); if(aq) aq.innerText = item.batches[0].qty;
+            }
+            cpv(); cw('im'); g('pqt').focus();
+        } else {
+            cw('im'); ow('sale', 'Sale Bill', 1000, 600);
+            setTimeout(() => si(item), 100);
+        }
+      }
+
+      function cpv() {
+        var q = parseFloat(g('pqt').value) || 0, r = parseFloat(g('pra').value) || 0;
+        var e = g('pam'); if (e) e.value = (q * r).toFixed(2);
+      }
 
       function addRow() {
-        var nm = g('pn'); if (!nm || !nm.value.trim()) { alert('Product select karein!'); openIM(); return; }
-        var q = parseFloat(g('pqt').value) || 0; if (q <= 0) { alert('Quantity enter karein!'); return; }
-        var pk = g('ppk').value, bt = g('pbt').value, ex = g('pex').value;
-        var bo = parseFloat(g('pbo').value) || 0, mr = parseFloat(g('pmr').value) || 0;
-        var ra = parseFloat(g('pra').value) || 0, di = parseFloat(g('pdi').value) || 0, gs = parseFloat(g('pgs').value) || 0;
-        var veg = q * ra * (1 - di / 100), ga = veg * gs / 100, am = veg + ga;
-        G.bi.push({ sno: G.bi.length + 1, name: nm.value, pk, bt, ex, q, bo, mr, ra, di, gs, veg, ga, am });
-        rr(); cf();
-        ['pn', 'ppk', 'pbt', 'pex', 'pbo', 'pmr', 'pra', 'pdi', 'pgs', 'pam'].forEach(function (id) { var e = g(id); if (e) e.value = ''; });
-        var qe = g('pqt'); if (qe) qe.value = 1; var de = g('pdi'); if (de) de.value = 0;
-        var ne = g('pn'); if (ne) ne.focus();
+        var nm = g('pn'); if (!nm || !nm.value.trim()) { ow('im', 'Item Search', 600, 400); return; }
+        var q = parseFloat(g('pqt').value) || 0; if (q <= 0) return;
+        var bt = g('pbt').value, ex = g('pex').value, ra = parseFloat(g('pra').value) || 0, am = q * ra;
+        G.bi.push({ sno: G.bi.length + 1, name: nm.value, bt, ex, q, ra, am });
+        rr();
+        ['pn', 'pbt', 'pex', 'pra', 'pam'].forEach(id => { var e = g(id); if (e) e.value = ''; });
+        g('paq').innerText = '0'; g('pqt').value = 1; g('pn').focus();
       }
 
       function rr() {
         var c = g('br2'); if (!c) return; c.innerHTML = '';
-        G.bi.forEach(function (r, i) {
+        G.bi.forEach((r, i) => {
           var d = document.createElement('div'); d.className = 'tr';
-          d.innerHTML = '<div class="c1">' + r.sno + '</div><div class="c2">' + r.name + '</div><div class="c3">' + r.pk + '</div>' +
-            '<div class="c4">' + r.bt + ' ' + r.ex + '</div><div class="c5">' + r.q + '</div><div class="c6">' + r.bo + '</div>' +
-            '<div class="c7">' + r.ra.toFixed(2) + '</div><div class="c8">' + r.di + '%</div>' +
-            '<div class="c9" style="font-weight:700;">' + r.am.toFixed(2) + '</div>';
-          d.ondblclick = function () { if (confirm('Remove row ' + r.sno + '?')) { G.bi.splice(i, 1); G.bi.forEach(function (x, j) { x.sno = j + 1; }); rr(); cf(); } };
+          d.innerHTML = `<div class="c1">${r.sno}</div><div class="c2">${r.name}</div><div class="c3">${r.bt}</div><div class="c5">${r.q}</div><div class="c7">${r.ra.toFixed(2)}</div><div class="c9">${r.am.toFixed(2)}</div>`;
+          d.ondblclick = () => { G.bi.splice(i, 1); G.bi.forEach((x, j) => x.sno = j + 1); rr(); };
           c.appendChild(d);
         });
+        var nt = G.bi.reduce((s,x)=>s+x.am, 0); var nte = g('fn'); if(nte) nte.value = nt.toFixed(2);
       }
-
-      function cf() {
-        var gr = 0, gt = 0, tq = 0;
-        G.bi.forEach(function (r) { gr += r.veg; gt += r.ga; tq += r.q; });
-        var nt = gr + gt, sg = gt / 2, cg = gt / 2;
-        se('fg', gr.toFixed(2)); se('fsg', sg.toFixed(2)); se('fcg', cg.toFixed(2)); se('fn', nt.toFixed(2));
-        se('fnr', nt.toFixed(2)); se('ftq', tq);
-        se('fac', G.bi.length > 0 ? (gr / G.bi.length).toFixed(2) : '0.00'); se('fmg', '0.00');
-      }
-
-      function rrf() {
-        var nt = parseFloat((g('fn') || { value: 0 }).value) || 0, sd = parseFloat((g('fsd') || { value: 0 }).value) || 0;
-        var fnr = g('fnr'); if (fnr) fnr.value = Math.max(0, nt - sd).toFixed(2);
-      }
-
-      function remLR() { if (G.bi.length > 0) { G.bi.pop(); G.bi.forEach(function (x, i) { x.sno = i + 1; }); rr(); cf(); } }
-
-      function clearBill() { G.bi = []; rr(); cf();['bcu', 'bdo', 'bsl', 'fpd', 'fsd', 'fra'].forEach(function (id) { var e = g(id); if (e) e.value = ''; }); }
 
       function saveBill() {
-        if (G.bi.length === 0) { alert('Koi item nahi!'); return; }
-        var cu = (g('bcu') || { value: 'Cash' }).value || 'Cash';
-        var nt = (g('fn') || { value: '0' }).value || '0';
+        if (G.bi.length === 0) { ntf('Add items first!'); return; }
+        var cu = g('bcu').value || 'Cash', nt = G.bi.reduce((s,x)=>s+x.am, 0);
         var no = 'SI-' + G.nbn;
-        var newB = { no, date: tds(), cust: cu, items: JSON.parse(JSON.stringify(G.bi)), net: nt };
-        G.bills.push(newB);
-        G.nbn++;
-        G.bi.forEach(function (r) { var idx = G.items.findIndex(function (i) { return i.name === r.name; }); if (idx >= 0) G.items[idx].stock = Math.max(0, G.items[idx].stock - r.q); });
+        var newB = { no, date: tds(), cust: cu, items: JSON.parse(JSON.stringify(G.bi)), net: nt.toFixed(2) };
+        G.bills.push(newB); G.nbn++;
+        G.bi.forEach(r => { var item = G.items.find(i=>i.name===r.name); if(item) item.stock -= r.q; });
 
         fetch(API_BASE + '/api/saveBill', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ bill: newB, items: G.items })
-        }).then(function (r) { return r.json() }).then(function (d) {
-          alert('Bill ' + no + ' saved to MongoDB!\nCustomer: ' + cu + '\nNet: Rs.' + parseFloat(nt).toFixed(2));
-          clearBill(); showDash();
-        }).catch(function (e) {
-          sv('mg2_bills', G.bills); sv('mg2_items', G.items);
-          alert('MongoDB offline. Saved Locally!\nCustomer: ' + cu + '\nNet: Rs.' + parseFloat(nt).toFixed(2));
-          clearBill(); showDash();
+        }).then(r => r.json()).then(d => {
+           ntf('Bill ' + no + ' SAVED Successfully!');
+           cw('sale');
+        }).catch(e => {
+           sv('mg2_bills', G.bills); sv('mg2_items', G.items);
+           ntf('Saved Locally (Offline)');
+           cw('sale');
         });
       }
 
-      function printBill() {
-        if (G.bi.length === 0) { alert('Koi item nahi!'); return; }
-        var cu = (g('bcu') || { value: 'Cash' }).value || 'Cash', no = (g('bid') || { value: 'SI-?' }).value;
-        var rows = G.bi.map(function (r, i) { return '<tr><td>' + (i + 1) + '</td><td>' + r.name + '</td><td>' + r.pk + '</td><td>' + r.bt + '</td><td>' + r.ex + '</td><td>' + r.q + '</td><td>' + r.ra.toFixed(2) + '</td><td>' + r.di + '%</td><td>' + r.am.toFixed(2) + '</td></tr>'; }).join('');
-        var gr = (g('fg') || { value: '0' }).value, nt = (g('fn') || { value: '0' }).value;
-        var gt = ((parseFloat((g('fsg') || { value: 0 }).value) || 0) * 2).toFixed(2);
-        var w = window.open('', '_blank');
-        w.document.write('<!DOCTYPE html><html><head><title>Invoice ' + no + '</title><style>body{font-family:Arial,sans-serif;font-size:12px;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #000;padding:4px 6px;font-size:11px;}th{background:#ddd;}.h{text-align:center;border-bottom:2px solid #000;margin-bottom:10px;}.f{text-align:right;font-weight:700;margin-top:10px;font-size:13px;}</style></head><body>' +
-          '<div class="h"><h2>CITY MEDICAL STORE</h2><p>GSTIN: 07AAAAA0000A1Z5 | Ph: 9876543210</p><h3>Tax Invoice</h3></div>' +
-          '<p><b>Bill No:</b> ' + no + ' &nbsp;<b>Date:</b> ' + tds() + ' &nbsp;<b>Customer:</b> ' + cu + '</p>' +
-          '<table><thead><tr><th>#</th><th>Product</th><th>Pack</th><th>Batch</th><th>Expiry</th><th>Qty</th><th>Rate</th><th>Disc%</th><th>Amount</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-          '<div class="f">Gross: Rs.' + gr + ' | GST: Rs.' + gt + ' | <b>NET: Rs.' + nt + '</b></div>' +
-          '<p style="text-align:center;margin-top:30px;">Thank You! Visit Again.</p></body></html>');
-        w.document.close(); w.print();
+      function renderHist(b) {
+        b.innerHTML = `<div style="padding:10px;"><table class="mt"><thead><tr><th>Bill No</th><th>Date</th><th>Customer</th><th>Net</th></tr></thead><tbody id="hb"></tbody></table></div>`;
+        var tb = g('hb');
+        G.bills.slice().reverse().forEach(b => {
+          var tr = document.createElement('tr');
+          tr.innerHTML = `<td>${b.no}</td><td>${b.date}</td><td>${b.cust}</td><td>Rs.${b.net}</td>`;
+          tb.appendChild(tr);
+        });
       }
 
-      function openIM() { document.getElementById('im').classList.add('show'); g('isi').value = ''; fi(); setTimeout(function () { g('isi').focus(); }, 100); }
-      function fi() {
-        var q = g('isi').value.toLowerCase(), tb = g('isb'); tb.innerHTML = '';
-        G.items.filter(function (i) { return i.name.toLowerCase().includes(q) || i.salt.toLowerCase().includes(q) || i.id.toLowerCase().includes(q) || i.company.toLowerCase().includes(q); })
-          .forEach(function (i) { var tr = document.createElement('tr'); tr.innerHTML = '<td>' + i.id + '</td><td>' + i.name + '</td><td>' + i.salt + '</td><td>' + i.company + '</td><td>' + i.pack + '</td><td>' + i.stock + '</td><td>' + i.rate + '</td>'; tr.onclick = function () { si(i); }; g('isb').appendChild(tr); });
+      function renderStock(b) {
+        b.innerHTML = `<div style="padding:10px;"><table class="mt"><thead><tr><th>Product</th><th>Company</th><th>Stock</th></tr></thead><tbody id="stb"></tbody></table></div>`;
+        var tb = g('stb');
+        G.items.forEach(i => {
+           var tr = document.createElement('tr');
+           tr.innerHTML = `<td>${i.name}</td><td>${i.company}</td><td style="color:${i.stock<20?'red':'green'};font-weight:bold;">${i.stock}</td>`;
+           tb.appendChild(tr);
+        });
       }
-      function si(item) {
-        se('pn', item.name); se('ppk', item.pack); se('pmr', item.mrp); se('pra', item.rate); se('pgs', item.gst);
-        if (item.batches && item.batches.length > 0) {
-          var bt = item.batches[0]; se('pbt', bt.b); se('pex', bt.exp);
-          var rb = g('rbi'); if (rb) rb.innerHTML = item.batches.map(function (b) { return '<tr><td>' + b.b + '</td><td>' + b.exp + '</td><td>' + b.qty + '</td><td>' + b.cost + '</td></tr>'; }).join('');
-          se('rlp', bt.cost); se('rtp', item.rate); se('rgs', item.gst + '%');
+
+      function renderExpiry(b) {
+        b.innerHTML = `<div style="padding:10px;"><table class="mt"><thead><tr><th>Product</th><th>Batch</th><th>Expiry</th></tr></thead><tbody id="eb"></tbody></table></div>`;
+        var tb = g('eb');
+        G.items.forEach(i => { i.batches.forEach(b => { 
+            var m = mu(b.exp);
+            if (m <= 6) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = `<td>${i.name}</td><td>${b.b}</td><td>${b.exp}</td>`;
+                tb.appendChild(tr);
+            }
+        }); });
+      }
+
+      function renderLedger(b) {
+        b.innerHTML = `<div style="padding:10px;"><table class="mt"><thead><tr><th>Party Name</th><th>Balance</th></tr></thead><tbody id="lb2"></tbody></table></div>`;
+        G.parties.forEach(p => {
+           var tr = document.createElement('tr');
+           tr.innerHTML = `<td>${p.name}</td><td>Rs.${Math.abs(p.bal).toFixed(2)} ${p.bal>0?'(Dr)':'(Cr)'}</td>`;
+           g('lb2').appendChild(tr);
+        });
+      }
+
+      function renderPurch(b) { b.innerHTML = `<div style="padding:20px;text-align:center;"><h3>Purchase Module</h3><p>Coming in next update...</p></div>`; }
+
+      function doLogin() {
+        var u = g('lu').value.trim(), p = g('lp').value.trim();
+        var f = G.users.find(x => x.u === u && x.p === p);
+        if (f) {
+          sv('mg2_sess', { on: true, u: u, r: f.r });
+          g('ls').style.display = 'none';
+          g('app').style.display = 'flex';
+          g('hi').innerText = 'User: ' + u.toUpperCase();
+          ntf('Welcome to MARG ERP 9+');
+        } else {
+          g('lerr').innerText = 'Invalid credentials!';
         }
-        cpv(); cm('im'); var e = g('pqt'); if (e) { e.focus(); e.select(); }
       }
-      function showHist() {
-        var tb = g('hb'); tb.innerHTML = '';
-        if (G.bills.length === 0) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">No bills yet</td></tr>'; }
-        G.bills.slice().reverse().forEach(function (b) {
-          tb.innerHTML += '<tr><td>' + b.no + '</td><td>' + b.date + '</td><td>' + b.cust + '</td><td>' + b.items.length + '</td><td>Rs.' + parseFloat(b.net).toFixed(2) + '</td>' +
-            '<td><button class="bsm" onclick="loadB(\\\'' + b.no + '\\\')">Load</button> <button class="bsm" style="background:linear-gradient(#f88,#d33);color:#fff;" onclick="delB(\\\'' + b.no + '\\\')">Del</button></td></tr>';
-        });
-        document.getElementById('hm').classList.add('show');
-      }
-      function loadB(no) {
-        var b = G.bills.find(function (x) { return x.no === no; }); if (!b) return;
-        showSale(); setTimeout(function () { G.bi = JSON.parse(JSON.stringify(b.items)); var e = g('bcu'); if (e) e.value = b.cust; rr(); cf(); }, 120);
-        cm('hm');
-      }
-      function delB(no) { if (!confirm('Delete ' + no + '?')) return; G.bills = G.bills.filter(function (b) { return b.no !== no; }); showHist(); alert('Deleted from UI (MongoDB API for delete pending)'); }
-      function showStock() {
-        var tb = g('stb'); tb.innerHTML = '';
-        G.items.forEach(function (i) { i.batches.forEach(function (b) { tb.innerHTML += '<tr><td>' + i.name + '</td><td>' + i.salt + '</td><td>' + i.company + '</td><td>' + i.pack + '</td><td>' + b.b + '</td><td>' + b.exp + '</td><td style="color:' + (b.qty < 20 ? 'red' : 'green') + ';font-weight:700;">' + b.qty + '</td><td>' + i.rate + '</td></tr>'; }); });
-        document.getElementById('sm2').classList.add('show');
-      }
-      function fst() { var q = g('ssi').value.toLowerCase(); document.querySelectorAll('#stb tr').forEach(function (tr) { tr.style.display = tr.innerText.toLowerCase().includes(q) ? '' : 'none'; }); }
-      function showExpiry() {
-        var tb = g('eb'); tb.innerHTML = '';
-        G.items.forEach(function (i) { i.batches.forEach(function (b) { var m = mu(b.exp); if (m <= 6) { var s = m <= 0 ? 'EXPIRED' : m <= 2 ? 'CRITICAL' : m <= 4 ? 'WARNING' : 'NEAR EXPIRY'; var c = m <= 0 ? '#c00' : m <= 2 ? '#e00' : m <= 4 ? '#e60' : '#990'; tb.innerHTML += '<tr><td>' + i.name + '</td><td>' + b.b + '</td><td>' + b.exp + '</td><td>' + b.qty + '</td><td style="color:' + c + ';font-weight:700;">' + s + '</td></tr>'; } }); });
-        if (!tb.innerHTML) tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:green;padding:15px;">No near-expiry items</td></tr>';
-        document.getElementById('em').classList.add('show');
-      }
-      function showLedger() {
-        var tb = g('lb2'); tb.innerHTML = '';
-        G.parties.forEach(function (p) { var c = p.bal > 0 ? '#cc3300' : '#228822'; tb.innerHTML += '<tr><td>' + p.name + '</td><td>' + p.type + '</td><td style="font-weight:700;color:' + c + ';">Rs.' + Math.abs(p.bal).toFixed(2) + (p.bal > 0 ? ' (Dr)' : ' (Cr)') + '</td></tr>'; });
-        document.getElementById('lm').classList.add('show');
-      }
-      function showPurch() { var e = g('pd'); if (e) e.value = tds(); document.getElementById('pm').classList.add('show'); }
+
+      function doLogout() { sv('mg2_sess', { on: false }); window.location.reload(); }
+
       window.onload = function () {
-        fetch(API_BASE + '/api/data')
-          .then(function (r) { return r.json(); })
-          .then(function (d) {
+        fetch(API_BASE + '/api/data').then(r => r.json()).then(d => {
             if (d.items) G.items = d.items;
             if (d.bills) { G.bills = d.bills; G.nbn = 10001 + G.bills.length; }
             if (d.users) G.users = d.users;
             if (d.parties) G.parties = d.parties;
-
             var s = ld('mg2_sess', {});
-            if (s.on) { document.getElementById('ls').style.display = 'none'; var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN'); showDash(); }
-          }).catch(function (e) {
-            console.warn("MongoDB offline, falling back to local storage.", e);
-            // FALLBACK TO LOCAL STORAGE
-            var li = ld('mg2_items', null); if (li) G.items = li;
-            var lb = ld('mg2_bills', null); if (lb) { G.bills = lb; G.nbn = 10001 + G.bills.length; }
-            var lu = ld('mg2_users', null); if (lu) G.users = lu;
-            var lp = ld('mg2_parties', null); if (lp) G.parties = lp;
-            
+            if (s.on) { g('ls').style.display = 'none'; g('app').style.display = 'flex'; g('hi').innerText = 'User: ' + s.u.toUpperCase(); }
+        }).catch(e => {
+            ntf('Offline Mode');
             var s = ld('mg2_sess', {});
-            if (s.on) { document.getElementById('ls').style.display = 'none'; var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN') + ' (Local Mode)'; showDash(); }
-          });
+            if (s.on) { g('ls').style.display = 'none'; g('app').style.display = 'flex'; g('hi').innerText = 'User: ' + s.u.toUpperCase(); }
+        });
       };
+
+      document.onkeydown = function(e) {
+        if (e.key === 'F2') { e.preventDefault(); ow('im', 'Item Search', 600, 400); }
+        if (e.key === 'F10') { e.preventDefault(); saveBill(); }
+        if (e.key === 'Escape') { 
+            var active = document.querySelector('.window.active');
+            if (active) cw(active.id.replace('win-', ''));
+        }
+      };
+
     </script>
 </body>
 
