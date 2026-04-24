@@ -7,8 +7,8 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app)
 
-# Robust Connection String
-MONGO_URI = "mongodb+srv://nadeali426:Alinade1926@cluster0.wml3oa4.mongodb.net/pharma_db?retryWrites=true&w=majority"
+# New Connection String
+MONGO_URI = "mongodb+srv://nadeali:alinade1926@cluster0.hgwzx4r.mongodb.net/pharma_db?retryWrites=true&w=majority"
 try:
     print("Connecting to MongoDB Atlas...")
     client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000, tlsAllowInvalidCertificates=True)
