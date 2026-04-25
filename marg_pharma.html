@@ -1051,7 +1051,10 @@
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape') document.querySelectorAll('.mo').forEach(function (m) { m.classList.remove('show'); }); if (e.key === 'F2') { e.preventDefault(); openIM(); } });
 
       function showDash() {
-        var ts = G.bills.filter(function (x) { return x.date === tds(); }).reduce(function (a, x) { return a + parseFloat(x.net || 0); }, 0);
+        var ts = G.bills.filter(x => x.date === tds()).reduce((a, x) => { 
+          var v = x.net_amt ? (x.net_amt - (x.spl_disc || 0)) : (parseFloat(x.net) || 0);
+          return a + v; 
+        }, 0);
         var ec = 0; G.items.forEach(function (i) { i.batches.forEach(function (b) { if (mu(b.exp) <= 3) ec++; }); });
         var ls = G.items.filter(function (i) { return i.stock < 20; }).length;
         setMA('<div id="dash-sc"><div class="dt">MARG ERP 9+ | Dashboard</div>' +
@@ -1070,7 +1073,7 @@
           '<button class="bsm" onclick="showLedger()">Ledger</button>' +
           '</div><div class="dst">Recent Bills</div>' +
           '<table class="mt"><thead><tr><th>Bill No</th><th>Date</th><th>Customer</th><th>Items</th><th>Net Amt</th></tr></thead><tbody>' +
-          G.bills.slice(-5).reverse().map(function (b) { return '<tr><td>' + b.no + '</td><td>' + b.date + '</td><td>' + b.cust + '</td><td>' + b.items.length + '</td><td>Rs.' + parseFloat(b.net).toFixed(2) + '</td></tr>'; }).join('') +
+          G.bills.slice(-5).reverse().map(function (b) { return '<tr><td>' + b.no + '</td><td>' + b.date + '</td><td>' + b.cust + '</td><td>' + b.items.length + '</td><td>Rs.' + (b.net_amt ? (b.net_amt - (b.spl_disc||0)) : (parseFloat(b.net)||0)).toFixed(2) + '</td></tr>'; }).join('') +
           '</tbody></table></div>');
       }
 
@@ -1082,8 +1085,7 @@
           '<div class="br"><label>Sale ID <input id="bid" value="SI-' + G.nbn + '" readonly style="width:65px;background:#eee;"></label>' +
           '<label>Entry Date <input id="bed" value="' + t + '" style="width:72px;"></label>' +
           '<label>Bill Date <input id="bbd" value="' + t + '" style="width:72px;"></label>' +
-          '<button class="bsm" onclick="alert(\\\'Open Bookings\\\')">Open Bookings</button>' +
-          '<button class="bsm" onclick="alert(\\\'Set Defaults\\\')">Set Defaults</button>' +
+          '<label style="font-weight:700;color:#002244;">Pay Mode <select id="bpm" style="height:21px;border:1px solid #7799bb;background:#fffde8;font-weight:700;"><option value="Cash">💵 Cash</option><option value="Credit">📋 Credit</option><option value="Online">📱 Online</option><option value="Cheque">🏦 Cheque</option></select></label>' +
           '<div class="pt"><label><input type="radio" name="pt" value="c" checked> Cash</label><label><input type="radio" name="pt" value="i"> Invoice</label></div>' +
           '<div style="margin-left:auto;display:flex;gap:1px;">' +
           '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Batch No</span>' +
@@ -1092,11 +1094,12 @@
           '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Qty</span>' +
           '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Price</span>' +
           '</div></div>' +
-          '<div class="br"><label>Customer <input id="bcu" list="party-list" style="min-width:200px;" placeholder="Cash / Customer Name" oninput="findParty()"></label>' +
+          '<div class="br"><label>Customer <input id="bcu" list="party-list" style="min-width:180px;" placeholder="Cash / Customer Name" oninput="findParty()"></label>' +
           '<datalist id="party-list"></datalist>' +
-          '<div id="p-bal" style="font-weight:700;color:#c00;margin-left:10px;">Bal: 0.00</div>' +
-          '<label style="margin-left:10px;"><input type="checkbox" id="bcl"> Is Claimable</label>' +
-          '<label style="margin-left:8px;"><input type="checkbox"> Apply Booking Disc</label></div>' +
+          '<label style="margin-left:6px;">Phone <input id="bph" style="width:110px;" placeholder="0300-XXXXXXX" oninput="findParty()"></label>' +
+          '<div id="p-bal" style="font-weight:700;color:#c00;margin-left:10px;font-size:11px;">Bal: 0.00</div>' +
+          '<div id="p-last-tx" style="font-size:10px;color:#555;margin-left:8px;"></div>' +
+          '<label style="margin-left:10px;"><input type="checkbox" id="bcl"> Is Claimable</label></div>' +
           '<div class="br"><label>Doctor <input id="bdo" style="min-width:160px;"></label><label>Salesman <input id="bsl" style="width:110px;"></label></div>' +
           '</div>' +
           '<div class="pib">' +
@@ -1133,7 +1136,7 @@
           '<div class="fl"><table><thead><tr><th>Company</th><th>Value</th><th>Disc%</th></tr></thead><tbody><tr><td><input style="width:85px;border:none;"></td><td><input style="width:55px;border:none;"></td><td><input style="width:38px;border:none;"></td></tr></tbody></table></div>' +
           '<div class="fm">' +
           '<div class="fmr"><label>Gross</label><input id="fg" readonly><label>SGST</label><input id="fsg" readonly><label>CGST</label><input id="fcg" readonly><label>Net Amt</label><input id="fn" readonly style="font-weight:700;background:#fffde8;"></div>' +
-          '<div class="fmr"><label>Prev Debit</label><input id="fpd"><label>Spl Disc</label><input id="fsd" oninput="rrf()"><label>Net Recv</label><input id="fnr" readonly><label>Rcvd Amt</label><input id="fra" oninput="rrf()"><label>Due Date</label><input id="fdu" value="' + t + '" style="width:68px;"></div>' +
+          '<div class="fmr"><label>Prev Bal</label><input id="fpd" readonly style="background:#ffe8e8;font-weight:700;"><label>Spl Disc</label><input id="fsd" oninput="rrf()"><label>Net Recv</label><input id="fnr" readonly><label>Rcvd Amt</label><input id="fra" oninput="rrf()"><label>Due Date</label><input id="fdu" value="' + t + '" style="width:68px;"></div>' +
           '<button onclick="printBill()" style="margin-top:2px;padding:2px 10px;border:1px solid #668;background:linear-gradient(#eef,#ccf);cursor:pointer;">A4 Print</button>' +
           '<button onclick="printThermal()" style="margin-top:2px;margin-left:5px;padding:2px 10px;border:1px solid #668;background:linear-gradient(#fef,#fcf);cursor:pointer;">Thermal Print</button>' +
           '</div>' +
@@ -1199,8 +1202,14 @@
       }
 
       function rrf() {
-        var nt = parseFloat((g('fn') || { value: 0 }).value) || 0, sd = parseFloat((g('fsd') || { value: 0 }).value) || 0;
-        var fnr = g('fnr'); if (fnr) fnr.value = Math.max(0, nt - sd).toFixed(2);
+        var nt = parseFloat((g('fn') || { value: 0 }).value) || 0, 
+            sd = parseFloat((g('fsd') || { value: 0 }).value) || 0,
+            ra = parseFloat((g('fra') || { value: 0 }).value) || 0;
+        var fnr = g('fnr'); 
+        if (fnr) {
+            var netRecv = Math.max(0, nt - sd);
+            fnr.value = netRecv.toFixed(2);
+        }
       }
 
       function remLR() { if (G.bi.length > 0) { G.bi.pop(); G.bi.forEach(function (x, i) { x.sno = i + 1; }); rr(); cf(); } }
@@ -1224,64 +1233,153 @@
       }
 
       function findParty() {
-        var q = (g('bcu') || {value:''}).value.toLowerCase();
+        var q = (g('bcu') || {value:''}).value.trim();
+        var ph = (g('bph') || {value:''}).value.trim();
         
-        // Populate suggestions
+        // Populate suggestions with name + phone
         var dl = g('party-list');
         if(dl) {
           dl.innerHTML = '';
-          G.parties.forEach(p => {
+          G.parties.filter(p => p.type !== 'Supplier').forEach(p => {
             var opt = document.createElement('option');
             opt.value = p.name;
+            opt.label = p.name + (p.phone ? ' | ' + p.phone : '');
             dl.appendChild(opt);
           });
         }
 
-        var p = G.parties.find(x => x.name.toLowerCase() === q);
+        // Match by name (case-insensitive)
+        var p = G.parties.find(x => x.name.toLowerCase() === q.toLowerCase());
+        // If not found by name, try phone
+        if(!p && ph) p = G.parties.find(x => x.phone && x.phone === ph);
+        
         var be = g('p-bal');
-        if(p && be) {
-          be.innerText = 'Bal: ' + Math.abs(p.bal).toFixed(2) + (p.bal > 0 ? ' Dr' : ' Cr');
-        } else if(be) {
-          be.innerText = 'Bal: 0.00';
+        var lt = g('p-last-tx');
+        var phInput = g('bph');
+        var fpdEl = g('fpd');
+        
+        if(p) {
+          // Auto-fill phone if found by name
+          if(phInput && !ph && p.phone) phInput.value = p.phone;
+          
+          // Balance display with color
+          if(be) {
+            var balAmt = Math.abs(p.bal).toFixed(2);
+            var balType = p.bal > 0 ? ' Dr' : (p.bal < 0 ? ' Cr' : '');
+            be.innerText = 'Prev Bal: Rs.' + balAmt + balType;
+            be.style.color = p.bal > 0 ? '#cc0000' : '#006600';
+          }
+          // Auto-fill Prev Bal field
+          if(fpdEl) fpdEl.value = p.bal > 0 ? p.bal.toFixed(2) : '0.00';
+          
+          // Last transaction info
+          if(lt) {
+            var txs = p.transactions || [];
+            if(txs.length > 0) {
+              var last = txs[txs.length - 1];
+              lt.innerText = 'Last Tx: ' + last.date + ' | ' + last.desc;
+            } else {
+              lt.innerText = 'No previous transactions';
+            }
+          }
+        } else {
+          if(be) { be.innerText = 'New Customer'; be.style.color = '#336699'; }
+          if(fpdEl) fpdEl.value = '0.00';
+          if(lt) lt.innerText = '';
         }
       }
 
       function saveBill() {
         if (G.bi.length === 0) { alert('Koi item nahi!'); return; }
         var cu = (g('bcu') || { value: 'Cash' }).value || 'Cash';
+        var ph = (g('bph') || { value: '' }).value.trim();
         var nt = parseFloat((g('fn') || { value: '0' }).value) || 0;
         var no = (g('bid') || { value: 'SI-?' }).value;
+        var pmEl = g('bpm'); var pm = pmEl ? pmEl.value : 'Cash';
         
-        var party = G.parties.find(p => p.name === cu);
+        // Find or create party (match by name+phone for uniqueness)
+        var party = G.parties.find(p => p.name === cu && (ph ? p.phone === ph : true));
+        if(!party) party = G.parties.find(p => p.name === cu);
         if(!party && cu !== 'Cash') {
-          party = { name: cu, type: 'Customer', bal: 0, transactions: [] };
+          party = { name: cu, type: 'Customer', phone: ph, bal: 0, transactions: [] };
           G.parties.push(party);
         }
+        if(party && ph && !party.phone) party.phone = ph;
 
-        var newB = { no, date: tds(), cust: cu, items: JSON.parse(JSON.stringify(G.bi)), net: nt };
+        var oldB = G.bills.find(x => x.no === no);
+        if(oldB) {
+            // Revert balance/transactions
+            var oldParty = G.parties.find(p => p.name === oldB.cust);
+            if(oldParty) {
+                var oldNetSale = oldB.net_amt ? (oldB.net_amt - (oldB.spl_disc || 0)) : (parseFloat(oldB.net) || 0);
+                var oldPaid = parseFloat(oldB.rcvd_amt || 0);
+                oldParty.bal -= (oldNetSale - oldPaid);
+                if(oldParty.transactions) oldParty.transactions = oldParty.transactions.filter(t => !t.desc.includes(no));
+            }
+            // Revert stock
+            oldB.items.forEach(r => {
+                var idx = G.items.findIndex(i => i.name === r.name);
+                if(idx >= 0) {
+                    G.items[idx].stock += r.q;
+                    if(G.items[idx].batches) {
+                       var bt = G.items[idx].batches.find(b => b.bt === r.bt);
+                       if(bt) bt.qty += r.q;
+                    }
+                }
+            });
+            G.bills = G.bills.filter(x => x.no !== no);
+            G.nbn--;
+        }
+
+        var newB = { 
+            no, date: tds(), cust: cu, phone: ph, pay_mode: pm, items: JSON.parse(JSON.stringify(G.bi)), 
+            net_amt: nt, spl_disc: parseFloat((g('fsd') || {value:0}).value) || 0,
+            rcvd_amt: parseFloat((g('fra') || {value:0}).value) || 0
+        };
+        var finalNet = parseFloat(newB.net_amt - newB.spl_disc);
         G.bills.push(newB);
         G.nbn++;
 
         if(party) {
           if(!party.transactions) party.transactions = [];
-          party.transactions.push({ date: tds(), desc: 'Sale Bill ' + no, type: 'Dr', amt: nt });
-          party.bal += nt;
+          // 1. Debit the sale (after special discount)
+          party.transactions.push({ date: tds(), desc: 'Sale Bill ' + no + ' (Net)', type: 'Dr', amt: finalNet });
+          party.bal = (parseFloat(party.bal)||0) + parseFloat(finalNet);
+          // 2. Credit the payment if any
+          if(newB.rcvd_amt > 0) {
+            party.transactions.push({ date: tds(), desc: 'Payment Recv ' + no + ' [' + pm + ']', type: 'Cr', amt: newB.rcvd_amt });
+            party.bal = (parseFloat(party.bal)||0) - parseFloat(newB.rcvd_amt);
+          }
         }
 
-        G.bi.forEach(function (r) { 
-          var idx = G.items.findIndex(function (i) { return i.name === r.name; }); 
-          if (idx >= 0) G.items[idx].stock = Math.max(0, G.items[idx].stock - r.q); 
+        // Update stock: item-level AND batch-level (FIFO)
+        G.bi.forEach(function (r) {
+          var idx = G.items.findIndex(function (i) { return i.name === r.name; });
+          if (idx >= 0) {
+            G.items[idx].stock = Math.max(0, G.items[idx].stock - r.q);
+            // Batch-level FIFO deduction
+            if(G.items[idx].batches) {
+              var remain = r.q;
+              G.items[idx].batches.forEach(function(bt) {
+                if(remain <= 0) return;
+                var deduct = Math.min(bt.qty, remain);
+                bt.qty = Math.max(0, bt.qty - deduct);
+                remain -= deduct;
+              });
+            }
+          }
         });
 
         fetch(API_BASE + '/api/saveBill', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ bill: newB, items: G.items, party: party })
         }).then(function (r) { return r.json() }).then(function (d) {
-          alert('Bill ' + no + ' saved successfully!');
+          sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+          alert('Bill ' + no + ' saved! [' + pm + ']');
           clearBill(); showDash();
         }).catch(function (e) {
           sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-          alert('Saved Locally!');
+          alert('Saved Locally! [' + pm + ']');
           clearBill(); showDash();
         });
       }
@@ -1475,19 +1573,57 @@
       function showPartyDetail(name) {
         var p = G.parties.find(x => x.name === name);
         if(!p) return;
-        var html = '<div class="mb2" style="min-width:700px;"><div class="mh">Ledger: ' + name + ' <span onclick="cm(\'pdm\')">&#10006;</span></div>' +
-          '<div class="mbd"><table class="mt"><thead><tr><th>Date</th><th>Description</th><th>Debit (Dr)</th><th>Credit (Cr)</th><th>Balance</th></tr></thead><tbody>';
-        
-        var bal = 0;
         var txs = p.transactions || [];
+        
+        // Real closing balance is always p.bal (source of truth)
+        // Opening balance = p.bal minus sum of all recorded transactions
+        var txSum = 0;
+        txs.forEach(t => { if(t.type === 'Dr') txSum += t.amt; else txSum -= t.amt; });
+        var openBal = p.bal - txSum;
+        
+        var partyInfo = p.type + (p.phone ? ' | 📞 ' + p.phone : '');
+        var html = '<div class="mb2" style="min-width:760px;"><div class="mh">Ledger: ' + name + ' <span style="font-size:11px;font-weight:400;margin-left:10px;">' + partyInfo + '</span><span onclick="cm(\'pdm\')" style="margin-left:auto;">&#10006;</span></div>' +
+          '<div class="mbd"><table class="mt"><thead><tr><th>Date</th><th>Description</th><th>Debit (Dr)</th><th>Credit (Cr)</th><th style="background:#2a5a8a;">Running Balance</th></tr></thead><tbody>';
+        
+        // Opening balance row
+        html += '<tr style="background:#e8f4e8;"><td colspan="4" style="font-weight:700;color:#006600;">Opening Balance</td><td style="font-weight:700;color:#006600;">' +
+          Math.abs(openBal).toFixed(2) + (openBal > 0 ? ' Dr' : openBal < 0 ? ' Cr' : ' Nil') + '</td></tr>';
+        
+        var bal = openBal;
         if(txs.length === 0) {
-          html += '<tr><td colspan="5" style="text-align:center;">No transactions found</td></tr>';
+          // No transaction history but balance exists (initial MongoDB data / legacy)
+          if(p.bal !== 0) {
+            html += '<tr style="background:#fff8e8;"><td>-</td>' +
+              '<td style="color:#555;font-style:italic;">Balance Brought Forward (No transaction history)</td>' +
+              '<td style="color:#cc0000;">' + (p.bal > 0 ? 'Rs.' + Math.abs(p.bal).toFixed(2) : '-') + '</td>' +
+              '<td style="color:#006600;">' + (p.bal < 0 ? 'Rs.' + Math.abs(p.bal).toFixed(2) : '-') + '</td>' +
+              '<td style="font-weight:700;color:' + (p.bal > 0 ? '#cc0000' : '#006600') + ';">' + Math.abs(p.bal).toFixed(2) + (p.bal > 0 ? ' Dr' : ' Cr') + '</td></tr>';
+            bal = p.bal;
+          } else {
+            html += '<tr><td colspan="5" style="text-align:center;color:#777;padding:10px;">No transactions recorded</td></tr>';
+          }
         } else {
           txs.forEach(t => {
+            var prev = bal;
             if(t.type === 'Dr') bal += t.amt; else bal -= t.amt;
-            html += '<tr><td>' + t.date + '</td><td>' + t.desc + '</td><td>' + (t.type === 'Dr' ? t.amt.toFixed(2) : '-') + '</td><td>' + (t.type === 'Cr' ? t.amt.toFixed(2) : '-') + '</td><td style="font-weight:700;">' + Math.abs(bal).toFixed(2) + (bal > 0 ? ' Dr' : ' Cr') + '</td></tr>';
+            var balColor = bal > 0 ? '#cc0000' : bal < 0 ? '#006600' : '#333';
+            var balLabel = bal > 0 ? ' Dr' : bal < 0 ? ' Cr' : ' Nil';
+            var rowBg = t.type === 'Dr' ? 'background:#fff8f0;' : 'background:#f0fff0;';
+            html += '<tr style="' + rowBg + '"><td>' + t.date + '</td>' +
+              '<td>' + t.desc + '</td>' +
+              '<td style="color:#cc0000;font-weight:' + (t.type==='Dr'?'700':'400') + ';">' + (t.type === 'Dr' ? 'Rs.' + t.amt.toFixed(2) : '-') + '</td>' +
+              '<td style="color:#006600;font-weight:' + (t.type==='Cr'?'700':'400') + ';">' + (t.type === 'Cr' ? 'Rs.' + t.amt.toFixed(2) : '-') + '</td>' +
+              '<td style="font-weight:700;color:' + balColor + ';">' + Math.abs(bal).toFixed(2) + balLabel + '</td></tr>';
           });
         }
+        
+        // Closing balance — always use p.bal as source of truth
+        var closingBal = p.bal;
+        var closingColor = closingBal > 0 ? '#cc0000' : closingBal < 0 ? '#006600' : '#333';
+        var closingLabel = closingBal > 0 ? ' Dr (Receivable)' : closingBal < 0 ? ' Cr (Payable)' : ' Nil';
+        html += '<tr style="background:#d0e8ff;border-top:2px solid #5a7fa8;"><td colspan="4" style="font-weight:700;color:#003366;">Closing Balance</td>' +
+          '<td style="font-weight:700;color:' + closingColor + ';font-size:13px;">' + Math.abs(closingBal).toFixed(2) + closingLabel + '</td></tr>';
+        
         html += '</tbody></table></div></div>';
         var m = document.getElementById('pdm');
         if(!m) {
@@ -1575,7 +1711,7 @@
         var new_net = b_new.items.reduce((a, x) => a + x.am, 0);
         b_new.net = new_net;
         if(party) {
-          party.bal += new_net;
+          party.bal = (parseFloat(party.bal)||0) + parseFloat(new_net);
           party.transactions.push({ date: tds(), desc: 'Sale Bill ' + b_new.no + ' (Modified)', type: 'Dr', amt: new_net });
         }
 
@@ -1602,22 +1738,31 @@
         if(!b) return;
         if(!confirm('Kya aap waqai ye bill return karna chahte hain? Stock aur Ledger update ho jayenge.')) return;
 
-        // 1. Update Stock
+        // 1. Update Stock (Item and Batch level)
         b.items.forEach(r => {
           var idx = G.items.findIndex(i => i.name === r.name);
-          if(idx >= 0) G.items[idx].stock += r.q;
+          if(idx >= 0) {
+            G.items[idx].stock = (parseFloat(G.items[idx].stock) || 0) + (parseFloat(r.q) || 0);
+            if(G.items[idx].batches) {
+              var bt = G.items[idx].batches.find(b2 => b2.bt === r.bt);
+              if(bt) bt.qty = (parseFloat(bt.qty) || 0) + (parseFloat(r.q) || 0);
+            }
+          }
         });
 
         // 2. Update Party Ledger
         var party = G.parties.find(p => p.name === b.cust);
         if(party) {
           if(!party.transactions) party.transactions = [];
-          var nt = parseFloat(b.net);
-          party.transactions.push({ date: tds(), desc: 'Return Bill ' + b.no, type: 'Cr', amt: nt });
-          party.bal -= nt;
+          var netSale = b.net_amt ? (b.net_amt - (b.spl_disc || 0)) : (parseFloat(b.net) || 0);
+          var alreadyPaid = parseFloat(b.rcvd_amt || 0);
+          var netDue = netSale - alreadyPaid;
+          
+          party.transactions.push({ date: tds(), desc: 'Return Bill ' + b.no, type: 'Cr', amt: netDue });
+          party.bal = (parseFloat(party.bal)||0) - netDue;
         }
 
-        // 3. Remove/Mark Bill (Deleting for now as per simple logic)
+        // 3. Remove Bill
         G.bills = G.bills.filter(x => x.no !== b.no);
 
         // 4. Sync with Server
@@ -1638,10 +1783,12 @@
          setMA('<div id="purch-sc">' +
            '<div class="sh">Purchase Entry &nbsp;<span>Date: ' + t + '</span></div>' +
            '<div class="bt">' +
-           '<div class="br"><label>Supplier <input id="psu" list="supplier-list" style="min-width:200px;" placeholder="Supplier Name"></label>' +
+           '<div class="br"><label>Supplier <input id="psu" list="supplier-list" style="min-width:200px;" placeholder="Supplier Name" oninput="findSupplier()"></label>' +
            '<datalist id="supplier-list"></datalist>' +
            '<label>Inv No <input id="pin" style="width:100px;"></label>' +
-           '<label>Date <input id="pdt" value="' + t + '" style="width:72px;"></label></div>' +
+           '<label>Date <input id="pdt" value="' + t + '" style="width:72px;"></label>' +
+           '<label style="font-weight:700;color:#002244;">Pay Mode <select id="ppm" style="height:21px;border:1px solid #7799bb;background:#fffde8;font-weight:700;"><option value="Credit">📋 Credit</option><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="Cheque">🏦 Cheque</option></select></label>' +
+           '<div id="sup-bal" style="font-weight:700;color:#c00;font-size:11px;margin-left:8px;"></div></div>' +
            '</div>' +
            '<div class="pib">' +
            '<label>Product <input id="ppn" style="min-width:140px;"></label>' +
@@ -1662,7 +1809,7 @@
            '<div class="tb2" id="pr2"></div></div>' +
            '</div>' +
            '<div class="bf">' +
-           '<div class="fm"><div class="fmr"><label>Total Amt</label><input id="pta" readonly style="font-weight:700;background:#fffde8;"></div></div>' +
+           '<div class="fm"><div class="fmr"><label>Total Amt</label><input id="pta" readonly style="font-weight:700;background:#fffde8;"><label style="margin-left:12px;">Paid Amt</label><input id="ppaid" type="number" style="width:80px;" placeholder="0.00"><label style="margin-left:8px;">Due Amt</label><input id="pdue" readonly style="width:80px;background:#ffe8e8;font-weight:700;"></div></div>' +
            '</div>' +
            '<div class="ab">' +
            '<button class="abg" onclick="savePurchaseFull()">Save Purchase</button>' +
@@ -1709,20 +1856,48 @@
            c.appendChild(d);
          });
          if(g('pta')) g('pta').value = tot.toFixed(2);
+         // Auto-update Due Amt
+         var paidEl = g('ppaid'); var dueEl = g('pdue');
+         if(paidEl && dueEl) {
+           var paid = parseFloat(paidEl.value) || 0;
+           dueEl.value = Math.max(0, tot - paid).toFixed(2);
+           paidEl.oninput = function() { dueEl.value = Math.max(0, tot - (parseFloat(paidEl.value)||0)).toFixed(2); };
+         }
        }
  
+       function findSupplier() {
+         var su = (g('psu') || {value:''}).value.trim();
+         var party = G.parties.find(p => p.name === su && p.type === 'Supplier');
+         var sb = g('sup-bal');
+         if(party && sb) {
+           var balAmt = Math.abs(party.bal).toFixed(2);
+           var balType = party.bal < 0 ? ' (Payable)' : ' (Advance)';
+           sb.innerText = 'Supplier Bal: Rs.' + balAmt + balType;
+           sb.style.color = party.bal < 0 ? '#cc0000' : '#006600';
+         } else if(sb) { sb.innerText = ''; }
+       }
+
        function savePurchaseFull() {
          if(G.pi.length === 0) { alert('Items add karein!'); return; }
          var su = g('psu').value || 'Unknown Supplier', inv = g('pin').value || 'INV-' + Date.now();
          var tot = parseFloat(g('pta').value) || 0;
+         var ppmEl = g('ppm'); var pm = ppmEl ? ppmEl.value : 'Credit';
+         var paid = parseFloat((g('ppaid') || {value:'0'}).value) || 0;
+         var due = Math.max(0, tot - paid);
          
-         var p_bill = { no: inv, date: tds(), supplier: su, items: JSON.parse(JSON.stringify(G.pi)), total: tot };
+         var p_bill = { no: inv, date: tds(), supplier: su, pay_mode: pm, paid: paid, due: due, items: JSON.parse(JSON.stringify(G.pi)), total: tot };
          
          var old_p = G.purchases.find(x => x.no === inv);
          if(old_p) {
            old_p.items.forEach(p => {
              var idx = G.items.findIndex(i => i.name.toLowerCase() === p.name.toLowerCase());
-             if(idx >= 0) G.items[idx].stock -= p.q;
+             if(idx >= 0) {
+               G.items[idx].stock = Math.max(0, G.items[idx].stock - p.q);
+               // Revert batch qty too
+               if(G.items[idx].batches) {
+                 G.items[idx].batches.forEach(bt => { if(bt.b === p.bt) bt.qty = Math.max(0, bt.qty - p.q); });
+               }
+             }
            });
            G.purchases = G.purchases.filter(x => x.no !== inv);
          }
@@ -1734,7 +1909,10 @@
            if(idx >= 0) {
              G.items[idx].stock += p.q;
              if(!G.items[idx].batches) G.items[idx].batches = [];
-             G.items[idx].batches.push({ b: p.bt, exp: p.ex, qty: p.q, cost: p.cp });
+             // Check if batch exists, update qty; else add new
+             var existBt = G.items[idx].batches.find(b => b.b === p.bt);
+             if(existBt) { existBt.qty += p.q; existBt.cost = p.cp; }
+             else G.items[idx].batches.push({ b: p.bt, exp: p.ex, qty: p.q, cost: p.cp });
              G.items[idx].rate = p.sp;
            } else {
              G.items.push({ id: 'P-' + (G.items.length + 1000), name: p.name, salt: p.salt, company: p.comp, pack: p.pk, stock: p.q, rate: p.sp, mrp: p.sp, gst: 0, batches: [{ b: p.bt, exp: p.ex, qty: p.q, cost: p.cp }] });
@@ -1743,17 +1921,26 @@
  
          var party = G.parties.find(p => p.name === su);
          if(!party) { party = { name: su, type: 'Supplier', bal: 0, transactions: [] }; G.parties.push(party); }
-         party.transactions.push({ date: tds(), desc: 'Purchase Inv ' + inv, type: 'Cr', amt: tot });
+         if(!party.transactions) party.transactions = [];
+         // Credit entry = we owe supplier
+         party.transactions.push({ date: tds(), desc: 'Purchase Inv ' + inv + ' [' + pm + ']', type: 'Cr', amt: tot });
          party.bal -= tot;
+         // If partial payment made, record as Dr (we paid)
+         if(paid > 0) {
+           party.transactions.push({ date: tds(), desc: 'Payment against ' + inv + ' [' + pm + ']', type: 'Dr', amt: paid });
+           party.bal += paid;
+         }
  
          fetch(API_BASE + '/api/savePurchase', {
            method: 'POST', headers: { 'Content-Type': 'application/json' },
            body: JSON.stringify({ purchase: p_bill, items: G.items, party: party })
          }).then(r => r.json()).then(d => {
-           alert('Purchase saved!'); showDash();
+           sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+           alert('Purchase saved! [' + pm + '] | Paid: Rs.' + paid.toFixed(2) + ' | Due: Rs.' + due.toFixed(2));
+           showDash();
          }).catch(e => {
            sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-           alert('Saved locally!'); showDash();
+           alert('Saved locally! [' + pm + ']'); showDash();
          });
        }
 
@@ -1790,7 +1977,7 @@
          // 3. Supplier Ledger revert karein
          var party = G.parties.find(x => x.name === p.supplier);
          if (party) {
-           party.bal += parseFloat(p.total);
+           var netEffect = (parseFloat(p.total)||0) - (parseFloat(p.paid)||0); party.bal += netEffect;
            if(party.transactions) {
              party.transactions = party.transactions.filter(t => !t.desc.includes(no));
            }
@@ -1839,10 +2026,15 @@
 
        function showHist() {
          var tb = g('hb'); tb.innerHTML = '';
-         if (G.bills.length === 0) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">No bills yet</td></tr>'; }
+         if (G.bills.length === 0) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">No bills yet</td></tr>'; }
          G.bills.slice().reverse().forEach(function (b) {
+           var pm = b.pay_mode || 'N/A';
+           var pmColor = pm === 'Cash' ? '#006600' : pm === 'Credit' ? '#cc4400' : pm === 'Online' ? '#003399' : '#555';
            var tr = document.createElement('tr');
-           tr.innerHTML = '<td>' + b.no + '</td><td>' + b.date + '</td><td>' + b.cust + '</td><td>' + b.items.length + '</td><td>Rs.' + parseFloat(b.net).toFixed(2) + '</td>' +
+           tr.innerHTML = '<td>' + b.no + '</td><td>' + b.date + '</td>' +
+             '<td>' + b.cust + (b.phone ? '<br><span style="font-size:10px;color:#555;">' + b.phone + '</span>' : '') + '</td>' +
+             '<td>' + b.items.length + '</td><td>Rs.' + (b.net_amt ? (b.net_amt - (b.spl_disc||0)) : (parseFloat(b.net)||0)).toFixed(2) + '</td>' +
+             '<td style="font-weight:700;color:' + pmColor + ';">' + pm + '</td>' +
              '<td><button class="bsm" style="background:linear-gradient(#eef,#ccf);border:1px solid #668;margin-right:4px;padding:2px 8px;cursor:pointer;">LOAD</button>' +
              '<button class="bsm" style="background:linear-gradient(#f88,#d33);color:#fff;border:1px solid #833;padding:2px 8px;cursor:pointer;">DEL</button></td>';
            var btns = tr.querySelectorAll('button');
@@ -1886,7 +2078,7 @@
          // 3. Party balance revert karein
          var party = G.parties.find(p => p.name === b.cust);
          if (party) {
-           party.bal -= parseFloat(b.net);
+           var netSale = b.net_amt ? (b.net_amt - (b.spl_disc || 0)) : (parseFloat(b.net) || 0); var alreadyPaid = parseFloat(b.rcvd_amt || 0); party.bal = (parseFloat(party.bal)||0) - (netSale - alreadyPaid);
            if(party.transactions) {
              party.transactions = party.transactions.filter(t => !t.desc.includes(no));
            }
