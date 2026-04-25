@@ -769,7 +769,8 @@
         <h4>Quick Access</h4>
         <a onclick="showSale()">&#128203; Sale Bill (Retail)</a>
         <a onclick="showPurch()">&#128666; Purchase Bill</a>
-        <a onclick="showHist()">&#128221; Modify Bill</a>
+        <a onclick="showHist()">&#128221; Modify Sale Bill</a>
+        <a onclick="showPurchHist()">&#128188; Purchase History</a>
         <a onclick="showStock()">&#128230; Current Stock</a>
         <a onclick="showExpiry()">&#9888; Expiry List</a>
         <a onclick="showLedger()">&#128202; Ledger A/c</a>
@@ -900,7 +901,8 @@
                 <th>Batch</th>
                 <th>Expiry</th>
                 <th>Qty</th>
-                <th>Rate</th>
+                <th>Cost Price</th>
+                <th>Sell Price</th>
                 <th>Amt</th>
               </tr>
             </thead>
@@ -912,11 +914,12 @@
                 <td><input style="width:55px;border:1px solid #aaa;padding:2px;"></td>
                 <td><input type="number" value="1" style="width:45px;border:1px solid #aaa;padding:2px;"></td>
                 <td><input type="number" style="width:55px;border:1px solid #aaa;padding:2px;"></td>
+                <td><input type="number" style="width:55px;border:1px solid #aaa;padding:2px;"></td>
                 <td>0.00</td>
               </tr>
             </tbody>
           </table>
-          <button class="bsm" style="margin-top:6px;" onclick="alert('Purchase saved!');cm('pm')">Save Purchase</button>
+          <button class="bsm" style="margin-top:6px;" onclick="savePurchase()">Save Purchase</button>
         </div>
       </div>
     </div>
@@ -945,10 +948,13 @@
           <div id="rb-detail" style="display:none;">
             <p id="rb-info" style="font-weight:700;margin-bottom:5px;"></p>
             <table class="mt">
-              <thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Amt</th></tr></thead>
+              <thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Amt</th><th>Action</th></tr></thead>
               <tbody id="rtb"></tbody>
             </table>
-            <button class="bsm" style="margin-top:10px;background:linear-gradient(#f88,#d33);color:#fff;" onclick="processReturn()">Confirm Return</button>
+            <div style="margin-top:10px;display:flex;gap:8px;">
+              <button class="bsm" style="background:linear-gradient(#f88,#d33);color:#fff;" onclick="processReturn()">Full Return</button>
+              <button class="bsm" style="background:linear-gradient(#88f,#33d);color:#fff;" onclick="processModification()">Update Bill</button>
+            </div>
           </div>
         </div>
       </div>
@@ -960,11 +966,13 @@
       var G = { 
         items: [], 
         bills: [], 
+        purchases: [],
         users: [{ u: 'admin', p: 'admin123', r: 'admin' }, { u: 'user1', p: '1234', r: 'user' }], 
         parties: [], 
         profile: { name: 'HAMZA MEDICINE COMPANY', phone: '061-2079422, 0300-7358302', addr: 'H-NO: 15-16 Shams abad, Multan.', ntn: '36102-7250390-3' },
         sess: {}, 
         bi: [], 
+        pi: [],
         nbn: 10001 
       };
       function ld(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
@@ -981,6 +989,64 @@
       function tds() { var d = new Date(); return d.getDate().toString().padStart(2, '0') + '/' + (d.getMonth() + 1).toString().padStart(2, '0') + '/' + d.getFullYear().toString().slice(2); }
       function mu(e) { var p = e.split('/'); if (p.length < 2) return 99; return (parseInt(p[1]) + 2000 - new Date().getFullYear()) * 12 + parseInt(p[0]) - (new Date().getMonth() + 1); }
       function cm(id) { document.getElementById(id).classList.remove('show'); }
+      
+      function savePurchase() {
+        var rows = document.querySelectorAll('#ptb tr');
+        var p_items = [];
+        rows.forEach(tr => {
+          var inputs = tr.querySelectorAll('input');
+          if(inputs.length >= 6) {
+            var name = inputs[0].value.trim();
+            var batch = inputs[1].value.trim();
+            var exp = inputs[2].value.trim();
+            var qty = parseFloat(inputs[3].value) || 0;
+            var cost = parseFloat(inputs[4].value) || 0;
+            var sell = parseFloat(inputs[5].value) || 0;
+            if(name && qty > 0) {
+              p_items.push({ name, batch, exp, qty, cost, sell });
+            }
+          }
+        });
+
+        if(p_items.length === 0) { alert('Kam se kam ek item add karein!'); return; }
+
+        p_items.forEach(p => {
+          var idx = G.items.findIndex(i => i.name.toLowerCase() === p.name.toLowerCase());
+          if(idx >= 0) {
+            G.items[idx].stock += p.qty;
+            if(!G.items[idx].batches) G.items[idx].batches = [];
+            G.items[idx].batches.push({ b: p.batch, exp: p.exp, qty: p.qty, cost: p.cost });
+            G.items[idx].rate = p.sell;
+          } else {
+            var newI = {
+              id: 'P-' + (G.items.length + 1000),
+              name: p.name,
+              salt: '-',
+              company: '-',
+              pack: '-',
+              stock: p.qty,
+              rate: p.sell,
+              mrp: p.sell,
+              gst: 0,
+              batches: [{ b: p.batch, exp: p.exp, qty: p.qty, cost: p.cost }]
+            };
+            G.items.push(newI);
+          }
+        });
+
+        fetch(API_BASE + '/api/saveBill', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: G.items })
+        }).then(r => r.json()).then(d => {
+          alert('Purchase saved and stock updated!');
+          cm('pm'); showDash();
+        }).catch(e => {
+          sv('mg2_items', G.items);
+          alert('Saved locally!');
+          cm('pm'); showDash();
+        });
+      }
+
       document.addEventListener('click', function (e) { if (e.target.classList.contains('mo')) e.target.classList.remove('show'); });
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape') document.querySelectorAll('.mo').forEach(function (m) { m.classList.remove('show'); }); if (e.key === 'F2') { e.preventDefault(); openIM(); } });
 
@@ -1026,7 +1092,8 @@
           '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Qty</span>' +
           '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Price</span>' +
           '</div></div>' +
-          '<div class="br"><label>Customer <input id="bcu" style="min-width:200px;" placeholder="Cash / Customer Name" oninput="findParty()"></label>' +
+          '<div class="br"><label>Customer <input id="bcu" list="party-list" style="min-width:200px;" placeholder="Cash / Customer Name" oninput="findParty()"></label>' +
+          '<datalist id="party-list"></datalist>' +
           '<div id="p-bal" style="font-weight:700;color:#c00;margin-left:10px;">Bal: 0.00</div>' +
           '<label style="margin-left:10px;"><input type="checkbox" id="bcl"> Is Claimable</label>' +
           '<label style="margin-left:8px;"><input type="checkbox"> Apply Booking Disc</label></div>' +
@@ -1158,6 +1225,18 @@
 
       function findParty() {
         var q = (g('bcu') || {value:''}).value.toLowerCase();
+        
+        // Populate suggestions
+        var dl = g('party-list');
+        if(dl) {
+          dl.innerHTML = '';
+          G.parties.forEach(p => {
+            var opt = document.createElement('option');
+            opt.value = p.name;
+            dl.appendChild(opt);
+          });
+        }
+
         var p = G.parties.find(x => x.name.toLowerCase() === q);
         var be = g('p-bal');
         if(p && be) {
@@ -1369,21 +1448,6 @@
         }
         cpv(); cm('im'); var e = g('pqt'); if (e) { e.focus(); e.select(); }
       }
-      function showHist() {
-        var tb = g('hb'); tb.innerHTML = '';
-        if (G.bills.length === 0) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">No bills yet</td></tr>'; }
-        G.bills.slice().reverse().forEach(function (b) {
-          tb.innerHTML += '<tr><td>' + b.no + '</td><td>' + b.date + '</td><td>' + b.cust + '</td><td>' + b.items.length + '</td><td>Rs.' + parseFloat(b.net).toFixed(2) + '</td>' +
-            '<td><button class="bsm" onclick="loadB(\\\'' + b.no + '\\\')">Load</button> <button class="bsm" style="background:linear-gradient(#f88,#d33);color:#fff;" onclick="delB(\\\'' + b.no + '\\\')">Del</button></td></tr>';
-        });
-        document.getElementById('hm').classList.add('show');
-      }
-      function loadB(no) {
-        var b = G.bills.find(function (x) { return x.no === no; }); if (!b) return;
-        showSale(); setTimeout(function () { G.bi = JSON.parse(JSON.stringify(b.items)); var e = g('bcu'); if (e) e.value = b.cust; rr(); cf(); }, 120);
-        cm('hm');
-      }
-      function delB(no) { if (!confirm('Delete ' + no + '?')) return; G.bills = G.bills.filter(function (b) { return b.no !== no; }); showHist(); alert('Deleted from UI (MongoDB API for delete pending)'); }
       function showStock() {
         var tb = g('stb'); tb.innerHTML = '';
         G.items.forEach(function (i) { i.batches.forEach(function (b) { tb.innerHTML += '<tr><td>' + i.name + '</td><td>' + i.salt + '</td><td>' + i.company + '</td><td>' + i.pack + '</td><td>' + b.b + '</td><td>' + b.exp + '</td><td style="color:' + (b.qty < 20 ? 'red' : 'green') + ';font-weight:700;">' + b.qty + '</td><td>' + i.rate + '</td></tr>'; }); });
@@ -1441,10 +1505,96 @@
         g('rb-detail').style.display = 'block';
         g('rb-info').innerText = 'Bill: ' + b.no + ' | Cust: ' + b.cust + ' | Date: ' + b.date;
         var tb = g('rtb'); tb.innerHTML = '';
-        b.items.forEach(i => {
-          tb.innerHTML += '<tr><td>' + i.name + '</td><td>' + i.q + '</td><td>' + i.ra.toFixed(2) + '</td><td>' + i.am.toFixed(2) + '</td></tr>';
+        b.items.forEach((i, idx) => {
+          tb.innerHTML += '<tr>' +
+            '<td>' + i.name + '</td>' +
+            '<td><input type="number" value="' + i.q + '" style="width:50px;" id="rqty-' + idx + '" oninput="urv(' + idx + ')"></td>' +
+            '<td><input type="number" value="' + i.ra + '" style="width:70px;" id="rrate-' + idx + '" oninput="urv(' + idx + ')"></td>' +
+            '<td id="ramt-' + idx + '">' + i.am.toFixed(2) + '</td>' +
+            '<td><button onclick="drr(' + idx + ')" style="color:red;">&#10006;</button></td>' +
+            '</tr>';
         });
-        window._currReturnBill = b;
+        window._currReturnBill = JSON.parse(JSON.stringify(b));
+      }
+
+      function urv(idx) {
+        var q = parseFloat(g('rqty-' + idx).value) || 0;
+        var r = parseFloat(g('rrate-' + idx).value) || 0;
+        var amt = q * r; // Simple amt for modification
+        g('ramt-' + idx).innerText = amt.toFixed(2);
+        window._currReturnBill.items[idx].q = q;
+        window._currReturnBill.items[idx].ra = r;
+        window._currReturnBill.items[idx].am = amt;
+      }
+
+      function drr(idx) {
+        if(!confirm('Item nikal dein?')) return;
+        window._currReturnBill.items.splice(idx, 1);
+        findBillForReturn_Refresh();
+      }
+
+      function findBillForReturn_Refresh() {
+        var b = window._currReturnBill;
+        var tb = g('rtb'); tb.innerHTML = '';
+        b.items.forEach((i, idx) => {
+          tb.innerHTML += '<tr>' +
+            '<td>' + i.name + '</td>' +
+            '<td><input type="number" value="' + i.q + '" style="width:50px;" id="rqty-' + idx + '" oninput="urv(' + idx + ')"></td>' +
+            '<td><input type="number" value="' + i.ra + '" style="width:70px;" id="rrate-' + idx + '" oninput="urv(' + idx + ')"></td>' +
+            '<td id="ramt-' + idx + '">' + i.am.toFixed(2) + '</td>' +
+            '<td><button onclick="drr(' + idx + ')" style="color:red;">&#10006;</button></td>' +
+            '</tr>';
+        });
+      }
+
+      function processModification() {
+        var b_new = window._currReturnBill;
+        var b_old = G.bills.find(x => x.no === b_new.no);
+        if(!confirm('Kya aap bill mein ye tabdeeliyaan (changes) save karna chahte hain?')) return;
+
+        // 1. Revert Old Stock
+        b_old.items.forEach(r => {
+          var idx = G.items.findIndex(i => i.name === r.name);
+          if(idx >= 0) G.items[idx].stock += r.q;
+        });
+
+        // 2. Revert Old Ledger
+        var party = G.parties.find(p => p.name === b_old.cust);
+        if(party) {
+          party.bal -= parseFloat(b_old.net);
+          party.transactions = party.transactions.filter(t => t.desc !== 'Sale Bill ' + b_old.no);
+        }
+
+        // 3. Apply New Stock
+        b_new.items.forEach(r => {
+          var idx = G.items.findIndex(i => i.name === r.name);
+          if(idx >= 0) G.items[idx].stock -= r.q;
+        });
+
+        // 4. Apply New Ledger
+        var new_net = b_new.items.reduce((a, x) => a + x.am, 0);
+        b_new.net = new_net;
+        if(party) {
+          party.bal += new_net;
+          party.transactions.push({ date: tds(), desc: 'Sale Bill ' + b_new.no + ' (Modified)', type: 'Dr', amt: new_net });
+        }
+
+        // 5. Update Local Array
+        var b_idx = G.bills.findIndex(x => x.no === b_new.no);
+        G.bills[b_idx] = b_new;
+
+        // 6. Sync
+        fetch(API_BASE + '/api/saveBill', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bill_update: b_new, items: G.items, party: party })
+        }).then(r => r.json()).then(d => {
+          alert('Bill updated successfully!');
+          cm('rm'); showDash();
+        }).catch(e => {
+          sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+          alert('Updated locally!');
+          cm('rm'); showDash();
+        });
       }
 
       function processReturn() {
@@ -1483,37 +1633,320 @@
            cm('rm'); showDash();
          });
        }
-       function showPurch() { var e = g('pd'); if (e) e.value = tds(); document.getElementById('pm').classList.add('show'); }
-      function showCompanyProfile() {
-         g('cp-name').value = G.profile.name || '';
-         g('cp-phone').value = G.profile.phone || '';
-         g('cp-addr').value = G.profile.addr || '';
-         g('cp-ntn').value = G.profile.ntn || '';
-         document.getElementById('cpm').classList.add('show');
-       }
-
-       function saveCompanyProfile() {
-         var name = g('cp-name').value.trim();
-         if(!name) { alert('Company Name zaroori hai!'); return; }
-         G.profile = {
-           name: name,
-           phone: g('cp-phone').value.trim(),
-           addr: g('cp-addr').value.trim(),
-           ntn: g('cp-ntn').value.trim()
-         };
+       function showPurch() {
+         var t = tds();
+         setMA('<div id="purch-sc">' +
+           '<div class="sh">Purchase Entry &nbsp;<span>Date: ' + t + '</span></div>' +
+           '<div class="bt">' +
+           '<div class="br"><label>Supplier <input id="psu" list="supplier-list" style="min-width:200px;" placeholder="Supplier Name"></label>' +
+           '<datalist id="supplier-list"></datalist>' +
+           '<label>Inv No <input id="pin" style="width:100px;"></label>' +
+           '<label>Date <input id="pdt" value="' + t + '" style="width:72px;"></label></div>' +
+           '</div>' +
+           '<div class="pib">' +
+           '<label>Product <input id="ppn" style="min-width:140px;"></label>' +
+           '<label>Salt <input id="psl" style="width:100px;"></label>' +
+           '<label>Comp <input id="pco" style="width:100px;"></label>' +
+           '<label>Pack <input id="ppk2" style="width:42px;"></label>' +
+           '<label>Batch <input id="pbt2" style="width:58px;"></label>' +
+           '<label>Exp <input id="pex2" style="width:50px;"></label>' +
+           '<label>Qty <input id="pqt2" type="number" value="1" style="width:42px;" oninput="cpv2()"></label>' +
+           '<label>Cost <input id="pcp" type="number" style="width:52px;" oninput="cpv2()"></label>' +
+           '<label>Sell <input id="psp" type="number" style="width:52px;"></label>' +
+           '<label>Amt <input id="pam2" style="width:62px;" readonly></label>' +
+           '<button class="bsm" style="background:linear-gradient(#c0eec0,#7acc7a);font-weight:700;" onclick="addPurchRow()">ADD</button>' +
+           '</div>' +
+           '<div class="cs">' +
+           '<div class="bta">' +
+           '<div class="th"><div class="c1">#</div><div class="c2">Product</div><div class="c3">Salt/Comp</div><div class="c4">Batch/Exp</div><div class="c5">Qty</div><div class="c7">Cost</div><div class="c7">Sell</div><div class="c9">Amount</div></div>' +
+           '<div class="tb2" id="pr2"></div></div>' +
+           '</div>' +
+           '<div class="bf">' +
+           '<div class="fm"><div class="fmr"><label>Total Amt</label><input id="pta" readonly style="font-weight:700;background:#fffde8;"></div></div>' +
+           '</div>' +
+           '<div class="ab">' +
+           '<button class="abg" onclick="savePurchaseFull()">Save Purchase</button>' +
+           '<button onclick="G.pi=[];rp();">Clear</button>' +
+           '<button onclick="showDash()">Home</button>' +
+           '</div></div>');
          
-         fetch(API_BASE + '/api/saveProfile', {
+         var dl = g('supplier-list');
+         if(dl) {
+           dl.innerHTML = '';
+           G.parties.filter(p => p.type === 'Supplier').forEach(p => {
+             var opt = document.createElement('option'); opt.value = p.name; dl.appendChild(opt);
+           });
+         }
+         G.pi = []; rp();
+       }
+ 
+       function cpv2() {
+         var q = parseFloat(g('pqt2').value) || 0, c = parseFloat(g('pcp').value) || 0;
+         g('pam2').value = (q * c).toFixed(2);
+       }
+ 
+       function addPurchRow() {
+         var nm = g('ppn').value.trim(); if(!nm) { alert('Product name!'); return; }
+         var q = parseFloat(g('pqt2').value) || 0; if(q <= 0) { alert('Qty!'); return; }
+         var sl = g('psl').value, co = g('pco').value, pk = g('ppk2').value, bt = g('pbt2').value, ex = g('pex2').value;
+         var cp = parseFloat(g('pcp').value) || 0, sp = parseFloat(g('psp').value) || 0, am = q * cp;
+         G.pi.push({ sno: G.pi.length + 1, name: nm, salt: sl, comp: co, pk, bt, ex, q, cp, sp, am });
+         rp();
+         ['ppn', 'psl', 'pco', 'ppk2', 'pbt2', 'pex2', 'pcp', 'psp', 'pam2'].forEach(id => g(id).value = '');
+         g('pqt2').value = 1; g('ppn').focus();
+       }
+ 
+       function rp() {
+         var c = g('pr2'); if(!c) return; c.innerHTML = '';
+         var tot = 0;
+         G.pi.forEach((r, i) => {
+           tot += r.am;
+           var d = document.createElement('div'); d.className = 'tr';
+           d.innerHTML = '<div class="c1">' + r.sno + '</div><div class="c2">' + r.name + '</div><div class="c3">' + r.salt + '/' + r.comp + '</div>' +
+             '<div class="c4">' + r.bt + ' ' + r.ex + '</div><div class="c5">' + r.q + '</div><div class="c7">' + r.cp.toFixed(2) + '</div>' +
+             '<div class="c7">' + r.sp.toFixed(2) + '</div><div class="c9">' + r.am.toFixed(2) + '</div>';
+           d.ondblclick = function() { G.pi.splice(i, 1); G.pi.forEach((x, j) => x.sno = j + 1); rp(); };
+           c.appendChild(d);
+         });
+         if(g('pta')) g('pta').value = tot.toFixed(2);
+       }
+ 
+       function savePurchaseFull() {
+         if(G.pi.length === 0) { alert('Items add karein!'); return; }
+         var su = g('psu').value || 'Unknown Supplier', inv = g('pin').value || 'INV-' + Date.now();
+         var tot = parseFloat(g('pta').value) || 0;
+         
+         var p_bill = { no: inv, date: tds(), supplier: su, items: JSON.parse(JSON.stringify(G.pi)), total: tot };
+         
+         var old_p = G.purchases.find(x => x.no === inv);
+         if(old_p) {
+           old_p.items.forEach(p => {
+             var idx = G.items.findIndex(i => i.name.toLowerCase() === p.name.toLowerCase());
+             if(idx >= 0) G.items[idx].stock -= p.q;
+           });
+           G.purchases = G.purchases.filter(x => x.no !== inv);
+         }
+         
+         G.purchases.push(p_bill);
+ 
+         G.pi.forEach(p => {
+           var idx = G.items.findIndex(i => i.name.toLowerCase() === p.name.toLowerCase());
+           if(idx >= 0) {
+             G.items[idx].stock += p.q;
+             if(!G.items[idx].batches) G.items[idx].batches = [];
+             G.items[idx].batches.push({ b: p.bt, exp: p.ex, qty: p.q, cost: p.cp });
+             G.items[idx].rate = p.sp;
+           } else {
+             G.items.push({ id: 'P-' + (G.items.length + 1000), name: p.name, salt: p.salt, company: p.comp, pack: p.pk, stock: p.q, rate: p.sp, mrp: p.sp, gst: 0, batches: [{ b: p.bt, exp: p.ex, qty: p.q, cost: p.cp }] });
+           }
+         });
+ 
+         var party = G.parties.find(p => p.name === su);
+         if(!party) { party = { name: su, type: 'Supplier', bal: 0, transactions: [] }; G.parties.push(party); }
+         party.transactions.push({ date: tds(), desc: 'Purchase Inv ' + inv, type: 'Cr', amt: tot });
+         party.bal -= tot;
+ 
+         fetch(API_BASE + '/api/savePurchase', {
            method: 'POST', headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ profile: G.profile })
+           body: JSON.stringify({ purchase: p_bill, items: G.items, party: party })
          }).then(r => r.json()).then(d => {
-           alert('Profile saved successfully!');
-           cm('cpm');
+           alert('Purchase saved!'); showDash();
          }).catch(e => {
-           sv('mg2_profile', G.profile);
-           alert('Profile saved locally!');
-           cm('cpm');
+           sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+           alert('Saved locally!'); showDash();
          });
        }
+
+       function showPurchHist() {
+         var tb = g('hb'); tb.innerHTML = '';
+         if (G.purchases.length === 0) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">No purchases yet</td></tr>'; }
+         G.purchases.slice().reverse().forEach(function (p) {
+           var tr = document.createElement('tr');
+           tr.innerHTML = '<td>' + p.no + '</td><td>' + p.date + '</td><td>' + p.supplier + '</td><td>' + p.items.length + '</td><td>Rs.' + parseFloat(p.total).toFixed(2) + '</td>' +
+             '<td><button class="bsm" style="background:linear-gradient(#eef,#ccf);border:1px solid #668;margin-right:4px;padding:2px 8px;cursor:pointer;">LOAD</button>' +
+             '<button class="bsm" style="background:linear-gradient(#f88,#d33);color:#fff;border:1px solid #833;padding:2px 8px;cursor:pointer;">DEL</button></td>';
+           var btns = tr.querySelectorAll('button');
+           btns[0].onclick = function() { loadPB(p.no); };
+           btns[1].onclick = function() { delPB(p.no); };
+           tb.appendChild(tr);
+         });
+         var mh = document.querySelector('#hm .mh'); if(mh) mh.innerHTML = 'Purchase History <span onclick="cm(\'hm\')">&#10006;</span>';
+         document.getElementById('hm').classList.add('show');
+       }
+
+       function delPB(no) {
+         if (!confirm('Delete purchase ' + no + '?')) return;
+         
+         // 1. Local data find karein
+         var p = G.purchases.find(x => x.no === no);
+         if (!p) { alert('Purchase data nahi mila!'); return; }
+
+         // 2. Stock revert karein
+         p.items.forEach(r => {
+           var idx = G.items.findIndex(i => i.name.toLowerCase() === r.name.toLowerCase());
+           if (idx >= 0) G.items[idx].stock -= r.q;
+         });
+
+         // 3. Supplier Ledger revert karein
+         var party = G.parties.find(x => x.name === p.supplier);
+         if (party) {
+           party.bal += parseFloat(p.total);
+           if(party.transactions) {
+             party.transactions = party.transactions.filter(t => !t.desc.includes(no));
+           }
+         }
+
+         // 4. Local array se delete karein
+         G.purchases = G.purchases.filter(x => x.no !== no);
+
+         // 5. Server sync
+         fetch(API_BASE + '/api/savePurchase', { 
+           method: 'POST', 
+           headers: { 'Content-Type': 'application/json' }, 
+           body: JSON.stringify({ 
+             purchase_delete: no, 
+             items: G.items, 
+             party: party 
+           }) 
+         }).then(function(r) { return r.json(); })
+         .then(function(res) {
+           sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+           alert('Purchase ' + no + ' deleted successfully!');
+           showPurchHist(); 
+         }).catch(function(err) {
+           console.error('Sync failed:', err);
+           sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+           alert('Deleted locally! (Server offline)');
+           showPurchHist();
+         });
+       }
+
+       function loadPB(no) {
+         var p = G.purchases.find(function (x) { return x.no === no; }); if (!p) return;
+         showPurch(); 
+         var attempts = 0;
+         var itv = setInterval(function () {
+           if (g('psu')) {
+             clearInterval(itv);
+             se('psu', p.supplier); se('pin', p.no); se('pdt', p.date);
+             G.pi = JSON.parse(JSON.stringify(p.items));
+             rp();
+             cm('hm');
+           }
+           if (++attempts > 20) clearInterval(itv);
+         }, 50);
+       }
+
+       function showHist() {
+         var tb = g('hb'); tb.innerHTML = '';
+         if (G.bills.length === 0) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">No bills yet</td></tr>'; }
+         G.bills.slice().reverse().forEach(function (b) {
+           var tr = document.createElement('tr');
+           tr.innerHTML = '<td>' + b.no + '</td><td>' + b.date + '</td><td>' + b.cust + '</td><td>' + b.items.length + '</td><td>Rs.' + parseFloat(b.net).toFixed(2) + '</td>' +
+             '<td><button class="bsm" style="background:linear-gradient(#eef,#ccf);border:1px solid #668;margin-right:4px;padding:2px 8px;cursor:pointer;">LOAD</button>' +
+             '<button class="bsm" style="background:linear-gradient(#f88,#d33);color:#fff;border:1px solid #833;padding:2px 8px;cursor:pointer;">DEL</button></td>';
+           var btns = tr.querySelectorAll('button');
+           btns[0].onclick = function() { loadB(b.no); };
+           btns[1].onclick = function() { delB(b.no); };
+           tb.appendChild(tr);
+         });
+         var mh = document.querySelector('#hm .mh'); if(mh) mh.innerHTML = 'Sale Bill History <span onclick="cm(\'hm\')">&#10006;</span>';
+         document.getElementById('hm').classList.add('show');
+       }
+
+       function loadB(no) {
+         var b = G.bills.find(function (x) { return x.no === no; }); if (!b) return;
+         showSale(); 
+         var attempts = 0;
+         var itv = setInterval(function () {
+           if (g('bid')) {
+             clearInterval(itv);
+             se('bid', b.no); se('bcu', b.cust);
+             G.bi = JSON.parse(JSON.stringify(b.items));
+             rr(); cf();
+             cm('hm');
+           }
+           if (++attempts > 20) clearInterval(itv);
+         }, 50);
+       }
+
+       function delB(no) {
+         if (!confirm('Delete bill ' + no + '?')) return;
+         
+         // 1. Local data find karein
+         var b = G.bills.find(x => x.no === no);
+         if (!b) { alert('Bill data nahi mila!'); return; }
+
+         // 2. Stock revert karein
+         b.items.forEach(r => {
+           var idx = G.items.findIndex(i => i.name === r.name);
+           if (idx >= 0) G.items[idx].stock += r.q;
+         });
+
+         // 3. Party balance revert karein
+         var party = G.parties.find(p => p.name === b.cust);
+         if (party) {
+           party.bal -= parseFloat(b.net);
+           if(party.transactions) {
+             party.transactions = party.transactions.filter(t => !t.desc.includes(no));
+           }
+         }
+
+         // 4. Local array se delete karein
+         G.bills = G.bills.filter(x => x.no !== no);
+
+         // 5. Server sync
+         fetch(API_BASE + '/api/saveBill', { 
+           method: 'POST', 
+           headers: { 'Content-Type': 'application/json' }, 
+           body: JSON.stringify({ 
+             bill_delete: no, 
+             items: G.items, 
+             party: party 
+           }) 
+         }).then(function(r) { return r.json(); })
+         .then(function(res) {
+           sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+           alert('Bill ' + no + ' deleted successfully!');
+           showHist(); // Refresh history view
+         }).catch(function(err) {
+           console.error('Sync failed:', err);
+           sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+           alert('Deleted locally! (Server offline)');
+           showHist();
+         });
+       }
+
+        function showCompanyProfile() {
+          g('cp-name').value = G.profile.name || '';
+          g('cp-phone').value = G.profile.phone || '';
+          g('cp-addr').value = G.profile.addr || '';
+          g('cp-ntn').value = G.profile.ntn || '';
+          document.getElementById('cpm').classList.add('show');
+        }
+
+        function saveCompanyProfile() {
+          var name = g('cp-name').value.trim();
+          if(!name) { alert('Company Name zaroori hai!'); return; }
+          G.profile = {
+            name: name,
+            phone: g('cp-phone').value.trim(),
+            addr: g('cp-addr').value.trim(),
+            ntn: g('cp-ntn').value.trim()
+          };
+          
+          fetch(API_BASE + '/api/saveProfile', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ profile: G.profile })
+          }).then(r => r.json()).then(d => {
+            alert('Profile saved successfully!');
+            cm('cpm');
+          }).catch(e => {
+            sv('mg2_profile', G.profile);
+            alert('Profile saved locally!');
+            cm('cpm');
+          });
+        }
 
        window.onload = function () {
         fetch(API_BASE + '/api/data')
@@ -1521,6 +1954,7 @@
           .then(function (d) {
             if (d.items) G.items = d.items;
             if (d.bills) { G.bills = d.bills; G.nbn = 10001 + G.bills.length; }
+            if (d.purchases) G.purchases = d.purchases;
             if (d.users) G.users = d.users;
             if (d.parties) G.parties = d.parties;
             if (d.profile) G.profile = d.profile;
@@ -1535,6 +1969,7 @@
             var lu = ld('mg2_users', null); if (lu) G.users = lu;
             var lp = ld('mg2_parties', null); if (lp) G.parties = lp;
             var lcp = ld('mg2_profile', null); if (lcp) G.profile = lcp;
+            var lpu = ld('mg2_purchases', null); if (lpu) G.purchases = lpu;
             
             var s = ld('mg2_sess', {});
             if (s.on) { document.getElementById('ls').style.display = 'none'; var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN') + ' (Local Mode)'; showDash(); }

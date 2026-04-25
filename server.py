@@ -92,10 +92,41 @@ def get_data():
     try:
         items = sterilize(list(db.items.find({})))
         bills = sterilize(list(db.bills.find({})))
+        purchases = sterilize(list(db.purchases.find({})))
         users = sterilize(list(db.users.find({})))
         parties = sterilize(list(db.parties.find({})))
         profile = sterilize(db.profile.find_one({}))
-        return jsonify({"items": items, "bills": bills, "users": users, "parties": parties, "profile": profile})
+        return jsonify({"items": items, "bills": bills, "purchases": purchases, "users": users, "parties": parties, "profile": profile})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/savePurchase', methods=['POST'])
+def save_purchase():
+    if db is None:
+        return jsonify({"error": "Database not connected"}), 503
+    try:
+        data = request.json
+        purchase = data.get('purchase')
+        purchase_delete = data.get('purchase_delete')
+        updated_items = data.get('items')
+        updated_party = data.get('party')
+        
+        if not updated_items:
+            return jsonify({"error": "Missing items data"}), 400
+
+        if purchase_delete:
+            db.purchases.delete_one({"no": purchase_delete})
+
+        if purchase:
+            db.purchases.update_one({"no": purchase["no"]}, {"$set": purchase}, upsert=True)
+        
+        for item in updated_items:
+            db.items.update_one({"id": item["id"]}, {"$set": item}, upsert=True)
+        
+        if updated_party:
+            db.parties.update_one({"name": updated_party["name"]}, {"$set": updated_party}, upsert=True)
+            
+        return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -122,6 +153,7 @@ def save_bill():
         data = request.json
         bill = data.get('bill')
         bill_delete = data.get('bill_delete')
+        bill_update = data.get('bill_update')
         updated_items = data.get('items')
         updated_party = data.get('party')
         
@@ -131,6 +163,10 @@ def save_bill():
         # Handle Bill Deletion (Return)
         if bill_delete:
             db.bills.delete_one({"no": bill_delete})
+        
+        # Handle Bill Update (Modify)
+        if bill_update:
+            db.bills.update_one({"no": bill_update["no"]}, {"$set": bill_update}, upsert=True)
         
         # Handle Bill Insertion
         if bill:
