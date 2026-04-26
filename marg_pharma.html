@@ -1250,7 +1250,7 @@
 
         // Match by name (case-insensitive)
         var p = G.parties.find(x => x.name.toLowerCase() === q.toLowerCase());
-        // If not found by name, try phone
+        // If not found by name, try phone if provided
         if(!p && ph) p = G.parties.find(x => x.phone && x.phone === ph);
         
         var be = g('p-bal');
@@ -1259,18 +1259,18 @@
         var fpdEl = g('fpd');
         
         if(p) {
-          // Auto-fill phone if found by name
+          // Auto-fill phone if found by name but phone is empty
           if(phInput && !ph && p.phone) phInput.value = p.phone;
           
           // Balance display with color
           if(be) {
             var balAmt = Math.abs(p.bal).toFixed(2);
-            var balType = p.bal > 0 ? ' Dr' : (p.bal < 0 ? ' Cr' : '');
-            be.innerText = 'Prev Bal: Rs.' + balAmt + balType;
-            be.style.color = p.bal > 0 ? '#cc0000' : '#006600';
+            var balType = p.bal > 0 ? ' (Dr)' : (p.bal < 0 ? ' (Cr)' : ' Nil');
+            be.innerHTML = 'Prev Bal: <span style="font-size:13px;">Rs. ' + balAmt + '</span>' + balType;
+            be.style.color = p.bal > 0 ? '#cc0000' : (p.bal < 0 ? '#006600' : '#333');
           }
-          // Auto-fill Prev Bal field
-          if(fpdEl) fpdEl.value = p.bal > 0 ? p.bal.toFixed(2) : '0.00';
+          // Auto-fill Prev Bal field in footer
+          if(fpdEl) fpdEl.value = p.bal.toFixed(2);
           
           // Last transaction info
           if(lt) {
@@ -1283,7 +1283,7 @@
             }
           }
         } else {
-          if(be) { be.innerText = 'New Customer'; be.style.color = '#336699'; }
+          if(be) { be.innerText = 'New / Walk-in'; be.style.color = '#336699'; }
           if(fpdEl) fpdEl.value = '0.00';
           if(lt) lt.innerText = '';
         }
@@ -1624,7 +1624,18 @@
         html += '<tr style="background:#d0e8ff;border-top:2px solid #5a7fa8;"><td colspan="4" style="font-weight:700;color:#003366;">Closing Balance</td>' +
           '<td style="font-weight:700;color:' + closingColor + ';font-size:13px;">' + Math.abs(closingBal).toFixed(2) + closingLabel + '</td></tr>';
         
-        html += '</tbody></table></div></div>';
+        html += '</tbody></table>' +
+          '<div style="margin-top:15px;background:#fffde8;border:1px dashed #8aabcc;padding:10px;">' +
+          '<div style="font-weight:700;margin-bottom:8px;color:#003366;">📤 Add Manual Transaction (e.g. Receive Payment)</div>' +
+          '<div style="display:flex;gap:10px;align-items:flex-end;">' +
+          '<div class="ri" style="flex:1;"><label>Description</label><input id="mtx-desc" placeholder="e.g. Cash Payment Received"></div>' +
+          '<div class="ri" style="width:100px;"><label>Type</label><select id="mtx-type" style="height:18px;border:1px solid #7799bb;"><option value="Cr">Credit (Received)</option><option value="Dr">Debit (Added)</option></select></div>' +
+          '<div class="ri" style="width:100px;"><label>Amount</label><input id="mtx-amt" type="number" placeholder="0.00"></div>' +
+          '<div class="ri" style="width:100px;"><label>Date</label><input id="mtx-date" value="' + tds() + '"></div>' +
+          '<button class="bsm" onclick="saveManualTx(\'' + name + '\')" style="background:linear-gradient(#3a6adc,#0a3a8c);color:#fff;border:none;">Save Tx</button>' +
+          '</div></div>' +
+          '</div></div>';
+        
         var m = document.getElementById('pdm');
         if(!m) {
           m = document.createElement('div'); m.id = 'pdm'; m.className = 'mo';
@@ -1632,6 +1643,37 @@
         }
         m.innerHTML = html;
         m.classList.add('show');
+      }
+
+      function saveManualTx(pname) {
+        var desc = g('mtx-desc').value.trim();
+        var amt = parseFloat(g('mtx-amt').value) || 0;
+        var type = g('mtx-type').value;
+        var date = g('mtx-date').value;
+        
+        if(!desc || amt <= 0) { alert('Sahi description aur amount enter karein!'); return; }
+        
+        var p = G.parties.find(x => x.name === pname);
+        if(!p) return;
+        
+        if(!p.transactions) p.transactions = [];
+        p.transactions.push({ date: date, desc: desc, type: type, amt: amt });
+        
+        if(type === 'Dr') p.bal = (parseFloat(p.bal)||0) + amt;
+        else p.bal = (parseFloat(p.bal)||0) - amt;
+        
+        fetch(API_BASE + '/api/saveBill', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: G.items, party: p }) // Re-using saveBill route which handles party updates
+        }).then(r => r.json()).then(d => {
+          sv('mg2_parties', G.parties);
+          alert('Transaction saved successfully!');
+          showPartyDetail(pname); // Refresh modal
+        }).catch(e => {
+          sv('mg2_parties', G.parties);
+          alert('Saved locally!');
+          showPartyDetail(pname);
+        });
       }
       function findBillForReturn() {
         var id = g('rsi').value.trim();
