@@ -748,7 +748,8 @@
       <button class="lbtn" onclick="doLogin()">LOGIN</button>
       <div class="lerr" id="lerr"></div>
       <p style="font-size:10px;color:#555;margin-top:8px;text-align:center;">admin/admin123 | user1/1234</p>
-      <p id="f-warn" style="font-size:9px;color:#a33;margin-top:4px;text-align:center;display:none;">Security check: Use localhost:5000 for full features.</p>
+      <p id="f-warn" style="font-size:9px;color:#a33;margin-top:4px;text-align:center;display:none;">Security check: Use
+        localhost:5000 for full features.</p>
     </div>
   </div>
   <div id="app" style="display:none;height:100vh;flex-direction:column;">
@@ -925,19 +926,23 @@
     </div>
 
     <div class="mo" id="cpm">
-       <div class="mb2">
-         <div class="mh">Company Profile <span onclick="cm('cpm')">&#10006;</span></div>
-         <div class="mbd">
-           <div class="lf2"><label>Company Name:</label><input id="cp-name" placeholder="e.g. HAMZA MEDICINE COMPANY"></div>
-           <div class="lf2"><label>Phone/Mobile:</label><input id="cp-phone" placeholder="e.g. 061-2079422, 0300-7358302"></div>
-           <div class="lf2"><label>Address:</label><input id="cp-addr" placeholder="e.g. H-NO: 15-16 Shams abad, Multan."></div>
-           <div class="lf2"><label>NTN/STN:</label><input id="cp-ntn" placeholder="e.g. 36102-7250390-3"></div>
-           <button class="bsm" style="width:100%;margin-top:10px;background:linear-gradient(#c0eec0,#7acc7a);" onclick="saveCompanyProfile()">Save Profile</button>
-         </div>
-       </div>
-     </div>
+      <div class="mb2">
+        <div class="mh">Company Profile <span onclick="cm('cpm')">&#10006;</span></div>
+        <div class="mbd">
+          <div class="lf2"><label>Company Name:</label><input id="cp-name" placeholder="e.g. HAMZA MEDICINE COMPANY">
+          </div>
+          <div class="lf2"><label>Phone/Mobile:</label><input id="cp-phone"
+              placeholder="e.g. 061-2079422, 0300-7358302"></div>
+          <div class="lf2"><label>Address:</label><input id="cp-addr"
+              placeholder="e.g. H-NO: 15-16 Shams abad, Multan."></div>
+          <div class="lf2"><label>NTN/STN:</label><input id="cp-ntn" placeholder="e.g. 36102-7250390-3"></div>
+          <button class="bsm" style="width:100%;margin-top:10px;background:linear-gradient(#c0eec0,#7acc7a);"
+            onclick="saveCompanyProfile()">Save Profile</button>
+        </div>
+      </div>
+    </div>
 
-     <div class="mo" id="rm">
+    <div class="mo" id="rm">
       <div class="mb2">
         <div class="mh">Sales Return <span onclick="cm('rm')">&#10006;</span></div>
         <div class="mbd">
@@ -948,12 +953,22 @@
           <div id="rb-detail" style="display:none;">
             <p id="rb-info" style="font-weight:700;margin-bottom:5px;"></p>
             <table class="mt">
-              <thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Amt</th><th>Action</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Qty</th>
+                  <th>Rate</th>
+                  <th>Amt</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
               <tbody id="rtb"></tbody>
             </table>
             <div style="margin-top:10px;display:flex;gap:8px;">
-              <button class="bsm" style="background:linear-gradient(#f88,#d33);color:#fff;" onclick="processReturn()">Full Return</button>
-              <button class="bsm" style="background:linear-gradient(#88f,#33d);color:#fff;" onclick="processModification()">Update Bill</button>
+              <button class="bsm" style="background:linear-gradient(#f88,#d33);color:#fff;"
+                onclick="processReturn()">Full Return</button>
+              <button class="bsm" style="background:linear-gradient(#88f,#33d);color:#fff;"
+                onclick="processModification()">Update Bill</button>
             </div>
           </div>
         </div>
@@ -962,18 +977,18 @@
 
     <script>
       const API_BASE = window.location.protocol === 'file:' ? "https://pharma-backend-production-c984.up.railway.app" : "";
-      if (window.location.protocol === 'file:') document.addEventListener('DOMContentLoaded', () => { var e = document.getElementById('f-warn'); if(e) e.style.display='block'; });
-      var G = { 
-        items: [], 
-        bills: [], 
+      if (window.location.protocol === 'file:') document.addEventListener('DOMContentLoaded', () => { var e = document.getElementById('f-warn'); if (e) e.style.display = 'block'; });
+      var G = {
+        items: [],
+        bills: [],
         purchases: [],
-        users: [{ u: 'admin', p: 'admin123', r: 'admin' }, { u: 'user1', p: '1234', r: 'user' }], 
-        parties: [], 
+        users: [{ u: 'admin', p: 'admin123', r: 'admin' }, { u: 'user1', p: '1234', r: 'user' }],
+        parties: [],
         profile: { name: 'HAMZA MEDICINE COMPANY', phone: '061-2079422, 0300-7358302', addr: 'H-NO: 15-16 Shams abad, Multan.', ntn: '36102-7250390-3' },
-        sess: {}, 
-        bi: [], 
+        sess: {},
+        bi: [],
         pi: [],
-        nbn: 10001 
+        nbn: 10001
       };
       function ld(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
       function sv(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
@@ -989,32 +1004,32 @@
       function tds() { var d = new Date(); return d.getDate().toString().padStart(2, '0') + '/' + (d.getMonth() + 1).toString().padStart(2, '0') + '/' + d.getFullYear().toString().slice(2); }
       function mu(e) { var p = e.split('/'); if (p.length < 2) return 99; return (parseInt(p[1]) + 2000 - new Date().getFullYear()) * 12 + parseInt(p[0]) - (new Date().getMonth() + 1); }
       function cm(id) { document.getElementById(id).classList.remove('show'); }
-      
+
       function savePurchase() {
         var rows = document.querySelectorAll('#ptb tr');
         var p_items = [];
         rows.forEach(tr => {
           var inputs = tr.querySelectorAll('input');
-          if(inputs.length >= 6) {
+          if (inputs.length >= 6) {
             var name = inputs[0].value.trim();
             var batch = inputs[1].value.trim();
             var exp = inputs[2].value.trim();
             var qty = parseFloat(inputs[3].value) || 0;
             var cost = parseFloat(inputs[4].value) || 0;
             var sell = parseFloat(inputs[5].value) || 0;
-            if(name && qty > 0) {
+            if (name && qty > 0) {
               p_items.push({ name, batch, exp, qty, cost, sell });
             }
           }
         });
 
-        if(p_items.length === 0) { alert('Kam se kam ek item add karein!'); return; }
+        if (p_items.length === 0) { alert('Kam se kam ek item add karein!'); return; }
 
         p_items.forEach(p => {
           var idx = G.items.findIndex(i => i.name.toLowerCase() === p.name.toLowerCase());
-          if(idx >= 0) {
+          if (idx >= 0) {
             G.items[idx].stock += p.qty;
-            if(!G.items[idx].batches) G.items[idx].batches = [];
+            if (!G.items[idx].batches) G.items[idx].batches = [];
             G.items[idx].batches.push({ b: p.batch, exp: p.exp, qty: p.qty, cost: p.cost });
             G.items[idx].rate = p.sell;
           } else {
@@ -1051,9 +1066,9 @@
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape') document.querySelectorAll('.mo').forEach(function (m) { m.classList.remove('show'); }); if (e.key === 'F2') { e.preventDefault(); openIM(); } });
 
       function showDash() {
-        var ts = G.bills.filter(x => x.date === tds()).reduce((a, x) => { 
+        var ts = G.bills.filter(x => x.date === tds()).reduce((a, x) => {
           var v = x.net_amt ? (x.net_amt - (x.spl_disc || 0)) : (parseFloat(x.net) || 0);
-          return a + v; 
+          return a + v;
         }, 0);
         var ec = 0; G.items.forEach(function (i) { i.batches.forEach(function (b) { if (mu(b.exp) <= 3) ec++; }); });
         var ls = G.items.filter(function (i) { return i.stock < 20; }).length;
@@ -1073,7 +1088,7 @@
           '<button class="bsm" onclick="showLedger()">Ledger</button>' +
           '</div><div class="dst">Recent Bills</div>' +
           '<table class="mt"><thead><tr><th>Bill No</th><th>Date</th><th>Customer</th><th>Items</th><th>Net Amt</th></tr></thead><tbody>' +
-          G.bills.slice(-5).reverse().map(function (b) { return '<tr><td>' + b.no + '</td><td>' + b.date + '</td><td>' + b.cust + '</td><td>' + b.items.length + '</td><td>Rs.' + (b.net_amt ? (b.net_amt - (b.spl_disc||0)) : (parseFloat(b.net)||0)).toFixed(2) + '</td></tr>'; }).join('') +
+          G.bills.slice(-5).reverse().map(function (b) { return '<tr><td>' + b.no + '</td><td>' + b.date + '</td><td>' + b.cust + '</td><td>' + b.items.length + '</td><td>Rs.' + (b.net_amt ? (b.net_amt - (b.spl_disc || 0)) : (parseFloat(b.net) || 0)).toFixed(2) + '</td></tr>'; }).join('') +
           '</tbody></table></div>');
       }
 
@@ -1156,6 +1171,10 @@
           '<button class="abr" onclick="showDash()">Home</button>' +
           '</div></div>');
         G.bi = []; rr();
+        var dl = g('party-list');
+        if (dl) {
+          dl.innerHTML = G.parties.filter(p => p.type !== 'Supplier').map(p => '<option value="' + p.name + '">' + p.name + (p.phone ? ' | ' + p.phone : '') + '</option>').join('');
+        }
       }
 
       function cpv() {
@@ -1202,13 +1221,13 @@
       }
 
       function rrf() {
-        var nt = parseFloat((g('fn') || { value: 0 }).value) || 0, 
-            sd = parseFloat((g('fsd') || { value: 0 }).value) || 0,
-            ra = parseFloat((g('fra') || { value: 0 }).value) || 0;
-        var fnr = g('fnr'); 
+        var nt = parseFloat((g('fn') || { value: 0 }).value) || 0,
+          sd = parseFloat((g('fsd') || { value: 0 }).value) || 0,
+          ra = parseFloat((g('fra') || { value: 0 }).value) || 0;
+        var fnr = g('fnr');
         if (fnr) {
-            var netRecv = Math.max(0, nt - sd);
-            fnr.value = netRecv.toFixed(2);
+          var netRecv = Math.max(0, nt - sd);
+          fnr.value = netRecv.toFixed(2);
         }
       }
 
@@ -1233,49 +1252,43 @@
       }
 
       function findParty() {
-        var q = (g('bcu') || {value:''}).value.trim();
-        var ph = (g('bph') || {value:''}).value.trim();
-        
-        // Populate suggestions with name + phone
+        var q = (g('bcu') || { value: '' }).value.trim();
+        var ph = (g('bph') || { value: '' }).value.trim();
+
+        // Populate suggestions from start
         var dl = g('party-list');
-        if(dl) {
-          dl.innerHTML = '';
-          G.parties.filter(p => p.type !== 'Supplier').forEach(p => {
-            var opt = document.createElement('option');
-            opt.value = p.name;
-            opt.label = p.name + (p.phone ? ' | ' + p.phone : '');
-            dl.appendChild(opt);
-          });
+        if (dl && dl.innerHTML === '') {
+          dl.innerHTML = G.parties.filter(p => p.type !== 'Supplier').map(p => '<option value="' + p.name + '">' + p.name + (p.phone ? ' | ' + p.phone : '') + '</option>').join('');
         }
 
         // Match by name (case-insensitive)
         var p = G.parties.find(x => x.name.toLowerCase() === q.toLowerCase());
         // If not found by name, try phone if provided
-        if(!p && ph) p = G.parties.find(x => x.phone && x.phone === ph);
-        
+        if (!p && ph) p = G.parties.find(x => x.phone && x.phone === ph);
+
         var be = g('p-bal');
         var lt = g('p-last-tx');
         var phInput = g('bph');
         var fpdEl = g('fpd');
-        
-        if(p) {
+
+        if (p) {
           // Auto-fill phone if found by name but phone is empty
-          if(phInput && !ph && p.phone) phInput.value = p.phone;
-          
+          if (phInput && !ph && p.phone) phInput.value = p.phone;
+
           // Balance display with color
-          if(be) {
+          if (be) {
             var balAmt = Math.abs(p.bal).toFixed(2);
             var balType = p.bal > 0 ? ' (Dr)' : (p.bal < 0 ? ' (Cr)' : ' Nil');
             be.innerHTML = 'Prev Bal: <span style="font-size:13px;">Rs. ' + balAmt + '</span>' + balType;
             be.style.color = p.bal > 0 ? '#cc0000' : (p.bal < 0 ? '#006600' : '#333');
           }
           // Auto-fill Prev Bal field in footer
-          if(fpdEl) fpdEl.value = p.bal.toFixed(2);
-          
+          if (fpdEl) fpdEl.value = p.bal.toFixed(2);
+
           // Last transaction info
-          if(lt) {
+          if (lt) {
             var txs = p.transactions || [];
-            if(txs.length > 0) {
+            if (txs.length > 0) {
               var last = txs[txs.length - 1];
               lt.innerText = 'Last Tx: ' + last.date + ' | ' + last.desc;
             } else {
@@ -1283,9 +1296,9 @@
             }
           }
         } else {
-          if(be) { be.innerText = 'New / Walk-in'; be.style.color = '#336699'; }
-          if(fpdEl) fpdEl.value = '0.00';
-          if(lt) lt.innerText = '';
+          if (be) { be.innerText = 'New / Walk-in'; be.style.color = '#336699'; }
+          if (fpdEl) fpdEl.value = '0.00';
+          if (lt) lt.innerText = '';
         }
       }
 
@@ -1296,59 +1309,59 @@
         var nt = parseFloat((g('fn') || { value: '0' }).value) || 0;
         var no = (g('bid') || { value: 'SI-?' }).value;
         var pmEl = g('bpm'); var pm = pmEl ? pmEl.value : 'Cash';
-        
+
         // Find or create party (match by name+phone for uniqueness)
         var party = G.parties.find(p => p.name === cu && (ph ? p.phone === ph : true));
-        if(!party) party = G.parties.find(p => p.name === cu);
-        if(!party && cu !== 'Cash') {
+        if (!party) party = G.parties.find(p => p.name === cu);
+        if (!party && cu !== 'Cash') {
           party = { name: cu, type: 'Customer', phone: ph, bal: 0, transactions: [] };
           G.parties.push(party);
         }
-        if(party && ph && !party.phone) party.phone = ph;
+        if (party && ph && !party.phone) party.phone = ph;
 
         var oldB = G.bills.find(x => x.no === no);
-        if(oldB) {
-            // Revert balance/transactions
-            var oldParty = G.parties.find(p => p.name === oldB.cust);
-            if(oldParty) {
-                var oldNetSale = oldB.net_amt ? (oldB.net_amt - (oldB.spl_disc || 0)) : (parseFloat(oldB.net) || 0);
-                var oldPaid = parseFloat(oldB.rcvd_amt || 0);
-                oldParty.bal -= (oldNetSale - oldPaid);
-                if(oldParty.transactions) oldParty.transactions = oldParty.transactions.filter(t => !t.desc.includes(no));
+        if (oldB) {
+          // Revert balance/transactions
+          var oldParty = G.parties.find(p => p.name === oldB.cust);
+          if (oldParty) {
+            var oldNetSale = oldB.net_amt ? (oldB.net_amt - (oldB.spl_disc || 0)) : (parseFloat(oldB.net) || 0);
+            var oldPaid = parseFloat(oldB.rcvd_amt || 0);
+            oldParty.bal -= (oldNetSale - oldPaid);
+            if (oldParty.transactions) oldParty.transactions = oldParty.transactions.filter(t => !t.desc.includes(no));
+          }
+          // Revert stock
+          oldB.items.forEach(r => {
+            var idx = G.items.findIndex(i => i.name === r.name);
+            if (idx >= 0) {
+              G.items[idx].stock += r.q;
+              if (G.items[idx].batches) {
+                var bt = G.items[idx].batches.find(b => b.bt === r.bt);
+                if (bt) bt.qty += r.q;
+              }
             }
-            // Revert stock
-            oldB.items.forEach(r => {
-                var idx = G.items.findIndex(i => i.name === r.name);
-                if(idx >= 0) {
-                    G.items[idx].stock += r.q;
-                    if(G.items[idx].batches) {
-                       var bt = G.items[idx].batches.find(b => b.bt === r.bt);
-                       if(bt) bt.qty += r.q;
-                    }
-                }
-            });
-            G.bills = G.bills.filter(x => x.no !== no);
-            G.nbn--;
+          });
+          G.bills = G.bills.filter(x => x.no !== no);
+          G.nbn--;
         }
 
-        var newB = { 
-            no, date: tds(), cust: cu, phone: ph, pay_mode: pm, items: JSON.parse(JSON.stringify(G.bi)), 
-            net_amt: nt, spl_disc: parseFloat((g('fsd') || {value:0}).value) || 0,
-            rcvd_amt: parseFloat((g('fra') || {value:0}).value) || 0
+        var newB = {
+          no, date: tds(), cust: cu, phone: ph, pay_mode: pm, items: JSON.parse(JSON.stringify(G.bi)),
+          net_amt: nt, spl_disc: parseFloat((g('fsd') || { value: 0 }).value) || 0,
+          rcvd_amt: parseFloat((g('fra') || { value: 0 }).value) || 0
         };
         var finalNet = parseFloat(newB.net_amt - newB.spl_disc);
         G.bills.push(newB);
         G.nbn++;
 
-        if(party) {
-          if(!party.transactions) party.transactions = [];
+        if (party) {
+          if (!party.transactions) party.transactions = [];
           // 1. Debit the sale (after special discount)
           party.transactions.push({ date: tds(), desc: 'Sale Bill ' + no + ' (Net)', type: 'Dr', amt: finalNet });
-          party.bal = (parseFloat(party.bal)||0) + parseFloat(finalNet);
+          party.bal = (parseFloat(party.bal) || 0) + parseFloat(finalNet);
           // 2. Credit the payment if any
-          if(newB.rcvd_amt > 0) {
+          if (newB.rcvd_amt > 0) {
             party.transactions.push({ date: tds(), desc: 'Payment Recv ' + no + ' [' + pm + ']', type: 'Cr', amt: newB.rcvd_amt });
-            party.bal = (parseFloat(party.bal)||0) - parseFloat(newB.rcvd_amt);
+            party.bal = (parseFloat(party.bal) || 0) - parseFloat(newB.rcvd_amt);
           }
         }
 
@@ -1358,10 +1371,10 @@
           if (idx >= 0) {
             G.items[idx].stock = Math.max(0, G.items[idx].stock - r.q);
             // Batch-level FIFO deduction
-            if(G.items[idx].batches) {
+            if (G.items[idx].batches) {
               var remain = r.q;
-              G.items[idx].batches.forEach(function(bt) {
-                if(remain <= 0) return;
+              G.items[idx].batches.forEach(function (bt) {
+                if (remain <= 0) return;
                 var deduct = Math.min(bt.qty, remain);
                 bt.qty = Math.max(0, bt.qty - deduct);
                 remain -= deduct;
@@ -1388,8 +1401,8 @@
         if (G.bi.length === 0) { alert('Koi item nahi!'); return; }
         var cu = (g('bcu') || { value: 'Cash' }).value || 'Cash', no = (g('bid') || { value: 'SI-?' }).value;
         var dt = tds(), tm = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-        
-        var rows = G.bi.map(function (r, i) { 
+
+        var rows = G.bi.map(function (r, i) {
           var advTax = (r.am * 0.005).toFixed(2); // Example 0.5% adv tax
           var gstUnt = (r.ga / r.q).toFixed(2);
           return '<tr>' +
@@ -1404,19 +1417,19 @@
             '<td>' + gstUnt + '</td>' +
             '<td>' + advTax + '</td>' +
             '<td>' + r.am.toFixed(2) + '</td>' +
-            '</tr>'; 
+            '</tr>';
         }).join('');
 
         var gr = parseFloat((g('fg') || { value: '0' }).value) || 0;
-         var nt = parseFloat((g('fn') || { value: '0' }).value) || 0;
-         var gt = parseFloat(((parseFloat((g('fsg') || { value: 0 }).value) || 0) * 2).toFixed(2)) || 0;
-         var sd = parseFloat((g('fsd') || { value: 0 }).value) || 0;
-         
-         var party = G.parties.find(p => p.name === cu);
-         var prevBal = party ? party.bal - nt : 0;
-         var totalAdvTax = G.bi.reduce((a, b) => a + (b.am * 0.005), 0).toFixed(2);
-         var netWithTax = (nt + parseFloat(totalAdvTax)).toFixed(2);
-         var inWords = numToWords(Math.round(netWithTax));
+        var nt = parseFloat((g('fn') || { value: '0' }).value) || 0;
+        var gt = parseFloat(((parseFloat((g('fsg') || { value: 0 }).value) || 0) * 2).toFixed(2)) || 0;
+        var sd = parseFloat((g('fsd') || { value: 0 }).value) || 0;
+
+        var party = G.parties.find(p => p.name === cu);
+        var prevBal = party ? party.bal - nt : 0;
+        var totalAdvTax = G.bi.reduce((a, b) => a + (b.am * 0.005), 0).toFixed(2);
+        var netWithTax = (nt + parseFloat(totalAdvTax)).toFixed(2);
+        var inWords = numToWords(Math.round(netWithTax));
 
         var w = window.open('', '_blank');
         w.document.write('<!DOCTYPE html><html><head><title>Invoice ' + no + '</title>' +
@@ -1454,7 +1467,7 @@
           '<div class="invoice-title"><h1>INVOICE</h1><p>Invoice No: <b>' + no.replace('SI-', '') + '</b></p><p>Cash Invoice | Duplicate</p><p>Invoice Date: ' + dt + '</p><p>Due Date: ' + dt + '</p></div></div>' +
           '<div class="customer-box"><div><p><b>Customer:</b> ' + cu + '</p><p><b>Address:</b> , MATI TILL ROAD, MULTAN-1</p></div><div style="text-align: right;"><p>NTN: ' + G.profile.ntn + ', STN: </p><p>Filer <span style="margin-left: 20px;">Page 1 of 1</span></p></div></div>' +
           '<table><colgroup><col style="width:7%"><col style="width:7%"><col style="width:30%"><col style="width:8%"><col style="width:10%"><col style="width:8%"><col style="width:8%"><col style="width:6%"><col style="width:8%"><col style="width:8%"><col style="width:10%"></colgroup>' +
-          '<thead><tr><th>QTY</th><th>BNS</th><th>PRODUCT NAME</th><th>PACK</th><th>BATCH NO</th><th>EXPIRY</th><th>T.RATE</th><th>DISC%</th><th>GST/UNT</th><th>ADV TAX</th><th>VALUE</th></tr></thead><tbody>' + rows + 
+          '<thead><tr><th>QTY</th><th>BNS</th><th>PRODUCT NAME</th><th>PACK</th><th>BATCH NO</th><th>EXPIRY</th><th>T.RATE</th><th>DISC%</th><th>GST/UNT</th><th>ADV TAX</th><th>VALUE</th></tr></thead><tbody>' + rows +
           '<tr class="subtotal-row"><td colspan="2" style="text-align: left;">GROSS :</td><td style="text-align: left;">' + gr.toFixed(2) + '</td><td>DISC 1 :</td><td>' + sd.toFixed(2) + '</td><td>C-DISC :</td><td>(0.00%)</td><td>0</td><td>NET :</td><td colspan="2" style="text-align: right;">' + nt.toFixed(2) + '</td></tr></tbody></table>' +
           '<div class="footer"><div class="footer-left"><p>Total Items : ' + G.bi.length + ' of ' + G.bi.length + '</p><p><b>Printed At :</b> ' + dt + ' ' + tm + '</p><p style="margin-top: 12px; font-size: 11pt;"><b>' + inWords + '</b></p>' +
           '<div class="warranty"><p>Form 2A (See Rules 19 & 30), <b>Warranty</b> under section 23(1)(i) of the Drug Act 1976.</p>' +
@@ -1465,46 +1478,46 @@
           '<div class="print-footer">SOFTWARE DEVELOPED BY: SMART BUSINESS SOFTWARE | 0322 3729770</div>' +
           '</div></body></html>');
         w.document.close(); w.print();
-       }
+      }
 
-       function printThermal() {
-         if (G.bi.length === 0) { alert('Koi item nahi!'); return; }
-         var cu = (g('bcu') || { value: 'Cash' }).value || 'Cash', no = (g('bid') || { value: 'SI-?' }).value;
-         var dt = tds(), tm = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-         
-         var rows = G.bi.map(function (r) { 
-           return '<tr>' +
-             '<td>' + r.q + '</td>' +
-             '<td>' + (r.bo || 0) + '</td>' +
-             '<td style="text-align:left;">' + r.name + '</td>' +
-             '<td>' + r.ra.toFixed(2) + '</td>' +
-             '<td>' + r.di.toFixed(2) + '</td>' +
-             '<td>' + r.am.toFixed(2) + '</td>' +
-             '</tr>'; 
-         }).join('');
+      function printThermal() {
+        if (G.bi.length === 0) { alert('Koi item nahi!'); return; }
+        var cu = (g('bcu') || { value: 'Cash' }).value || 'Cash', no = (g('bid') || { value: 'SI-?' }).value;
+        var dt = tds(), tm = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-         var gr = parseFloat((g('fg') || { value: '0' }).value) || 0;
-         var nt = parseFloat((g('fn') || { value: '0' }).value) || 0;
-         var sd = parseFloat((g('fsd') || { value: '0' }).value) || 0;
-         
-         var party = G.parties.find(p => p.name === cu);
-         var prevBal = party ? party.bal - nt : 0;
-         var totalItems = G.bi.length;
+        var rows = G.bi.map(function (r) {
+          return '<tr>' +
+            '<td>' + r.q + '</td>' +
+            '<td>' + (r.bo || 0) + '</td>' +
+            '<td style="text-align:left;">' + r.name + '</td>' +
+            '<td>' + r.ra.toFixed(2) + '</td>' +
+            '<td>' + r.di.toFixed(2) + '</td>' +
+            '<td>' + r.am.toFixed(2) + '</td>' +
+            '</tr>';
+        }).join('');
 
-         var w = window.open('', '_blank');
-         w.document.write('<!DOCTYPE html><html><head><title>Thermal Receipt ' + no + '</title>' +
-           '<style>' +
-           '@page { size: 80mm auto; margin: 0; }' +
-           'body { font-family: "Courier New", Courier, monospace; font-size: 10pt; width: 72mm; margin: 0 auto; padding: 5mm 2mm; color: #000; }' +
-           '.header { border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }' +
-           '.header-row { display: flex; justify-content: space-between; font-size: 9pt; margin-bottom: 2px; }' +
-           'table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }' +
-           'th, td { padding: 2px 1px; text-align: center; font-size: 8.5pt; border-bottom: 0.5px solid #eee; }' +
-           'th { border-bottom: 1px solid #000; font-weight: bold; }' +
-           '.totals { border-top: 1px solid #000; padding-top: 5px; margin-top: 5px; }' +
-           '.total-row { display: flex; justify-content: space-between; font-size: 9pt; margin-bottom: 2px; }' +
-           '.grand-total-box { border: 1px solid #000; padding: 5px; margin-top: 5px; }' +
-           '.footer-text { text-align: center; font-size: 11pt; margin-top: 15px; border-top: 2px solid #000; padding-top: 8px; font-weight: bold; text-transform: uppercase; }' +
+        var gr = parseFloat((g('fg') || { value: '0' }).value) || 0;
+        var nt = parseFloat((g('fn') || { value: '0' }).value) || 0;
+        var sd = parseFloat((g('fsd') || { value: '0' }).value) || 0;
+
+        var party = G.parties.find(p => p.name === cu);
+        var prevBal = party ? party.bal - nt : 0;
+        var totalItems = G.bi.length;
+
+        var w = window.open('', '_blank');
+        w.document.write('<!DOCTYPE html><html><head><title>Thermal Receipt ' + no + '</title>' +
+          '<style>' +
+          '@page { size: 80mm auto; margin: 0; }' +
+          'body { font-family: "Courier New", Courier, monospace; font-size: 10pt; width: 72mm; margin: 0 auto; padding: 5mm 2mm; color: #000; }' +
+          '.header { border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }' +
+          '.header-row { display: flex; justify-content: space-between; font-size: 9pt; margin-bottom: 2px; }' +
+          'table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }' +
+          'th, td { padding: 2px 1px; text-align: center; font-size: 8.5pt; border-bottom: 0.5px solid #eee; }' +
+          'th { border-bottom: 1px solid #000; font-weight: bold; }' +
+          '.totals { border-top: 1px solid #000; padding-top: 5px; margin-top: 5px; }' +
+          '.total-row { display: flex; justify-content: space-between; font-size: 9pt; margin-bottom: 2px; }' +
+          '.grand-total-box { border: 1px solid #000; padding: 5px; margin-top: 5px; }' +
+          '.footer-text { text-align: center; font-size: 11pt; margin-top: 15px; border-top: 2px solid #000; padding-top: 8px; font-weight: bold; text-transform: uppercase; }' +
           '@media print { body { width: 100%; } }' +
           '</style></head><body>' +
           '<div class="header">' +
@@ -1528,8 +1541,8 @@
           '</div>' +
           '<div class="footer-text">SOFTWARE DEVELOPED BY: SMART BUSINESS SOFTWARE | 0322 3729770</div>' +
           '</body></html>');
-         w.document.close(); w.print();
-       }
+        w.document.close(); w.print();
+      }
 
       function openIM() { document.getElementById('im').classList.add('show'); g('isi').value = ''; fi(); setTimeout(function () { g('isi').focus(); }, 100); }
       function fi() {
@@ -1560,11 +1573,11 @@
       }
       function showLedger() {
         var tb = g('lb2'); tb.innerHTML = '';
-        G.parties.forEach(function (p) { 
-          var c = p.bal > 0 ? '#cc3300' : '#228822'; 
+        G.parties.forEach(function (p) {
+          var c = p.bal > 0 ? '#cc3300' : '#228822';
           var tr = document.createElement('tr');
           tr.innerHTML = '<td>' + p.name + '</td><td>' + p.type + '</td><td style="font-weight:700;color:' + c + ';">Rs.' + Math.abs(p.bal).toFixed(2) + (p.bal > 0 ? ' (Dr)' : ' (Cr)') + '</td>';
-          tr.onclick = function() { showPartyDetail(p.name); };
+          tr.onclick = function () { showPartyDetail(p.name); };
           tb.appendChild(tr);
         });
         document.getElementById('lm').classList.add('show');
@@ -1572,27 +1585,42 @@
 
       function showPartyDetail(name) {
         var p = G.parties.find(x => x.name === name);
-        if(!p) return;
+        if (!p) return;
         var txs = p.transactions || [];
-        
+
         // Real closing balance is always p.bal (source of truth)
         // Opening balance = p.bal minus sum of all recorded transactions
         var txSum = 0;
-        txs.forEach(t => { if(t.type === 'Dr') txSum += t.amt; else txSum -= t.amt; });
+        txs.forEach(t => { if (t.type === 'Dr') txSum += t.amt; else txSum -= t.amt; });
         var openBal = p.bal - txSum;
-        
+
         var partyInfo = p.type + (p.phone ? ' | 📞 ' + p.phone : '');
+
+        // Calculate Summary
+        var totalDr = 0, totalCr = 0;
+        txs.forEach(t => { if (t.type === 'Dr') totalDr += t.amt; else totalCr += t.amt; });
+        var netPending = Math.abs(p.bal);
+        var netLabel = p.bal > 0 ? 'Dr (Receivable)' : p.bal < 0 ? 'Cr (Payable)' : 'Nil';
+        var summaryColor = p.bal > 0 ? '#cc0000' : p.bal < 0 ? '#006600' : '#333';
+
         var html = '<div class="mb2" style="min-width:760px;"><div class="mh">Ledger: ' + name + ' <span style="font-size:11px;font-weight:400;margin-left:10px;">' + partyInfo + '</span><span onclick="cm(\'pdm\')" style="margin-left:auto;">&#10006;</span></div>' +
-          '<div class="mbd"><table class="mt"><thead><tr><th>Date</th><th>Description</th><th>Debit (Dr)</th><th>Credit (Cr)</th><th style="background:#2a5a8a;">Running Balance</th></tr></thead><tbody>';
-        
+          '<div class="mbd">' +
+          '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;background:#e8f0f8;padding:8px;border:1px solid #8aabcc;">' +
+          '<div class="cd" style="padding:5px;"><div class="ct">Total Dr</div><div class="cv" style="font-size:16px;">Rs.' + totalDr.toFixed(2) + '</div></div>' +
+          '<div class="cd" style="padding:5px;"><div class="ct">Total Cr</div><div class="cv" style="font-size:16px;">Rs.' + totalCr.toFixed(2) + '</div></div>' +
+          '<div class="cd" style="padding:5px;border-top-color:' + summaryColor + '"><div class="ct">Pending Balance</div><div class="cv" style="font-size:16px;color:' + summaryColor + '">Rs.' + netPending.toFixed(2) + '</div></div>' +
+          '<div class="cd" style="padding:5px;"><div class="ct">Status</div><div class="cv" style="font-size:13px;color:' + summaryColor + '">' + netLabel + '</div></div>' +
+          '</div>' +
+          '<table class="mt"><thead><tr><th>Date</th><th>Description</th><th>Debit (Dr)</th><th>Credit (Cr)</th><th style="background:#2a5a8a;">Running Balance</th></tr></thead><tbody>';
+
         // Opening balance row
         html += '<tr style="background:#e8f4e8;"><td colspan="4" style="font-weight:700;color:#006600;">Opening Balance</td><td style="font-weight:700;color:#006600;">' +
           Math.abs(openBal).toFixed(2) + (openBal > 0 ? ' Dr' : openBal < 0 ? ' Cr' : ' Nil') + '</td></tr>';
-        
+
         var bal = openBal;
-        if(txs.length === 0) {
+        if (txs.length === 0) {
           // No transaction history but balance exists (initial MongoDB data / legacy)
-          if(p.bal !== 0) {
+          if (p.bal !== 0) {
             html += '<tr style="background:#fff8e8;"><td>-</td>' +
               '<td style="color:#555;font-style:italic;">Balance Brought Forward (No transaction history)</td>' +
               '<td style="color:#cc0000;">' + (p.bal > 0 ? 'Rs.' + Math.abs(p.bal).toFixed(2) : '-') + '</td>' +
@@ -1605,25 +1633,35 @@
         } else {
           txs.forEach(t => {
             var prev = bal;
-            if(t.type === 'Dr') bal += t.amt; else bal -= t.amt;
+            if (t.type === 'Dr') bal += t.amt; else bal -= t.amt;
             var balColor = bal > 0 ? '#cc0000' : bal < 0 ? '#006600' : '#333';
             var balLabel = bal > 0 ? ' Dr' : bal < 0 ? ' Cr' : ' Nil';
             var rowBg = t.type === 'Dr' ? 'background:#fff8f0;' : 'background:#f0fff0;';
+
+            // Make bill IDs clickable
+            var desc = t.desc;
+            var billMatch = desc.match(/(SI-\d+|INV-\w+)/);
+            if (billMatch) {
+              var billNo = billMatch[0];
+              var clickFn = billNo.startsWith('SI-') ? 'loadB' : 'loadPB';
+              desc = desc.replace(billNo, '<a href="#" onclick="cm(\'pdm\'); ' + clickFn + '(\'' + billNo + '\'); return false;" style="color:#003399;font-weight:700;text-decoration:underline;">' + billNo + '</a>');
+            }
+
             html += '<tr style="' + rowBg + '"><td>' + t.date + '</td>' +
-              '<td>' + t.desc + '</td>' +
-              '<td style="color:#cc0000;font-weight:' + (t.type==='Dr'?'700':'400') + ';">' + (t.type === 'Dr' ? 'Rs.' + t.amt.toFixed(2) : '-') + '</td>' +
-              '<td style="color:#006600;font-weight:' + (t.type==='Cr'?'700':'400') + ';">' + (t.type === 'Cr' ? 'Rs.' + t.amt.toFixed(2) : '-') + '</td>' +
+              '<td>' + desc + '</td>' +
+              '<td style="color:#cc0000;font-weight:' + (t.type === 'Dr' ? '700' : '400') + ';">' + (t.type === 'Dr' ? 'Rs.' + t.amt.toFixed(2) : '-') + '</td>' +
+              '<td style="color:#006600;font-weight:' + (t.type === 'Cr' ? '700' : '400') + ';">' + (t.type === 'Cr' ? 'Rs.' + t.amt.toFixed(2) : '-') + '</td>' +
               '<td style="font-weight:700;color:' + balColor + ';">' + Math.abs(bal).toFixed(2) + balLabel + '</td></tr>';
           });
         }
-        
+
         // Closing balance — always use p.bal as source of truth
         var closingBal = p.bal;
         var closingColor = closingBal > 0 ? '#cc0000' : closingBal < 0 ? '#006600' : '#333';
         var closingLabel = closingBal > 0 ? ' Dr (Receivable)' : closingBal < 0 ? ' Cr (Payable)' : ' Nil';
         html += '<tr style="background:#d0e8ff;border-top:2px solid #5a7fa8;"><td colspan="4" style="font-weight:700;color:#003366;">Closing Balance</td>' +
           '<td style="font-weight:700;color:' + closingColor + ';font-size:13px;">' + Math.abs(closingBal).toFixed(2) + closingLabel + '</td></tr>';
-        
+
         html += '</tbody></table>' +
           '<div style="margin-top:15px;background:#fffde8;border:1px dashed #8aabcc;padding:10px;">' +
           '<div style="font-weight:700;margin-bottom:8px;color:#003366;">📤 Add Manual Transaction (e.g. Receive Payment)</div>' +
@@ -1635,9 +1673,9 @@
           '<button class="bsm" onclick="saveManualTx(\'' + name + '\')" style="background:linear-gradient(#3a6adc,#0a3a8c);color:#fff;border:none;">Save Tx</button>' +
           '</div></div>' +
           '</div></div>';
-        
+
         var m = document.getElementById('pdm');
-        if(!m) {
+        if (!m) {
           m = document.createElement('div'); m.id = 'pdm'; m.className = 'mo';
           document.body.appendChild(m);
         }
@@ -1650,18 +1688,18 @@
         var amt = parseFloat(g('mtx-amt').value) || 0;
         var type = g('mtx-type').value;
         var date = g('mtx-date').value;
-        
-        if(!desc || amt <= 0) { alert('Sahi description aur amount enter karein!'); return; }
-        
+
+        if (!desc || amt <= 0) { alert('Sahi description aur amount enter karein!'); return; }
+
         var p = G.parties.find(x => x.name === pname);
-        if(!p) return;
-        
-        if(!p.transactions) p.transactions = [];
+        if (!p) return;
+
+        if (!p.transactions) p.transactions = [];
         p.transactions.push({ date: date, desc: desc, type: type, amt: amt });
-        
-        if(type === 'Dr') p.bal = (parseFloat(p.bal)||0) + amt;
-        else p.bal = (parseFloat(p.bal)||0) - amt;
-        
+
+        if (type === 'Dr') p.bal = (parseFloat(p.bal) || 0) + amt;
+        else p.bal = (parseFloat(p.bal) || 0) - amt;
+
         fetch(API_BASE + '/api/saveBill', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ items: G.items, party: p }) // Re-using saveBill route which handles party updates
@@ -1677,9 +1715,9 @@
       }
       function findBillForReturn() {
         var id = g('rsi').value.trim();
-        if(!id.startsWith('SI-')) id = 'SI-' + id;
+        if (!id.startsWith('SI-')) id = 'SI-' + id;
         var b = G.bills.find(x => x.no === id);
-        if(!b) { alert('Bill nahi mila!'); return; }
+        if (!b) { alert('Bill nahi mila!'); return; }
         g('rb-detail').style.display = 'block';
         g('rb-info').innerText = 'Bill: ' + b.no + ' | Cust: ' + b.cust + ' | Date: ' + b.date;
         var tb = g('rtb'); tb.innerHTML = '';
@@ -1706,7 +1744,7 @@
       }
 
       function drr(idx) {
-        if(!confirm('Item nikal dein?')) return;
+        if (!confirm('Item nikal dein?')) return;
         window._currReturnBill.items.splice(idx, 1);
         findBillForReturn_Refresh();
       }
@@ -1728,17 +1766,17 @@
       function processModification() {
         var b_new = window._currReturnBill;
         var b_old = G.bills.find(x => x.no === b_new.no);
-        if(!confirm('Kya aap bill mein ye tabdeeliyaan (changes) save karna chahte hain?')) return;
+        if (!confirm('Kya aap bill mein ye tabdeeliyaan (changes) save karna chahte hain?')) return;
 
         // 1. Revert Old Stock
         b_old.items.forEach(r => {
           var idx = G.items.findIndex(i => i.name === r.name);
-          if(idx >= 0) G.items[idx].stock += r.q;
+          if (idx >= 0) G.items[idx].stock += r.q;
         });
 
         // 2. Revert Old Ledger
         var party = G.parties.find(p => p.name === b_old.cust);
-        if(party) {
+        if (party) {
           party.bal -= parseFloat(b_old.net);
           party.transactions = party.transactions.filter(t => t.desc !== 'Sale Bill ' + b_old.no);
         }
@@ -1746,14 +1784,14 @@
         // 3. Apply New Stock
         b_new.items.forEach(r => {
           var idx = G.items.findIndex(i => i.name === r.name);
-          if(idx >= 0) G.items[idx].stock -= r.q;
+          if (idx >= 0) G.items[idx].stock -= r.q;
         });
 
         // 4. Apply New Ledger
         var new_net = b_new.items.reduce((a, x) => a + x.am, 0);
         b_new.net = new_net;
-        if(party) {
-          party.bal = (parseFloat(party.bal)||0) + parseFloat(new_net);
+        if (party) {
+          party.bal = (parseFloat(party.bal) || 0) + parseFloat(new_net);
           party.transactions.push({ date: tds(), desc: 'Sale Bill ' + b_new.no + ' (Modified)', type: 'Dr', amt: new_net });
         }
 
@@ -1777,31 +1815,31 @@
 
       function processReturn() {
         var b = window._currReturnBill;
-        if(!b) return;
-        if(!confirm('Kya aap waqai ye bill return karna chahte hain? Stock aur Ledger update ho jayenge.')) return;
+        if (!b) return;
+        if (!confirm('Kya aap waqai ye bill return karna chahte hain? Stock aur Ledger update ho jayenge.')) return;
 
         // 1. Update Stock (Item and Batch level)
         b.items.forEach(r => {
           var idx = G.items.findIndex(i => i.name === r.name);
-          if(idx >= 0) {
+          if (idx >= 0) {
             G.items[idx].stock = (parseFloat(G.items[idx].stock) || 0) + (parseFloat(r.q) || 0);
-            if(G.items[idx].batches) {
+            if (G.items[idx].batches) {
               var bt = G.items[idx].batches.find(b2 => b2.bt === r.bt);
-              if(bt) bt.qty = (parseFloat(bt.qty) || 0) + (parseFloat(r.q) || 0);
+              if (bt) bt.qty = (parseFloat(bt.qty) || 0) + (parseFloat(r.q) || 0);
             }
           }
         });
 
         // 2. Update Party Ledger
         var party = G.parties.find(p => p.name === b.cust);
-        if(party) {
-          if(!party.transactions) party.transactions = [];
+        if (party) {
+          if (!party.transactions) party.transactions = [];
           var netSale = b.net_amt ? (b.net_amt - (b.spl_disc || 0)) : (parseFloat(b.net) || 0);
           var alreadyPaid = parseFloat(b.rcvd_amt || 0);
           var netDue = netSale - alreadyPaid;
-          
+
           party.transactions.push({ date: tds(), desc: 'Return Bill ' + b.no, type: 'Cr', amt: netDue });
-          party.bal = (parseFloat(party.bal)||0) - netDue;
+          party.bal = (parseFloat(party.bal) || 0) - netDue;
         }
 
         // 3. Remove Bill
@@ -1815,374 +1853,371 @@
           alert('Return processed successfully!');
           cm('rm'); showDash();
         }).catch(e => {
-           sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-           alert('Return processed locally!');
-           cm('rm'); showDash();
-         });
-       }
-       function showPurch() {
-         var t = tds();
-         setMA('<div id="purch-sc">' +
-           '<div class="sh">Purchase Entry &nbsp;<span>Date: ' + t + '</span></div>' +
-           '<div class="bt">' +
-           '<div class="br"><label>Supplier <input id="psu" list="supplier-list" style="min-width:200px;" placeholder="Supplier Name" oninput="findSupplier()"></label>' +
-           '<datalist id="supplier-list"></datalist>' +
-           '<label>Inv No <input id="pin" style="width:100px;"></label>' +
-           '<label>Date <input id="pdt" value="' + t + '" style="width:72px;"></label>' +
-           '<label style="font-weight:700;color:#002244;">Pay Mode <select id="ppm" style="height:21px;border:1px solid #7799bb;background:#fffde8;font-weight:700;"><option value="Credit">📋 Credit</option><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="Cheque">🏦 Cheque</option></select></label>' +
-           '<div id="sup-bal" style="font-weight:700;color:#c00;font-size:11px;margin-left:8px;"></div></div>' +
-           '</div>' +
-           '<div class="pib">' +
-           '<label>Product <input id="ppn" style="min-width:140px;"></label>' +
-           '<label>Salt <input id="psl" style="width:100px;"></label>' +
-           '<label>Comp <input id="pco" style="width:100px;"></label>' +
-           '<label>Pack <input id="ppk2" style="width:42px;"></label>' +
-           '<label>Batch <input id="pbt2" style="width:58px;"></label>' +
-           '<label>Exp <input id="pex2" style="width:50px;"></label>' +
-           '<label>Qty <input id="pqt2" type="number" value="1" style="width:42px;" oninput="cpv2()"></label>' +
-           '<label>Cost <input id="pcp" type="number" style="width:52px;" oninput="cpv2()"></label>' +
-           '<label>Sell <input id="psp" type="number" style="width:52px;"></label>' +
-           '<label>Amt <input id="pam2" style="width:62px;" readonly></label>' +
-           '<button class="bsm" style="background:linear-gradient(#c0eec0,#7acc7a);font-weight:700;" onclick="addPurchRow()">ADD</button>' +
-           '</div>' +
-           '<div class="cs">' +
-           '<div class="bta">' +
-           '<div class="th"><div class="c1">#</div><div class="c2">Product</div><div class="c3">Salt/Comp</div><div class="c4">Batch/Exp</div><div class="c5">Qty</div><div class="c7">Cost</div><div class="c7">Sell</div><div class="c9">Amount</div></div>' +
-           '<div class="tb2" id="pr2"></div></div>' +
-           '</div>' +
-           '<div class="bf">' +
-           '<div class="fm"><div class="fmr"><label>Total Amt</label><input id="pta" readonly style="font-weight:700;background:#fffde8;"><label style="margin-left:12px;">Paid Amt</label><input id="ppaid" type="number" style="width:80px;" placeholder="0.00"><label style="margin-left:8px;">Due Amt</label><input id="pdue" readonly style="width:80px;background:#ffe8e8;font-weight:700;"></div></div>' +
-           '</div>' +
-           '<div class="ab">' +
-           '<button class="abg" onclick="savePurchaseFull()">Save Purchase</button>' +
-           '<button onclick="G.pi=[];rp();">Clear</button>' +
-           '<button onclick="showDash()">Home</button>' +
-           '</div></div>');
-         
-         var dl = g('supplier-list');
-         if(dl) {
-           dl.innerHTML = '';
-           G.parties.filter(p => p.type === 'Supplier').forEach(p => {
-             var opt = document.createElement('option'); opt.value = p.name; dl.appendChild(opt);
-           });
-         }
-         G.pi = []; rp();
-       }
- 
-       function cpv2() {
-         var q = parseFloat(g('pqt2').value) || 0, c = parseFloat(g('pcp').value) || 0;
-         g('pam2').value = (q * c).toFixed(2);
-       }
- 
-       function addPurchRow() {
-         var nm = g('ppn').value.trim(); if(!nm) { alert('Product name!'); return; }
-         var q = parseFloat(g('pqt2').value) || 0; if(q <= 0) { alert('Qty!'); return; }
-         var sl = g('psl').value, co = g('pco').value, pk = g('ppk2').value, bt = g('pbt2').value, ex = g('pex2').value;
-         var cp = parseFloat(g('pcp').value) || 0, sp = parseFloat(g('psp').value) || 0, am = q * cp;
-         G.pi.push({ sno: G.pi.length + 1, name: nm, salt: sl, comp: co, pk, bt, ex, q, cp, sp, am });
-         rp();
-         ['ppn', 'psl', 'pco', 'ppk2', 'pbt2', 'pex2', 'pcp', 'psp', 'pam2'].forEach(id => g(id).value = '');
-         g('pqt2').value = 1; g('ppn').focus();
-       }
- 
-       function rp() {
-         var c = g('pr2'); if(!c) return; c.innerHTML = '';
-         var tot = 0;
-         G.pi.forEach((r, i) => {
-           tot += r.am;
-           var d = document.createElement('div'); d.className = 'tr';
-           d.innerHTML = '<div class="c1">' + r.sno + '</div><div class="c2">' + r.name + '</div><div class="c3">' + r.salt + '/' + r.comp + '</div>' +
-             '<div class="c4">' + r.bt + ' ' + r.ex + '</div><div class="c5">' + r.q + '</div><div class="c7">' + r.cp.toFixed(2) + '</div>' +
-             '<div class="c7">' + r.sp.toFixed(2) + '</div><div class="c9">' + r.am.toFixed(2) + '</div>';
-           d.ondblclick = function() { G.pi.splice(i, 1); G.pi.forEach((x, j) => x.sno = j + 1); rp(); };
-           c.appendChild(d);
-         });
-         if(g('pta')) g('pta').value = tot.toFixed(2);
-         // Auto-update Due Amt
-         var paidEl = g('ppaid'); var dueEl = g('pdue');
-         if(paidEl && dueEl) {
-           var paid = parseFloat(paidEl.value) || 0;
-           dueEl.value = Math.max(0, tot - paid).toFixed(2);
-           paidEl.oninput = function() { dueEl.value = Math.max(0, tot - (parseFloat(paidEl.value)||0)).toFixed(2); };
-         }
-       }
- 
-       function findSupplier() {
-         var su = (g('psu') || {value:''}).value.trim();
-         var party = G.parties.find(p => p.name === su && p.type === 'Supplier');
-         var sb = g('sup-bal');
-         if(party && sb) {
-           var balAmt = Math.abs(party.bal).toFixed(2);
-           var balType = party.bal < 0 ? ' (Payable)' : ' (Advance)';
-           sb.innerText = 'Supplier Bal: Rs.' + balAmt + balType;
-           sb.style.color = party.bal < 0 ? '#cc0000' : '#006600';
-         } else if(sb) { sb.innerText = ''; }
-       }
+          sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+          alert('Return processed locally!');
+          cm('rm'); showDash();
+        });
+      }
+      function showPurch() {
+        var t = tds();
+        setMA('<div id="purch-sc">' +
+          '<div class="sh">Purchase Entry &nbsp;<span>Date: ' + t + '</span></div>' +
+          '<div class="bt">' +
+          '<div class="br"><label>Supplier <input id="psu" list="supplier-list" style="min-width:200px;" placeholder="Supplier Name" oninput="findSupplier()"></label>' +
+          '<datalist id="supplier-list"></datalist>' +
+          '<label>Inv No <input id="pin" style="width:100px;"></label>' +
+          '<label>Date <input id="pdt" value="' + t + '" style="width:72px;"></label>' +
+          '<label style="font-weight:700;color:#002244;">Pay Mode <select id="ppm" style="height:21px;border:1px solid #7799bb;background:#fffde8;font-weight:700;"><option value="Credit">📋 Credit</option><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="Cheque">🏦 Cheque</option></select></label>' +
+          '<div id="sup-bal" style="font-weight:700;color:#c00;font-size:11px;margin-left:8px;"></div></div>' +
+          '</div>' +
+          '<div class="pib">' +
+          '<label>Product <input id="ppn" style="min-width:140px;"></label>' +
+          '<label>Salt <input id="psl" style="width:100px;"></label>' +
+          '<label>Comp <input id="pco" style="width:100px;"></label>' +
+          '<label>Pack <input id="ppk2" style="width:42px;"></label>' +
+          '<label>Batch <input id="pbt2" style="width:58px;"></label>' +
+          '<label>Exp <input id="pex2" style="width:50px;"></label>' +
+          '<label>Qty <input id="pqt2" type="number" value="1" style="width:42px;" oninput="cpv2()"></label>' +
+          '<label>Cost <input id="pcp" type="number" style="width:52px;" oninput="cpv2()"></label>' +
+          '<label>Sell <input id="psp" type="number" style="width:52px;"></label>' +
+          '<label>Amt <input id="pam2" style="width:62px;" readonly></label>' +
+          '<button class="bsm" style="background:linear-gradient(#c0eec0,#7acc7a);font-weight:700;" onclick="addPurchRow()">ADD</button>' +
+          '</div>' +
+          '<div class="cs">' +
+          '<div class="bta">' +
+          '<div class="th"><div class="c1">#</div><div class="c2">Product</div><div class="c3">Salt/Comp</div><div class="c4">Batch/Exp</div><div class="c5">Qty</div><div class="c7">Cost</div><div class="c7">Sell</div><div class="c9">Amount</div></div>' +
+          '<div class="tb2" id="pr2"></div></div>' +
+          '</div>' +
+          '<div class="bf">' +
+          '<div class="fm"><div class="fmr"><label>Total Amt</label><input id="pta" readonly style="font-weight:700;background:#fffde8;"><label style="margin-left:12px;">Paid Amt</label><input id="ppaid" type="number" style="width:80px;" placeholder="0.00"><label style="margin-left:8px;">Due Amt</label><input id="pdue" readonly style="width:80px;background:#ffe8e8;font-weight:700;"></div></div>' +
+          '</div>' +
+          '<div class="ab">' +
+          '<button class="abg" onclick="savePurchaseFull()">Save Purchase</button>' +
+          '<button onclick="G.pi=[];rp();">Clear</button>' +
+          '<button onclick="showDash()">Home</button>' +
+          '</div></div>');
 
-       function savePurchaseFull() {
-         if(G.pi.length === 0) { alert('Items add karein!'); return; }
-         var su = g('psu').value || 'Unknown Supplier', inv = g('pin').value || 'INV-' + Date.now();
-         var tot = parseFloat(g('pta').value) || 0;
-         var ppmEl = g('ppm'); var pm = ppmEl ? ppmEl.value : 'Credit';
-         var paid = parseFloat((g('ppaid') || {value:'0'}).value) || 0;
-         var due = Math.max(0, tot - paid);
-         
-         var p_bill = { no: inv, date: tds(), supplier: su, pay_mode: pm, paid: paid, due: due, items: JSON.parse(JSON.stringify(G.pi)), total: tot };
-         
-         var old_p = G.purchases.find(x => x.no === inv);
-         if(old_p) {
-           old_p.items.forEach(p => {
-             var idx = G.items.findIndex(i => i.name.toLowerCase() === p.name.toLowerCase());
-             if(idx >= 0) {
-               G.items[idx].stock = Math.max(0, G.items[idx].stock - p.q);
-               // Revert batch qty too
-               if(G.items[idx].batches) {
-                 G.items[idx].batches.forEach(bt => { if(bt.b === p.bt) bt.qty = Math.max(0, bt.qty - p.q); });
-               }
-             }
-           });
-           G.purchases = G.purchases.filter(x => x.no !== inv);
-         }
-         
-         G.purchases.push(p_bill);
- 
-         G.pi.forEach(p => {
-           var idx = G.items.findIndex(i => i.name.toLowerCase() === p.name.toLowerCase());
-           if(idx >= 0) {
-             G.items[idx].stock += p.q;
-             if(!G.items[idx].batches) G.items[idx].batches = [];
-             // Check if batch exists, update qty; else add new
-             var existBt = G.items[idx].batches.find(b => b.b === p.bt);
-             if(existBt) { existBt.qty += p.q; existBt.cost = p.cp; }
-             else G.items[idx].batches.push({ b: p.bt, exp: p.ex, qty: p.q, cost: p.cp });
-             G.items[idx].rate = p.sp;
-           } else {
-             G.items.push({ id: 'P-' + (G.items.length + 1000), name: p.name, salt: p.salt, company: p.comp, pack: p.pk, stock: p.q, rate: p.sp, mrp: p.sp, gst: 0, batches: [{ b: p.bt, exp: p.ex, qty: p.q, cost: p.cp }] });
-           }
-         });
- 
-         var party = G.parties.find(p => p.name === su);
-         if(!party) { party = { name: su, type: 'Supplier', bal: 0, transactions: [] }; G.parties.push(party); }
-         if(!party.transactions) party.transactions = [];
-         // Credit entry = we owe supplier
-         party.transactions.push({ date: tds(), desc: 'Purchase Inv ' + inv + ' [' + pm + ']', type: 'Cr', amt: tot });
-         party.bal -= tot;
-         // If partial payment made, record as Dr (we paid)
-         if(paid > 0) {
-           party.transactions.push({ date: tds(), desc: 'Payment against ' + inv + ' [' + pm + ']', type: 'Dr', amt: paid });
-           party.bal += paid;
-         }
- 
-         fetch(API_BASE + '/api/savePurchase', {
-           method: 'POST', headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ purchase: p_bill, items: G.items, party: party })
-         }).then(r => r.json()).then(d => {
-           sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-           alert('Purchase saved! [' + pm + '] | Paid: Rs.' + paid.toFixed(2) + ' | Due: Rs.' + due.toFixed(2));
-           showDash();
-         }).catch(e => {
-           sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-           alert('Saved locally! [' + pm + ']'); showDash();
-         });
-       }
-
-       function showPurchHist() {
-         var tb = g('hb'); tb.innerHTML = '';
-         if (G.purchases.length === 0) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">No purchases yet</td></tr>'; }
-         G.purchases.slice().reverse().forEach(function (p) {
-           var tr = document.createElement('tr');
-           tr.innerHTML = '<td>' + p.no + '</td><td>' + p.date + '</td><td>' + p.supplier + '</td><td>' + p.items.length + '</td><td>Rs.' + parseFloat(p.total).toFixed(2) + '</td>' +
-             '<td><button class="bsm" style="background:linear-gradient(#eef,#ccf);border:1px solid #668;margin-right:4px;padding:2px 8px;cursor:pointer;">LOAD</button>' +
-             '<button class="bsm" style="background:linear-gradient(#f88,#d33);color:#fff;border:1px solid #833;padding:2px 8px;cursor:pointer;">DEL</button></td>';
-           var btns = tr.querySelectorAll('button');
-           btns[0].onclick = function() { loadPB(p.no); };
-           btns[1].onclick = function() { delPB(p.no); };
-           tb.appendChild(tr);
-         });
-         var mh = document.querySelector('#hm .mh'); if(mh) mh.innerHTML = 'Purchase History <span onclick="cm(\'hm\')">&#10006;</span>';
-         document.getElementById('hm').classList.add('show');
-       }
-
-       function delPB(no) {
-         if (!confirm('Delete purchase ' + no + '?')) return;
-         
-         // 1. Local data find karein
-         var p = G.purchases.find(x => x.no === no);
-         if (!p) { alert('Purchase data nahi mila!'); return; }
-
-         // 2. Stock revert karein
-         p.items.forEach(r => {
-           var idx = G.items.findIndex(i => i.name.toLowerCase() === r.name.toLowerCase());
-           if (idx >= 0) G.items[idx].stock -= r.q;
-         });
-
-         // 3. Supplier Ledger revert karein
-         var party = G.parties.find(x => x.name === p.supplier);
-         if (party) {
-           var netEffect = (parseFloat(p.total)||0) - (parseFloat(p.paid)||0); party.bal += netEffect;
-           if(party.transactions) {
-             party.transactions = party.transactions.filter(t => !t.desc.includes(no));
-           }
-         }
-
-         // 4. Local array se delete karein
-         G.purchases = G.purchases.filter(x => x.no !== no);
-
-         // 5. Server sync
-         fetch(API_BASE + '/api/savePurchase', { 
-           method: 'POST', 
-           headers: { 'Content-Type': 'application/json' }, 
-           body: JSON.stringify({ 
-             purchase_delete: no, 
-             items: G.items, 
-             party: party 
-           }) 
-         }).then(function(r) { return r.json(); })
-         .then(function(res) {
-           sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-           alert('Purchase ' + no + ' deleted successfully!');
-           showPurchHist(); 
-         }).catch(function(err) {
-           console.error('Sync failed:', err);
-           sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-           alert('Deleted locally! (Server offline)');
-           showPurchHist();
-         });
-       }
-
-       function loadPB(no) {
-         var p = G.purchases.find(function (x) { return x.no === no; }); if (!p) return;
-         showPurch(); 
-         var attempts = 0;
-         var itv = setInterval(function () {
-           if (g('psu')) {
-             clearInterval(itv);
-             se('psu', p.supplier); se('pin', p.no); se('pdt', p.date);
-             G.pi = JSON.parse(JSON.stringify(p.items));
-             rp();
-             cm('hm');
-           }
-           if (++attempts > 20) clearInterval(itv);
-         }, 50);
-       }
-
-       function showHist() {
-         var tb = g('hb'); tb.innerHTML = '';
-         if (G.bills.length === 0) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">No bills yet</td></tr>'; }
-         G.bills.slice().reverse().forEach(function (b) {
-           var pm = b.pay_mode || 'N/A';
-           var pmColor = pm === 'Cash' ? '#006600' : pm === 'Credit' ? '#cc4400' : pm === 'Online' ? '#003399' : '#555';
-           var tr = document.createElement('tr');
-           tr.innerHTML = '<td>' + b.no + '</td><td>' + b.date + '</td>' +
-             '<td>' + b.cust + (b.phone ? '<br><span style="font-size:10px;color:#555;">' + b.phone + '</span>' : '') + '</td>' +
-             '<td>' + b.items.length + '</td><td>Rs.' + (b.net_amt ? (b.net_amt - (b.spl_disc||0)) : (parseFloat(b.net)||0)).toFixed(2) + '</td>' +
-             '<td style="font-weight:700;color:' + pmColor + ';">' + pm + '</td>' +
-             '<td><button class="bsm" style="background:linear-gradient(#eef,#ccf);border:1px solid #668;margin-right:4px;padding:2px 8px;cursor:pointer;">LOAD</button>' +
-             '<button class="bsm" style="background:linear-gradient(#f88,#d33);color:#fff;border:1px solid #833;padding:2px 8px;cursor:pointer;">DEL</button></td>';
-           var btns = tr.querySelectorAll('button');
-           btns[0].onclick = function() { loadB(b.no); };
-           btns[1].onclick = function() { delB(b.no); };
-           tb.appendChild(tr);
-         });
-         var mh = document.querySelector('#hm .mh'); if(mh) mh.innerHTML = 'Sale Bill History <span onclick="cm(\'hm\')">&#10006;</span>';
-         document.getElementById('hm').classList.add('show');
-       }
-
-       function loadB(no) {
-         var b = G.bills.find(function (x) { return x.no === no; }); if (!b) return;
-         showSale(); 
-         var attempts = 0;
-         var itv = setInterval(function () {
-           if (g('bid')) {
-             clearInterval(itv);
-             se('bid', b.no); se('bcu', b.cust);
-             G.bi = JSON.parse(JSON.stringify(b.items));
-             rr(); cf();
-             cm('hm');
-           }
-           if (++attempts > 20) clearInterval(itv);
-         }, 50);
-       }
-
-       function delB(no) {
-         if (!confirm('Delete bill ' + no + '?')) return;
-         
-         // 1. Local data find karein
-         var b = G.bills.find(x => x.no === no);
-         if (!b) { alert('Bill data nahi mila!'); return; }
-
-         // 2. Stock revert karein
-         b.items.forEach(r => {
-           var idx = G.items.findIndex(i => i.name === r.name);
-           if (idx >= 0) G.items[idx].stock += r.q;
-         });
-
-         // 3. Party balance revert karein
-         var party = G.parties.find(p => p.name === b.cust);
-         if (party) {
-           var netSale = b.net_amt ? (b.net_amt - (b.spl_disc || 0)) : (parseFloat(b.net) || 0); var alreadyPaid = parseFloat(b.rcvd_amt || 0); party.bal = (parseFloat(party.bal)||0) - (netSale - alreadyPaid);
-           if(party.transactions) {
-             party.transactions = party.transactions.filter(t => !t.desc.includes(no));
-           }
-         }
-
-         // 4. Local array se delete karein
-         G.bills = G.bills.filter(x => x.no !== no);
-
-         // 5. Server sync
-         fetch(API_BASE + '/api/saveBill', { 
-           method: 'POST', 
-           headers: { 'Content-Type': 'application/json' }, 
-           body: JSON.stringify({ 
-             bill_delete: no, 
-             items: G.items, 
-             party: party 
-           }) 
-         }).then(function(r) { return r.json(); })
-         .then(function(res) {
-           sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-           alert('Bill ' + no + ' deleted successfully!');
-           showHist(); // Refresh history view
-         }).catch(function(err) {
-           console.error('Sync failed:', err);
-           sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-           alert('Deleted locally! (Server offline)');
-           showHist();
-         });
-       }
-
-        function showCompanyProfile() {
-          g('cp-name').value = G.profile.name || '';
-          g('cp-phone').value = G.profile.phone || '';
-          g('cp-addr').value = G.profile.addr || '';
-          g('cp-ntn').value = G.profile.ntn || '';
-          document.getElementById('cpm').classList.add('show');
+        var dl = g('supplier-list');
+        if (dl) {
+          dl.innerHTML = G.parties.filter(p => p.type === 'Supplier').map(p => '<option value="' + p.name + '">' + p.name + '</option>').join('');
         }
+        G.pi = []; rp();
+      }
 
-        function saveCompanyProfile() {
-          var name = g('cp-name').value.trim();
-          if(!name) { alert('Company Name zaroori hai!'); return; }
-          G.profile = {
-            name: name,
-            phone: g('cp-phone').value.trim(),
-            addr: g('cp-addr').value.trim(),
-            ntn: g('cp-ntn').value.trim()
-          };
-          
-          fetch(API_BASE + '/api/saveProfile', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ profile: G.profile })
-          }).then(r => r.json()).then(d => {
-            alert('Profile saved successfully!');
-            cm('cpm');
-          }).catch(e => {
-            sv('mg2_profile', G.profile);
-            alert('Profile saved locally!');
-            cm('cpm');
+      function cpv2() {
+        var q = parseFloat(g('pqt2').value) || 0, c = parseFloat(g('pcp').value) || 0;
+        g('pam2').value = (q * c).toFixed(2);
+      }
+
+      function addPurchRow() {
+        var nm = g('ppn').value.trim(); if (!nm) { alert('Product name!'); return; }
+        var q = parseFloat(g('pqt2').value) || 0; if (q <= 0) { alert('Qty!'); return; }
+        var sl = g('psl').value, co = g('pco').value, pk = g('ppk2').value, bt = g('pbt2').value, ex = g('pex2').value;
+        var cp = parseFloat(g('pcp').value) || 0, sp = parseFloat(g('psp').value) || 0, am = q * cp;
+        G.pi.push({ sno: G.pi.length + 1, name: nm, salt: sl, comp: co, pk, bt, ex, q, cp, sp, am });
+        rp();
+        ['ppn', 'psl', 'pco', 'ppk2', 'pbt2', 'pex2', 'pcp', 'psp', 'pam2'].forEach(id => g(id).value = '');
+        g('pqt2').value = 1; g('ppn').focus();
+      }
+
+      function rp() {
+        var c = g('pr2'); if (!c) return; c.innerHTML = '';
+        var tot = 0;
+        G.pi.forEach((r, i) => {
+          tot += r.am;
+          var d = document.createElement('div'); d.className = 'tr';
+          d.innerHTML = '<div class="c1">' + r.sno + '</div><div class="c2">' + r.name + '</div><div class="c3">' + r.salt + '/' + r.comp + '</div>' +
+            '<div class="c4">' + r.bt + ' ' + r.ex + '</div><div class="c5">' + r.q + '</div><div class="c7">' + r.cp.toFixed(2) + '</div>' +
+            '<div class="c7">' + r.sp.toFixed(2) + '</div><div class="c9">' + r.am.toFixed(2) + '</div>';
+          d.ondblclick = function () { G.pi.splice(i, 1); G.pi.forEach((x, j) => x.sno = j + 1); rp(); };
+          c.appendChild(d);
+        });
+        if (g('pta')) g('pta').value = tot.toFixed(2);
+        // Auto-update Due Amt
+        var paidEl = g('ppaid'); var dueEl = g('pdue');
+        if (paidEl && dueEl) {
+          var paid = parseFloat(paidEl.value) || 0;
+          dueEl.value = Math.max(0, tot - paid).toFixed(2);
+          paidEl.oninput = function () { dueEl.value = Math.max(0, tot - (parseFloat(paidEl.value) || 0)).toFixed(2); };
+        }
+      }
+
+      function findSupplier() {
+        var su = (g('psu') || { value: '' }).value.trim();
+        var party = G.parties.find(p => p.name === su && p.type === 'Supplier');
+        var sb = g('sup-bal');
+        if (party && sb) {
+          var balAmt = Math.abs(party.bal).toFixed(2);
+          var balType = party.bal < 0 ? ' (Payable)' : ' (Advance)';
+          sb.innerText = 'Supplier Bal: Rs.' + balAmt + balType;
+          sb.style.color = party.bal < 0 ? '#cc0000' : '#006600';
+        } else if (sb) { sb.innerText = ''; }
+      }
+
+      function savePurchaseFull() {
+        if (G.pi.length === 0) { alert('Items add karein!'); return; }
+        var su = g('psu').value || 'Unknown Supplier', inv = g('pin').value || 'INV-' + Date.now();
+        var tot = parseFloat(g('pta').value) || 0;
+        var ppmEl = g('ppm'); var pm = ppmEl ? ppmEl.value : 'Credit';
+        var paid = parseFloat((g('ppaid') || { value: '0' }).value) || 0;
+        var due = Math.max(0, tot - paid);
+
+        var p_bill = { no: inv, date: tds(), supplier: su, pay_mode: pm, paid: paid, due: due, items: JSON.parse(JSON.stringify(G.pi)), total: tot };
+
+        var old_p = G.purchases.find(x => x.no === inv);
+        if (old_p) {
+          old_p.items.forEach(p => {
+            var idx = G.items.findIndex(i => i.name.toLowerCase() === p.name.toLowerCase());
+            if (idx >= 0) {
+              G.items[idx].stock = Math.max(0, G.items[idx].stock - p.q);
+              // Revert batch qty too
+              if (G.items[idx].batches) {
+                G.items[idx].batches.forEach(bt => { if (bt.b === p.bt) bt.qty = Math.max(0, bt.qty - p.q); });
+              }
+            }
           });
+          G.purchases = G.purchases.filter(x => x.no !== inv);
         }
 
-       window.onload = function () {
+        G.purchases.push(p_bill);
+
+        G.pi.forEach(p => {
+          var idx = G.items.findIndex(i => i.name.toLowerCase() === p.name.toLowerCase());
+          if (idx >= 0) {
+            G.items[idx].stock += p.q;
+            if (!G.items[idx].batches) G.items[idx].batches = [];
+            // Check if batch exists, update qty; else add new
+            var existBt = G.items[idx].batches.find(b => b.b === p.bt);
+            if (existBt) { existBt.qty += p.q; existBt.cost = p.cp; }
+            else G.items[idx].batches.push({ b: p.bt, exp: p.ex, qty: p.q, cost: p.cp });
+            G.items[idx].rate = p.sp;
+          } else {
+            G.items.push({ id: 'P-' + (G.items.length + 1000), name: p.name, salt: p.salt, company: p.comp, pack: p.pk, stock: p.q, rate: p.sp, mrp: p.sp, gst: 0, batches: [{ b: p.bt, exp: p.ex, qty: p.q, cost: p.cp }] });
+          }
+        });
+
+        var party = G.parties.find(p => p.name === su);
+        if (!party) { party = { name: su, type: 'Supplier', bal: 0, transactions: [] }; G.parties.push(party); }
+        if (!party.transactions) party.transactions = [];
+        // Credit entry = we owe supplier
+        party.transactions.push({ date: tds(), desc: 'Purchase Inv ' + inv + ' [' + pm + ']', type: 'Cr', amt: tot });
+        party.bal -= tot;
+        // If partial payment made, record as Dr (we paid)
+        if (paid > 0) {
+          party.transactions.push({ date: tds(), desc: 'Payment against ' + inv + ' [' + pm + ']', type: 'Dr', amt: paid });
+          party.bal += paid;
+        }
+
+        fetch(API_BASE + '/api/savePurchase', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ purchase: p_bill, items: G.items, party: party })
+        }).then(r => r.json()).then(d => {
+          sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+          alert('Purchase saved! [' + pm + '] | Paid: Rs.' + paid.toFixed(2) + ' | Due: Rs.' + due.toFixed(2));
+          showDash();
+        }).catch(e => {
+          sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+          alert('Saved locally! [' + pm + ']'); showDash();
+        });
+      }
+
+      function showPurchHist() {
+        var tb = g('hb'); tb.innerHTML = '';
+        if (G.purchases.length === 0) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">No purchases yet</td></tr>'; }
+        G.purchases.slice().reverse().forEach(function (p) {
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + p.no + '</td><td>' + p.date + '</td><td>' + p.supplier + '</td><td>' + p.items.length + '</td><td>Rs.' + parseFloat(p.total).toFixed(2) + '</td>' +
+            '<td><button class="bsm" style="background:linear-gradient(#eef,#ccf);border:1px solid #668;margin-right:4px;padding:2px 8px;cursor:pointer;">LOAD</button>' +
+            '<button class="bsm" style="background:linear-gradient(#f88,#d33);color:#fff;border:1px solid #833;padding:2px 8px;cursor:pointer;">DEL</button></td>';
+          var btns = tr.querySelectorAll('button');
+          btns[0].onclick = function () { loadPB(p.no); };
+          btns[1].onclick = function () { delPB(p.no); };
+          tb.appendChild(tr);
+        });
+        var mh = document.querySelector('#hm .mh'); if (mh) mh.innerHTML = 'Purchase History <span onclick="cm(\'hm\')">&#10006;</span>';
+        document.getElementById('hm').classList.add('show');
+      }
+
+      function delPB(no) {
+        if (!confirm('Delete purchase ' + no + '?')) return;
+
+        // 1. Local data find karein
+        var p = G.purchases.find(x => x.no === no);
+        if (!p) { alert('Purchase data nahi mila!'); return; }
+
+        // 2. Stock revert karein
+        p.items.forEach(r => {
+          var idx = G.items.findIndex(i => i.name.toLowerCase() === r.name.toLowerCase());
+          if (idx >= 0) G.items[idx].stock -= r.q;
+        });
+
+        // 3. Supplier Ledger revert karein
+        var party = G.parties.find(x => x.name === p.supplier);
+        if (party) {
+          var netEffect = (parseFloat(p.total) || 0) - (parseFloat(p.paid) || 0); party.bal += netEffect;
+          if (party.transactions) {
+            party.transactions = party.transactions.filter(t => !t.desc.includes(no));
+          }
+        }
+
+        // 4. Local array se delete karein
+        G.purchases = G.purchases.filter(x => x.no !== no);
+
+        // 5. Server sync
+        fetch(API_BASE + '/api/savePurchase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            purchase_delete: no,
+            items: G.items,
+            party: party
+          })
+        }).then(function (r) { return r.json(); })
+          .then(function (res) {
+            sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+            alert('Purchase ' + no + ' deleted successfully!');
+            showPurchHist();
+          }).catch(function (err) {
+            console.error('Sync failed:', err);
+            sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+            alert('Deleted locally! (Server offline)');
+            showPurchHist();
+          });
+      }
+
+      function loadPB(no) {
+        var p = G.purchases.find(function (x) { return x.no === no; }); if (!p) return;
+        showPurch();
+        var attempts = 0;
+        var itv = setInterval(function () {
+          if (g('psu')) {
+            clearInterval(itv);
+            se('psu', p.supplier); se('pin', p.no); se('pdt', p.date);
+            G.pi = JSON.parse(JSON.stringify(p.items));
+            rp();
+            cm('hm');
+          }
+          if (++attempts > 20) clearInterval(itv);
+        }, 50);
+      }
+
+      function showHist() {
+        var tb = g('hb'); tb.innerHTML = '';
+        if (G.bills.length === 0) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">No bills yet</td></tr>'; }
+        G.bills.slice().reverse().forEach(function (b) {
+          var pm = b.pay_mode || 'N/A';
+          var pmColor = pm === 'Cash' ? '#006600' : pm === 'Credit' ? '#cc4400' : pm === 'Online' ? '#003399' : '#555';
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + b.no + '</td><td>' + b.date + '</td>' +
+            '<td>' + b.cust + (b.phone ? '<br><span style="font-size:10px;color:#555;">' + b.phone + '</span>' : '') + '</td>' +
+            '<td>' + b.items.length + '</td><td>Rs.' + (b.net_amt ? (b.net_amt - (b.spl_disc || 0)) : (parseFloat(b.net) || 0)).toFixed(2) + '</td>' +
+            '<td style="font-weight:700;color:' + pmColor + ';">' + pm + '</td>' +
+            '<td><button class="bsm" style="background:linear-gradient(#eef,#ccf);border:1px solid #668;margin-right:4px;padding:2px 8px;cursor:pointer;">LOAD</button>' +
+            '<button class="bsm" style="background:linear-gradient(#f88,#d33);color:#fff;border:1px solid #833;padding:2px 8px;cursor:pointer;">DEL</button></td>';
+          var btns = tr.querySelectorAll('button');
+          btns[0].onclick = function () { loadB(b.no); };
+          btns[1].onclick = function () { delB(b.no); };
+          tb.appendChild(tr);
+        });
+        var mh = document.querySelector('#hm .mh'); if (mh) mh.innerHTML = 'Sale Bill History <span onclick="cm(\'hm\')">&#10006;</span>';
+        document.getElementById('hm').classList.add('show');
+      }
+
+      function loadB(no) {
+        var b = G.bills.find(function (x) { return x.no === no; }); if (!b) return;
+        showSale();
+        var attempts = 0;
+        var itv = setInterval(function () {
+          if (g('bid')) {
+            clearInterval(itv);
+            se('bid', b.no); se('bcu', b.cust);
+            G.bi = JSON.parse(JSON.stringify(b.items));
+            rr(); cf();
+            cm('hm');
+          }
+          if (++attempts > 20) clearInterval(itv);
+        }, 50);
+      }
+
+      function delB(no) {
+        if (!confirm('Delete bill ' + no + '?')) return;
+
+        // 1. Local data find karein
+        var b = G.bills.find(x => x.no === no);
+        if (!b) { alert('Bill data nahi mila!'); return; }
+
+        // 2. Stock revert karein
+        b.items.forEach(r => {
+          var idx = G.items.findIndex(i => i.name === r.name);
+          if (idx >= 0) G.items[idx].stock += r.q;
+        });
+
+        // 3. Party balance revert karein
+        var party = G.parties.find(p => p.name === b.cust);
+        if (party) {
+          var netSale = b.net_amt ? (b.net_amt - (b.spl_disc || 0)) : (parseFloat(b.net) || 0); var alreadyPaid = parseFloat(b.rcvd_amt || 0); party.bal = (parseFloat(party.bal) || 0) - (netSale - alreadyPaid);
+          if (party.transactions) {
+            party.transactions = party.transactions.filter(t => !t.desc.includes(no));
+          }
+        }
+
+        // 4. Local array se delete karein
+        G.bills = G.bills.filter(x => x.no !== no);
+
+        // 5. Server sync
+        fetch(API_BASE + '/api/saveBill', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bill_delete: no,
+            items: G.items,
+            party: party
+          })
+        }).then(function (r) { return r.json(); })
+          .then(function (res) {
+            sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+            alert('Bill ' + no + ' deleted successfully!');
+            showHist(); // Refresh history view
+          }).catch(function (err) {
+            console.error('Sync failed:', err);
+            sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+            alert('Deleted locally! (Server offline)');
+            showHist();
+          });
+      }
+
+      function showCompanyProfile() {
+        g('cp-name').value = G.profile.name || '';
+        g('cp-phone').value = G.profile.phone || '';
+        g('cp-addr').value = G.profile.addr || '';
+        g('cp-ntn').value = G.profile.ntn || '';
+        document.getElementById('cpm').classList.add('show');
+      }
+
+      function saveCompanyProfile() {
+        var name = g('cp-name').value.trim();
+        if (!name) { alert('Company Name zaroori hai!'); return; }
+        G.profile = {
+          name: name,
+          phone: g('cp-phone').value.trim(),
+          addr: g('cp-addr').value.trim(),
+          ntn: g('cp-ntn').value.trim()
+        };
+
+        fetch(API_BASE + '/api/saveProfile', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profile: G.profile })
+        }).then(r => r.json()).then(d => {
+          alert('Profile saved successfully!');
+          cm('cpm');
+        }).catch(e => {
+          sv('mg2_profile', G.profile);
+          alert('Profile saved locally!');
+          cm('cpm');
+        });
+      }
+
+      window.onload = function () {
         fetch(API_BASE + '/api/data')
           .then(function (r) { return r.json(); })
           .then(function (d) {
@@ -2204,7 +2239,7 @@
             var lp = ld('mg2_parties', null); if (lp) G.parties = lp;
             var lcp = ld('mg2_profile', null); if (lcp) G.profile = lcp;
             var lpu = ld('mg2_purchases', null); if (lpu) G.purchases = lpu;
-            
+
             var s = ld('mg2_sess', {});
             if (s.on) { document.getElementById('ls').style.display = 'none'; var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN') + ' (Local Mode)'; showDash(); }
           });
