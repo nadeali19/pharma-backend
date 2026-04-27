@@ -1216,17 +1216,18 @@
         G.bi.forEach(function (r) { gr += r.veg; gt += r.ga; tq += r.q; });
         var nt = gr + gt, sg = gt / 2, cg = gt / 2;
         se('fg', gr.toFixed(2)); se('fsg', sg.toFixed(2)); se('fcg', cg.toFixed(2)); se('fn', nt.toFixed(2));
-        se('fnr', nt.toFixed(2)); se('ftq', tq);
+        se('ftq', tq);
         se('fac', G.bi.length > 0 ? (gr / G.bi.length).toFixed(2) : '0.00'); se('fmg', '0.00');
+        rrf(); // Use rrf to centralize Net Receivable calculation
       }
 
       function rrf() {
         var nt = parseFloat((g('fn') || { value: 0 }).value) || 0,
           sd = parseFloat((g('fsd') || { value: 0 }).value) || 0,
-          ra = parseFloat((g('fra') || { value: 0 }).value) || 0;
+          pb = parseFloat((g('fpd') || { value: 0 }).value) || 0;
         var fnr = g('fnr');
         if (fnr) {
-          var netRecv = Math.max(0, nt - sd);
+          var netRecv = Math.max(0, nt + pb - sd);
           fnr.value = netRecv.toFixed(2);
         }
       }
@@ -1310,10 +1311,12 @@
         var no = (g('bid') || { value: 'SI-?' }).value;
         var pmEl = g('bpm'); var pm = pmEl ? pmEl.value : 'Cash';
 
-        // Find or create party (match by name+phone for uniqueness)
-        var party = G.parties.find(p => p.name === cu && (ph ? p.phone === ph : true));
-        if (!party) party = G.parties.find(p => p.name === cu);
-        if (!party && cu !== 'Cash') {
+        // Find or create party (case-insensitive lookup)
+        var cu_lower = cu.toLowerCase();
+        var party = G.parties.find(p => p.name.toLowerCase() === cu_lower && (ph ? p.phone === ph : true));
+        if (!party) party = G.parties.find(p => p.name.toLowerCase() === cu_lower);
+
+        if (!party && cu_lower !== 'cash') {
           party = { name: cu, type: 'Customer', phone: ph, bal: 0, transactions: [] };
           G.parties.push(party);
         }
@@ -1350,6 +1353,10 @@
           rcvd_amt: parseFloat((g('fra') || { value: 0 }).value) || 0
         };
         var finalNet = parseFloat(newB.net_amt - newB.spl_disc);
+
+        if (!party && newB.rcvd_amt < finalNet && cu_lower === 'cash') {
+          if (!confirm('This is a partial payment on a "Cash" bill. To track the remaining balance (Rs.' + (finalNet - newB.rcvd_amt).toFixed(2) + ') in the ledger, please enter a Customer Name. Continue anyway?')) return;
+        }
         G.bills.push(newB);
         G.nbn++;
 
@@ -2131,8 +2138,9 @@
           if (g('bid')) {
             clearInterval(itv);
             se('bid', b.no); se('bcu', b.cust);
+            if (b.phone) se('bph', b.phone);
             G.bi = JSON.parse(JSON.stringify(b.items));
-            rr(); cf();
+            rr(); cf(); findParty(); // Trigger balance lookup
             cm('hm');
           }
           if (++attempts > 20) clearInterval(itv);
