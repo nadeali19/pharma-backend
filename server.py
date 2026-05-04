@@ -145,6 +145,24 @@ def save_profile():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/manageMedicine', methods=['POST'])
+def manage_medicine():
+    if db is None:
+        return jsonify({"error": "Database not connected"}), 503
+    try:
+        data = request.json
+        item_delete = data.get('item_delete')
+        item_update = data.get('item_update')
+        
+        if item_delete:
+            db.items.delete_one({"id": item_delete})
+        if item_update:
+            db.items.update_one({"id": item_update["id"]}, {"$set": item_update}, upsert=True)
+            
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/saveBill', methods=['POST'])
 def save_bill():
     if db is None:

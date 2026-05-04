@@ -760,16 +760,19 @@
       <li onclick="showDash()">Masters <u style="color:#c00">M</u></li>
       <li onclick="showSale()">Transactions <u style="color:#c00">T</u></li>
       <li onclick="showLedger()">Accounts <u style="color:#c00">A</u></li>
+      <li onclick="showMedicines()">Medicines <u style="color:#c00">M</u></li>
       <li onclick="showStock()">Stocks <u style="color:#c00">S</u></li>
-      <li onclick="showHist()">Reports <u style="color:#c00">R</u></li>
+      <li onclick="showAllReports()">Reports <u style="color:#c00">R</u></li>
       <li onclick="showCompanyProfile()" style="color:#003366;">Settings</li>
       <li onclick="doLogout()" style="margin-left:auto;color:#c00;">Exit</li>
     </ul>
     <div class="ws">
       <nav class="sl">
         <h4>Quick Access</h4>
+        <a onclick="showMedicines()" style="background:#fff8d0;font-weight:700;">&#128138; Medicine Master</a>
         <a onclick="showSale()">&#128203; Sale Bill (Retail)</a>
         <a onclick="showPurch()">&#128666; Purchase Bill</a>
+        <a onclick="showAllReports()" style="background:#e8f0f8;font-weight:700;">&#128188; All Reports</a>
         <a onclick="showHist()">&#128221; Modify Sale Bill</a>
         <a onclick="showPurchHist()">&#128188; Purchase History</a>
         <a onclick="showStock()">&#128230; Current Stock</a>
@@ -2192,6 +2195,216 @@
             alert('Deleted locally! (Server offline)');
             showHist();
           });
+      }
+
+      function showMedicines() {
+        var h = '<div id="med-sc" style="display:flex;flex-direction:column;height:100%;overflow:hidden;">' +
+          '<div class="sh" style="background:#3a6a9a;">Medicine Master (Custom System) &nbsp;<span>Total Items: ' + G.items.length + '</span></div>' +
+          '<div class="bt">' +
+          '<input id="med-search" placeholder="Search by name, salt, company..." style="width:250px;padding:3px;border:1px solid #7799bb;height:24px;" onkeyup="filterMed()">' +
+          '<button class="bsm" style="background:linear-gradient(#c0eec0,#7acc7a);font-weight:700;margin-left:10px;" onclick="openAddMed()">+ Add New Medicine</button>' +
+          '</div>' +
+          '<div class="cs">' +
+          '<div class="bta" style="border:none;">' +
+          '<div class="th">' + 
+          '<div class="c1">#</div><div class="c2">Product Name</div><div style="flex:1;min-width:145px;padding:2px 4px;border-right:1px solid rgba(200,220,240,.3);">Salt</div>' + 
+          '<div style="flex:1;min-width:145px;padding:2px 4px;border-right:1px solid rgba(200,220,240,.3);">Company</div><div class="c4">Pack</div><div class="c5">Stock</div><div class="c7">Rate</div><div class="c7">Action</div>' + 
+          '</div>' +
+          '<div class="tb2" id="med-list"></div></div>' +
+          '</div></div>';
+        
+        setMA(h);
+        renderMedList();
+      }
+
+      function filterMed() {
+        var q = g('med-search').value.toLowerCase();
+        Array.from(g('med-list').children).forEach(tr => {
+          tr.style.display = tr.innerText.toLowerCase().includes(q) ? '' : 'none';
+        });
+      }
+
+      function renderMedList() {
+        var c = g('med-list');
+        if (!c) return;
+        c.innerHTML = '';
+        G.items.forEach((i, idx) => {
+          var d = document.createElement('div'); d.className = 'tr';
+          d.innerHTML = '<div class="c1">' + (idx+1) + '</div><div class="c2">' + i.name + '</div>' + 
+            '<div style="flex:1;min-width:145px;padding:2px 4px;border-right:1px solid #dde8f0;white-space:nowrap;overflow:hidden;">' + i.salt + '</div>' + 
+            '<div style="flex:1;min-width:145px;padding:2px 4px;border-right:1px solid #dde8f0;white-space:nowrap;overflow:hidden;">' + i.company + '</div>' + 
+            '<div class="c4">' + i.pack + '</div><div class="c5" style="font-weight:700;">' + i.stock + '</div>' + 
+            '<div class="c7">' + parseFloat(i.rate||0).toFixed(2) + '</div>' + 
+            '<div class="c7" style="display:flex;align-items:center;justify-content:center;gap:3px;"><button class="bsm" onclick="editMed(\'' + i.id + '\')">Edit</button><button class="bsm" style="color:red;font-weight:bold;" title="Delete" onclick="deleteMed(\'' + i.id + '\')">&#10006;</button></div>';
+          c.appendChild(d);
+        });
+      }
+
+      function openAddMed() {
+         var m = g('am-modal');
+         if (!m) {
+           m = document.createElement('div'); m.id = 'am-modal'; m.className = 'mo';
+           document.body.appendChild(m);
+         }
+         m.innerHTML = '<div class="mb2" style="min-width:450px;"><div class="mh">Add/Edit Medicine <span onclick="cm(\'am-modal\')">&#10006;</span></div>' +
+          '<div class="mbd">' +
+          '<input type="hidden" id="am-id">' +
+          '<div class="lf2"><label>Product Name</label><input id="am-nm" placeholder="e.g. PANADOL"></div>' +
+          '<div class="lf2"><label>Salt / Composition</label><input id="am-sl" placeholder="e.g. PARACETAMOL"></div>' +
+          '<div class="lf2"><label>Company</label><input id="am-co" placeholder="e.g. GSK"></div>' +
+          '<div class="lf2" style="display:flex;gap:10px;"><div style="flex:1;"><label>Pack Size</label><input id="am-pk" placeholder="e.g. 10X10"></div>' + 
+          '<div style="flex:1;"><label>Sale Rate (Rs)</label><input type="number" id="am-rt" placeholder="0.00"></div></div>' +
+          '<button class="lbtn" style="margin-top:15px;background:linear-gradient(#c0eec0,#7acc7a);color:#000;" onclick="saveMed()">Save Custom Medicine</button>' +
+          '</div></div>';
+         m.classList.add('show');
+         ['am-id', 'am-nm', 'am-sl', 'am-co', 'am-pk', 'am-rt'].forEach(id => { var e = g(id); if (e) e.value = ''; });
+         g('am-nm').focus();
+      }
+
+      function editMed(id) {
+         openAddMed();
+         var i = G.items.find(x => x.id === id);
+         if (i) {
+           se('am-id', i.id); se('am-nm', i.name); se('am-sl', i.salt); se('am-co', i.company); se('am-pk', i.pack); se('am-rt', i.rate);
+         }
+      }
+
+      function saveMed() {
+         var id = g('am-id').value;
+         var name = g('am-nm').value.trim();
+         if (!name) { alert('Medicine Name is required!'); return; }
+         var savedItem;
+         if (id) {
+            var idx = G.items.findIndex(x => x.id === id);
+            if (idx >= 0) {
+              G.items[idx].name = name; G.items[idx].salt = g('am-sl').value; G.items[idx].company = g('am-co').value;
+              G.items[idx].pack = g('am-pk').value; G.items[idx].rate = parseFloat(g('am-rt').value)||0;
+              savedItem = G.items[idx];
+            }
+         } else {
+            var newId = 'M-' + Date.now();
+            savedItem = { id: newId, name: name, salt: g('am-sl').value, company: g('am-co').value, pack: g('am-pk').value, stock: 0, rate: parseFloat(g('am-rt').value)||0, mrp: parseFloat(g('am-rt').value)||0, gst: 0, batches: [] };
+            G.items.push(savedItem);
+         }
+         
+         // Trigger save via new API
+         fetch(API_BASE + '/api/manageMedicine', {
+           method: 'POST', headers: {'Content-Type': 'application/json'},
+           body: JSON.stringify({ item_update: savedItem })
+         }).then(r => r.json()).then(d => {
+           sv('mg2_items', G.items);
+           alert('Medicine saved successfully!');
+           cm('am-modal'); if (g('med-list')) renderMedList();
+         }).catch(e => {
+           sv('mg2_items', G.items);
+           alert('Medicine saved locally!');
+           cm('am-modal'); if (g('med-list')) renderMedList();
+         });
+      }
+
+      function deleteMed(id) {
+         if (!confirm('Permanently remove this medicine from inventory \nAre you sure?')) return;
+         
+         var idx = G.items.findIndex(x => x.id === id);
+         if (idx >= 0) {
+            var itemToDel = G.items[idx];
+            G.items.splice(idx, 1);
+            
+            // Immediate UI update to show it worked
+            if (g('med-list')) renderMedList();
+            
+            // Trigger save via new API
+            fetch(API_BASE + '/api/manageMedicine', { 
+               method: 'POST', headers: {'Content-Type': 'application/json'},
+               body: JSON.stringify({ item_delete: id })
+            }).then(r => r.json()).then(d => {
+               sv('mg2_items', G.items);
+               // Removed the success alert to make it perfectly smooth, since the visual removal is enough.
+            }).catch(e => {
+               console.error("Delete Error", e);
+               sv('mg2_items', G.items);
+            });
+         } else {
+             alert('Error: Cannot find medicine to delete!');
+         }
+      }
+
+      function showAllReports() {
+        var h = '<div id="rep-sc" style="display:flex;flex-direction:column;height:100%;background:#d4e4f0;overflow-y:auto;padding:10px;">' +
+          '<div class="dt">Comprehensive Reporting Dashboard</div>' +
+          '<div style="display:flex;gap:10px;margin-bottom:15px;border-bottom:2px solid #5a7fa8;padding-bottom:10px;background:#c8dce8;padding:10px;border-radius:4px;">' + 
+          '<button class="bsm" style="padding:6px 16px;font-size:14px;font-weight:700;height:auto;" onclick="renderRep(\'stock\')">📦 Medicine Stock Report</button>' +
+          '<button class="bsm" style="padding:6px 16px;font-size:14px;font-weight:700;height:auto;background:linear-gradient(#fff,#eee);" onclick="renderRep(\'pnl\')">💰 Profit & Loss Report</button>' +
+          '<button class="bsm" style="padding:6px 16px;font-size:14px;font-weight:700;height:auto;" onclick="renderRep(\'ledger\')">📖 Ledger Summary Report</button>' +
+          '</div>' +
+          '<div id="rep-body" style="background:#fff;border:1px solid #8aabcc;padding:20px;min-height:350px;flex:1;overflow-y:auto;box-shadow:2px 2px 8px rgba(0,0,0,0.1);">' +
+          '<h3 style="color:#555;">Select a report to view...</h3></div>' +
+          '</div>';
+        setMA(h);
+        renderRep('pnl'); // show PNL by default
+      }
+
+      function renderRep(type) {
+        var v = g('rep-body');
+        if (!v) return;
+        
+        if (type === 'stock') {
+           var totalVal = 0; var lowStock = 0;
+           var tbody = G.items.map(i => {
+              var val = parseFloat(i.stock || 0) * parseFloat(i.rate || 0); totalVal += val;
+              if (i.stock < 20) lowStock++;
+              return '<tr><td>' + i.name + '</td><td>' + i.company + '</td><td style="font-weight:700;text-align:center;">' + i.stock + '</td><td style="text-align:right;">Rs.' + parseFloat(i.rate||0).toFixed(2) + '</td><td style="text-align:right;">Rs.' + val.toFixed(2) + '</td></tr>';
+           }).join('');
+           
+           v.innerHTML = '<h2 style="color:#003366;margin-bottom:15px;border-bottom:2px solid #3a6a9a;padding-bottom:5px;">Medicine Stock Report</h2>' +
+             '<div class="g4" style="margin-bottom:20px;"><div class="cd"><div class="ct">Total Inventory Valuation</div><div class="cv">Rs.' + totalVal.toFixed(2) + '</div></div>' +
+             '<div class="cd rd"><div class="ct">Low Stock / Reorder Items</div><div class="cv">' + lowStock + '</div></div>' +
+             '<div class="cd"><div class="ct">Total Medicine Types</div><div class="cv">' + G.items.length + '</div></div></div>' +
+             '<table class="mt" style="width:100%;"><thead><tr><th style="background:#3a6a9a;color:#fff;text-align:left;">Medicine Name</th><th style="background:#3a6a9a;color:#fff;text-align:left;">Company</th><th style="background:#3a6a9a;color:#fff;text-align:center;">Avail Stock</th><th style="background:#3a6a9a;color:#fff;text-align:right;">Rate</th><th style="background:#3a6a9a;color:#fff;text-align:right;">Total Value</th></tr></thead><tbody>' + tbody + '</tbody></table>';
+        } 
+        else if (type === 'pnl') {
+           var sales = 0; var cogs = 0;
+           G.bills.forEach(b => {
+             var n = parseFloat(b.net_amt ? (b.net_amt - (b.spl_disc||0)) : (parseFloat(b.net)||0)) || 0;
+             sales += n;
+             b.items.forEach(i => {
+                var cost = parseFloat(i.cp || i.mr || (i.ra * 0.8)) || 0; 
+                cogs += (cost * i.q);
+             });
+           });
+           
+           var purch = 0;
+           if (G.purchases) G.purchases.forEach(p => purch += (parseFloat(p.total)||0));
+           
+           var gp = sales - cogs;
+           
+           v.innerHTML = '<h2 style="color:#003366;margin-bottom:15px;border-bottom:2px solid #3a6a9a;padding-bottom:5px;">Profit & Loss Report (Overall)</h2>' +
+             '<div class="g4" style="margin-bottom:20px;">' +
+             '<div class="cd" style="border-top:3px solid #003399;"><div class="ct">Total Sales Revenue</div><div class="cv" style="color:#003399;">Rs.' + sales.toFixed(2) + '</div></div>' +
+             '<div class="cd" style="border-top:3px solid #993300;"><div class="ct">Est. COGS (Cost of Goods)</div><div class="cv" style="color:#993300;">Rs.' + cogs.toFixed(2) + '</div></div>' +
+             '<div class="cd gr"><div class="ct">Gross Profit (Sales - COGS)</div><div class="cv" style="font-size:26px;">Rs.' + gp.toFixed(2) + '</div></div>' +
+             '<div class="cd"><div class="ct">Total Purchases Lifetime</div><div class="cv">Rs.' + purch.toFixed(2) + '</div></div>' +
+             '</div>' +
+             '<div style="margin-top:20px;padding:15px;background:#fff8d0;border:1px solid #cca;color:#665;"><b>Analytics Note:</b> The <i>Gross Profit</i> calculated here shows the earnings over the raw cost of medicines. For more detailed insights, verify actual purchase costs of active batches instead of estimations. Operational expenses are not included in this Gross Margin.</div>';
+        }
+        else if (type === 'ledger') {
+           var totalReceivable = 0; var totalPayable = 0;
+           var tbody = G.parties.map(p => {
+              var bal = parseFloat(p.bal) || 0;
+              if (bal > 0) totalReceivable += bal;
+              if (bal < 0) totalPayable += Math.abs(bal);
+              var c = bal > 0 ? 'color:#cc0000;' : (bal < 0 ? 'color:#006600;' : 'color:#555;');
+              return '<tr><td style="text-align:left;">' + p.name + '</td><td style="text-align:center;">' + p.type + '</td><td style="font-weight:700;text-align:right;' + c + '">Rs.' + Math.abs(bal).toFixed(2) + (bal>0?' (Dr)':' (Cr)') + '</td></tr>';
+           }).join('');
+           
+           v.innerHTML = '<h2 style="color:#003366;margin-bottom:15px;border-bottom:2px solid #3a6a9a;padding-bottom:5px;">Ledger Details & Balances Report</h2>' +
+             '<div class="g4" style="margin-bottom:20px;">' +
+             '<div class="cd rd"><div class="ct">Total Market Receivables (Dr)</div><div class="cv">Rs.' + totalReceivable.toFixed(2) + '</div></div>' +
+             '<div class="cd gr"><div class="ct">Total Payables / Debt (Cr)</div><div class="cv">Rs.' + totalPayable.toFixed(2) + '</div></div>' +
+             '<div class="cd"><div class="ct">Net Position</div><div class="cv" style="font-size:20px;">Rs.' + Math.abs(totalReceivable - totalPayable).toFixed(2) + ((totalReceivable - totalPayable) > 0 ? ' (Dr)' : ' (Cr)') + '</div></div>' +
+             '</div>' +
+             '<table class="mt" style="width:100%;"><thead><tr><th style="background:#3a6a9a;color:#fff;text-align:left;">Party / Ledger Name</th><th style="background:#3a6a9a;color:#fff;text-align:center;">Type</th><th style="background:#3a6a9a;color:#fff;text-align:right;">Current Final Balance</th></tr></thead><tbody>' + tbody + '</tbody></table>';
+        }
       }
 
       function showCompanyProfile() {
