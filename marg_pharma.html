@@ -10,7 +10,7 @@
       padding: 0;
       box-sizing: border-box;
       font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
-      font-size: 12px;
+      font-size: 15px;
     }
 
     body {
@@ -31,6 +31,41 @@
       min-height: 34px;
     }
 
+    @media (max-width: 768px) {
+      * { font-size: 16px; }
+      body { overflow-y: auto; height: auto; min-height: 100vh; }
+      .tb { flex-direction: column; align-items: flex-start; padding: 10px; }
+      #hi { margin-left: 0 !important; font-size: 10px; margin-top: 5px; }
+      .mb { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+      .mb li { flex: 0 0 auto; border-right: 1px solid #eee; padding: 12px 20px; font-size: 12px; }
+      .ws { flex-direction: column; height: auto; overflow: visible; }
+      .ma { height: auto; overflow: visible; }
+      .g4 { grid-template-columns: 1fr !important; gap: 15px !important; }
+      .cd { padding: 15px !important; }
+      .sh { flex-direction: row !important; align-items: center !important; gap: 5px; padding: 4px 8px !important; font-size: 11px !important; min-height: auto !important; }
+      .sh span { font-size: 9px; margin-left: auto; }
+      .bt { padding: 4px !important; }
+      #sale-sc { height: auto !important; overflow: auto !important; min-height: 100vh; padding-bottom: 80px; }
+      .br { flex-direction: row !important; flex-wrap: wrap !important; align-items: center !important; gap: 4px !important; margin-bottom: 2px; }
+      .br label { width: auto !important; border: none !important; padding: 0 !important; font-size: 11px !important; gap: 2px !important; }
+      .br input { width: 80px !important; height: 24px !important; font-size: 11px !important; padding: 2px !important; }
+      .pib { display: grid !important; grid-template-columns: 1fr 1fr 1fr; gap: 4px; padding: 4px !important; background: #fefefe; margin-bottom: 4px; border: 1px solid #ccc; }
+      .pib label { width: 100% !important; flex-direction: column; align-items: stretch; gap: 1px; font-size: 10px !important; }
+      .pib input { width: 100% !important; height: 26px !important; font-size: 11px !important; border: 1px solid #99b; }
+      .pib button { grid-column: span 3; width: 100%; height: 36px !important; margin-top: 2px; font-size: 16px; font-weight: 800; }
+      .fmr { display: grid !important; grid-template-columns: 1fr 1fr; gap: 4px !important; }
+      .fmr label { width: 100%; border: 1px solid #eee; background: #fff; padding: 2px 4px; font-size: 10px !important; display: flex; flex-direction: column; }
+      .fmr input { width: 100% !important; height: 24px !important; border: none; font-weight: 700; color: #b33; }
+      .bf { padding: 4px; }
+      .cs { flex-direction: column !important; min-height: 150px; }
+      .bta { overflow: auto; border: 1px solid #8aabcc; }
+      .tb2 { min-height: 80px; max-height: 300px; overflow-y: auto; background: #fff; }
+      .ab { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: #eee; padding: 6px; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); display: flex !important; flex-wrap: wrap !important; gap: 4px !important; justify-content: center; }
+      .ab button { flex: 1; padding: 10px 5px !important; font-size: 11px !important; height: auto !important; }
+      .abg { flex: 2 !important; font-size: 14px !important; background: #28a745 !important; color: #fff !important; }
+
+    }
+
     .tb h1 {
       font-size: 18px;
       font-weight: 700;
@@ -42,61 +77,46 @@
     }
 
     .mb {
-      background: #fff;
-      border-bottom: 2px solid #003366;
+      background: linear-gradient(to bottom, #ffffff, #f8faff);
+      border-bottom: 3px solid #003366;
       display: flex;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     .mb li {
       list-style: none;
-      padding: 4px 12px;
+      padding: 10px 16px;
       cursor: pointer;
-      border-right: 1px solid #ccc;
-      font-weight: 600;
-      color: #003366;
+      border-right: 1px solid #e1e9f0;
+      font-weight: 700;
+      color: #004488;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      font-size: 14px;
     }
 
     .mb li:hover {
       background: #003366;
       color: #fff;
+      transform: translateY(-1px);
+    }
+    
+    .mb li:active {
+      transform: translateY(0);
+    }
+    
+    .mb li i {
+       font-style: normal;
+       font-size: 18px;
     }
 
     .ws {
       display: flex;
       flex: 1;
       overflow: hidden;
-    }
-
-    .sl {
-      width: 165px;
-      background: #dde8f0;
-      border-right: 1px solid #aabbd0;
-      padding: 8px;
-      overflow-y: auto;
-      flex-shrink: 0;
-    }
-
-    .sl h4 {
-      font-size: 11px;
-      color: #555;
-      border-bottom: 1px solid #aabbd0;
-      padding-bottom: 4px;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-    }
-
-    .sl a {
-      display: block;
-      padding: 5px 6px;
-      color: #003366;
-      cursor: pointer;
-      margin-bottom: 2px;
-      font-size: 11px;
-    }
-
-    .sl a:hover {
-      background: #003366;
-      color: #fff;
     }
 
     .ma {
@@ -747,7 +767,7 @@
           onkeydown="if(event.key=='Enter')doLogin()"></div>
       <button class="lbtn" onclick="doLogin()">LOGIN</button>
       <div class="lerr" id="lerr"></div>
-      <p style="font-size:10px;color:#555;margin-top:8px;text-align:center;">admin/admin123 | user1/1234</p>
+      <p style="font-size:10px;color:#555;margin-top:8px;text-align:center;">admin/admin123 | salesman1/sales123</p>
       <p id="f-warn" style="font-size:9px;color:#a33;margin-top:4px;text-align:center;display:none;">Security check: Use
         localhost:5000 for full features.</p>
     </div>
@@ -756,37 +776,26 @@
     <div class="tb">
       <h1>MARG ERP 9+ <span>[Pharma Special]</span></h1><span style="margin-left:auto;" id="hi"></span>
     </div>
-    <ul class="mb">
-      <li onclick="showDash()">Masters <u style="color:#c00">M</u></li>
-      <li onclick="showSale()">Transactions <u style="color:#c00">T</u></li>
-      <li onclick="showLedger()">Accounts <u style="color:#c00">A</u></li>
-      <li onclick="showMedicines()">Medicines <u style="color:#c00">M</u></li>
-      <li onclick="showStock()">Stocks <u style="color:#c00">S</u></li>
-      <li onclick="showAllReports()">Reports <u style="color:#c00">R</u></li>
-      <li onclick="showCompanyProfile()" style="color:#003366;">Settings</li>
-      <li onclick="doLogout()" style="margin-left:auto;color:#c00;">Exit</li>
+    <ul class="mb" id="top-menu">
+      <li onclick="showMedicines()" class="admin-only"><i>&#128138;</i> Medicines</li>
+      <li onclick="showSale()"><i>&#128203;</i> Sale Bill</li>
+      <li onclick="showHist()" class="admin-only"><i>&#128221;</i> Sale History</li>
+      <li onclick="document.getElementById('rm').classList.add('show')" class="admin-only"><i>&#128228;</i> Sales Return</li>
+      <li onclick="showPurch()" class="admin-only"><i>&#128666;</i> Purchase Bill</li>
+      <li onclick="showPurchHist()" class="admin-only"><i>&#128188;</i> Purch History</li>
+      <li onclick="showStock()"><i>&#128230;</i> Stock</li>
+      <li onclick="showExpiry()" class="admin-only"><i>&#9888;</i> Expiry</li>
+      <li onclick="showLedger()"><i>&#128202;</i> Ledger</li>
+      <li onclick="showAllReports()" class="admin-only"><i>&#128200;</i> Reports</li>
+      <li onclick="showUserMgmt()" class="admin-only mgmt-only" style="color: #d63384; border-bottom: 2px solid #d63384;"><i>&#128100;</i> Users</li>
+      <li onclick="showDash()" class="admin-only"><i>&#128187;</i> Dash</li>
+      <li onclick="doLogout()" style="margin-left:auto; color:#c00; font-weight:800;"><i>&#128682;</i> Exit</li>
     </ul>
     <div class="ws">
-      <nav class="sl">
-        <h4>Quick Access</h4>
-        <a onclick="showMedicines()" style="background:#fff8d0;font-weight:700;">&#128138; Medicine Master</a>
-        <a onclick="showSale()">&#128203; Sale Bill (Retail)</a>
-        <a onclick="showPurch()">&#128666; Purchase Bill</a>
-        <a onclick="showAllReports()" style="background:#e8f0f8;font-weight:700;">&#128188; All Reports</a>
-        <a onclick="showHist()">&#128221; Modify Sale Bill</a>
-        <a onclick="showPurchHist()">&#128188; Purchase History</a>
-        <a onclick="showStock()">&#128230; Current Stock</a>
-        <a onclick="showExpiry()">&#9888; Expiry List</a>
-        <a onclick="showLedger()">&#128202; Ledger A/c</a>
-        <a onclick="document.getElementById('rm').classList.add('show')">&#128228; Sales Return</a>
-        <h4 style="margin-top:10px;">Digital</h4>
-        <a onclick="alert('Retailio feature')">&#128722; Retailio</a>
-        <a onclick="alert('Marg Mart feature')">&#128138; Marg Mart</a>
-      </nav>
       <div class="ma" id="ma"></div>
     </div>
   </div>
-  <--help Modals -->
+  <!--help Modals -->
     <div class="mo" id="im">
       <div class="mb2" style="min-width:620px;">
         <div class="mh">Search Medicine (F2) <span onclick="cm('im')">&#10006;</span></div>
@@ -979,13 +988,13 @@
     </div>
 
     <script>
-      const API_BASE = window.location.protocol === 'file:' ? "https://pharma-backend-production-c984.up.railway.app" : "";
+      const API_BASE = window.location.hostname === 'localhost' ? '' : 'http://localhost:5000';
       if (window.location.protocol === 'file:') document.addEventListener('DOMContentLoaded', () => { var e = document.getElementById('f-warn'); if (e) e.style.display = 'block'; });
       var G = {
         items: [],
         bills: [],
         purchases: [],
-        users: [{ u: 'admin', p: 'admin123', r: 'admin' }, { u: 'user1', p: '1234', r: 'user' }],
+        users: [{ u: 'admin', p: 'admin123', r: 'admin' }, { u: 'salesman1', p: 'sales123', r: 'salesman' }],
         parties: [],
         profile: { name: 'HAMZA MEDICINE COMPANY', phone: '061-2079422, 0300-7358302', addr: 'H-NO: 15-16 Shams abad, Multan.', ntn: '36102-7250390-3' },
         sess: {},
@@ -996,10 +1005,30 @@
       function ld(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
       function sv(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
       G.sess = ld('mg2_sess', {});
+      function applyPermissions() {
+        if (!G.sess || !G.sess.on) return;
+        if (G.sess.r === 'salesman') {
+          document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'none');
+        } else {
+          document.querySelectorAll('.admin-only').forEach(e => e.style.display = '');
+        }
+      }
+
       function doLogin() {
         var u = document.getElementById('lu').value.trim(), p = document.getElementById('lp').value.trim();
         var f = G.users.find(function (x) { return x.u === u && x.p === p; });
-        if (f) { G.sess = { u: u, r: f.r, on: true }; sv('mg2_sess', G.sess); document.getElementById('ls').style.display = 'none'; var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; document.getElementById('hi').innerText = 'User: ' + u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN'); showDash(); }
+        if (f) { 
+          G.sess = { u: u, r: f.r, on: true }; 
+          sv('mg2_sess', G.sess); 
+          document.getElementById('ls').style.display = 'none'; 
+          var a = document.getElementById('app'); 
+          a.style.display = 'flex'; 
+          a.style.flexDirection = 'column'; 
+          document.getElementById('hi').innerText = 'User: ' + u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN'); 
+          
+          applyPermissions();
+          showDash(); 
+        }
         else document.getElementById('lerr').innerText = 'Invalid credentials!';
       }
       function doLogout() { sv('mg2_sess', {}); location.reload(); }
@@ -1069,30 +1098,46 @@
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape') document.querySelectorAll('.mo').forEach(function (m) { m.classList.remove('show'); }); if (e.key === 'F2') { e.preventDefault(); openIM(); } });
 
       function showDash() {
-        var ts = G.bills.filter(x => x.date === tds()).reduce((a, x) => {
+        var isSalesman = G.sess.r === 'salesman';
+        var myBills = G.bills.slice();
+        if (isSalesman) myBills = myBills.filter(b => b.salesman === G.sess.u);
+        
+        var ts = myBills.filter(x => x.date === tds()).reduce((a, x) => {
           var v = x.net_amt ? (x.net_amt - (x.spl_disc || 0)) : (parseFloat(x.net) || 0);
           return a + v;
         }, 0);
         var ec = 0; G.items.forEach(function (i) { i.batches.forEach(function (b) { if (mu(b.exp) <= 3) ec++; }); });
         var ls = G.items.filter(function (i) { return i.stock < 20; }).length;
-        setMA('<div id="dash-sc"><div class="dt">MARG ERP 9+ | Dashboard</div>' +
+
+        var dashHtml = '<div id="dash-sc"><div class="dt">MARG ERP 9+ | ' + (isSalesman ? 'Salesman Home' : 'Admin Dashboard') + '</div>' +
           '<div class="g4">' +
-          '<div class="cd gr"><div class="ct">Today Sales</div><div class="cv">Rs.' + ts.toFixed(2) + '</div></div>' +
-          '<div class="cd"><div class="ct">Total Bills</div><div class="cv">' + G.bills.length + '</div></div>' +
-          '<div class="cd rd"><div class="ct">Near Expiry</div><div class="cv">' + ec + '</div></div>' +
-          '<div class="cd or"><div class="ct">Low Stock</div><div class="cv">' + ls + '</div></div>' +
-          '</div><div class="dst">Quick Actions</div>' +
-          '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">' +
-          '<button class="bsm" onclick="showSale()">New Sale Bill</button>' +
-          '<button class="bsm" onclick="showPurch()">Purchase Bill</button>' +
-          '<button class="bsm" onclick="showHist()">Bill History</button>' +
-          '<button class="bsm" onclick="showStock()">Stock Status</button>' +
-          '<button class="bsm" onclick="showExpiry()">Expiry List</button>' +
-          '<button class="bsm" onclick="showLedger()">Ledger</button>' +
-          '</div><div class="dst">Recent Bills</div>' +
-          '<table class="mt"><thead><tr><th>Bill No</th><th>Date</th><th>Customer</th><th>Items</th><th>Net Amt</th></tr></thead><tbody>' +
-          G.bills.slice(-5).reverse().map(function (b) { return '<tr><td>' + b.no + '</td><td>' + b.date + '</td><td>' + b.cust + '</td><td>' + b.items.length + '</td><td>Rs.' + (b.net_amt ? (b.net_amt - (b.spl_disc || 0)) : (parseFloat(b.net) || 0)).toFixed(2) + '</td></tr>'; }).join('') +
-          '</tbody></table></div>');
+          '<div class="cd gr"><div class="ct">' + (isSalesman ? 'My Today Sales' : 'Total Today Sales') + '</div><div class="cv">Rs.' + ts.toFixed(2) + '</div></div>' +
+          '<div class="cd"><div class="ct">' + (isSalesman ? 'My Orders' : 'Total Bills') + '</div><div class="cv">' + myBills.length + '</div></div>';
+          
+        if (!isSalesman) {
+           dashHtml += '<div class="cd rd"><div class="ct">Near Expiry</div><div class="cv">' + ec + '</div></div>' +
+                       '<div class="cd or"><div class="ct">Low Stock</div><div class="cv">' + ls + '</div></div>';
+        }
+
+        dashHtml += '</div>';
+
+        if (isSalesman) {
+           // PREMIUM MOBILE DASHBOARD FOR SALESMAN
+           dashHtml += '<div class="dst" style="margin-top:25px;">Salesman Operations</div>' +
+             '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:10px;">' +
+             '<div class="cd" style="border-top-color:#007bff; text-align:center; padding:20px; cursor:pointer;" onclick="showSale()"><div style="font-size:40px; margin-bottom:10px;">📋</div><div style="font-weight:700;">NEW ORDER</div></div>' +
+             '<div class="cd" style="border-top-color:#28a745; text-align:center; padding:20px; cursor:pointer;" onclick="showStock()"><div style="font-size:40px; margin-bottom:10px;">📦</div><div style="font-weight:700;">VIEW STOCK</div></div>' +
+             '<div class="cd" style="border-top-color:#17a2b8; text-align:center; padding:20px; cursor:pointer;" onclick="showHist()"><div style="font-size:40px; margin-bottom:10px;">📜</div><div style="font-weight:700;">MY HISTORY</div></div>' +
+             '<div class="cd" style="border-top-color:#ffc107; text-align:center; padding:20px; cursor:pointer;" onclick="showLedger()"><div style="font-size:40px; margin-bottom:10px;">📖</div><div style="font-weight:700;">LEDGERS</div></div>' +
+             '</div>';
+        } else {
+           dashHtml += '<div class="dst">Recent Bills</div>' +
+             '<table class="mt"><thead><tr><th>Bill No</th><th>Date</th><th>Customer</th><th>Items</th><th>Net Amt</th></tr></thead><tbody>' +
+             myBills.slice(-5).reverse().map(function (b) { return '<tr><td>' + b.no + '</td><td>' + b.date + '</td><td>' + b.cust + '</td><td>' + b.items.length + '</td><td>Rs.' + (b.net_amt ? (b.net_amt - (b.spl_disc || 0)) : (parseFloat(b.net) || 0)).toFixed(2) + '</td></tr>'; }).join('') +
+             '</tbody></table>';
+        }
+
+        setMA(dashHtml + '</div>');
       }
 
       function showSale() {
@@ -1118,7 +1163,7 @@
           '<div id="p-bal" style="font-weight:700;color:#c00;margin-left:10px;font-size:11px;">Bal: 0.00</div>' +
           '<div id="p-last-tx" style="font-size:10px;color:#555;margin-left:8px;"></div>' +
           '<label style="margin-left:10px;"><input type="checkbox" id="bcl"> Is Claimable</label></div>' +
-          '<div class="br"><label>Doctor <input id="bdo" style="min-width:160px;"></label><label>Salesman <input id="bsl" style="width:110px;"></label></div>' +
+          '<div class="br"><label>Doctor <input id="bdo" style="min-width:160px;"></label></div>' +
           '</div>' +
           '<div class="pib">' +
           '<label>Product <input id="pn" style="min-width:155px;cursor:pointer;background:#ffe;" onclick="openIM()" readonly placeholder="F2/Click"></label>' +
@@ -1350,10 +1395,13 @@
           G.nbn--;
         }
 
+        var isSalesman = G.sess.r === 'salesman';
         var newB = {
           no, date: tds(), cust: cu, phone: ph, pay_mode: pm, items: JSON.parse(JSON.stringify(G.bi)),
           net_amt: nt, spl_disc: parseFloat((g('fsd') || { value: 0 }).value) || 0,
-          rcvd_amt: parseFloat((g('fra') || { value: 0 }).value) || 0
+          rcvd_amt: parseFloat((g('fra') || { value: 0 }).value) || 0,
+          salesman: G.sess.u,
+          status: isSalesman ? 'Pending' : 'Completed'
         };
         var finalNet = parseFloat(newB.net_amt - newB.spl_disc);
 
@@ -1363,35 +1411,35 @@
         G.bills.push(newB);
         G.nbn++;
 
-        if (party) {
+        if (!isSalesman && party) { // Only update ledger if not salesman pending order
           if (!party.transactions) party.transactions = [];
-          // 1. Debit the sale (after special discount)
-          party.transactions.push({ date: tds(), desc: 'Sale Bill ' + no + ' (Net)', type: 'Dr', amt: finalNet });
-          party.bal = (parseFloat(party.bal) || 0) + parseFloat(finalNet);
-          // 2. Credit the payment if any
+          // 1. Credit the sale - flipped logic
+          party.transactions.push({ date: tds(), desc: 'Sale Bill ' + no + ' (Net) [by:' + G.sess.u + ']', type: 'Cr', amt: finalNet });
+          party.bal = (parseFloat(party.bal) || 0) - parseFloat(finalNet);
+          // 2. Debit the payment
           if (newB.rcvd_amt > 0) {
-            party.transactions.push({ date: tds(), desc: 'Payment Recv ' + no + ' [' + pm + ']', type: 'Cr', amt: newB.rcvd_amt });
-            party.bal = (parseFloat(party.bal) || 0) - parseFloat(newB.rcvd_amt);
+            party.transactions.push({ date: tds(), desc: 'Payment Recv ' + no + ' [' + pm + '] [by:' + G.sess.u + ']', type: 'Dr', amt: newB.rcvd_amt });
+            party.bal = (parseFloat(party.bal) || 0) + parseFloat(newB.rcvd_amt);
           }
         }
 
-        // Update stock: item-level AND batch-level (FIFO)
-        G.bi.forEach(function (r) {
-          var idx = G.items.findIndex(function (i) { return i.name === r.name; });
-          if (idx >= 0) {
-            G.items[idx].stock = Math.max(0, G.items[idx].stock - r.q);
-            // Batch-level FIFO deduction
-            if (G.items[idx].batches) {
-              var remain = r.q;
-              G.items[idx].batches.forEach(function (bt) {
-                if (remain <= 0) return;
-                var deduct = Math.min(bt.qty, remain);
-                bt.qty = Math.max(0, bt.qty - deduct);
-                remain -= deduct;
-              });
+        if (!isSalesman) { // Only update stock if not salesman pending order
+          G.bi.forEach(function (r) {
+            var idx = G.items.findIndex(function (i) { return i.name === r.name; });
+            if (idx >= 0) {
+              G.items[idx].stock = Math.max(0, G.items[idx].stock - r.q);
+              if (G.items[idx].batches) {
+                var remain = r.q;
+                G.items[idx].batches.forEach(function (bt) {
+                  if (remain <= 0) return;
+                  var deduct = Math.min(bt.qty, remain);
+                  bt.qty = Math.max(0, bt.qty - deduct);
+                  remain -= deduct;
+                });
+              }
             }
-          }
-        });
+          });
+        }
 
         fetch(API_BASE + '/api/saveBill', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1542,12 +1590,11 @@
           '<div class="header-row"><span>City:</span><b>...</b></div>' +
           '</div>' +
           '<table><thead><tr><th>Qty</th><th>Bns</th><th style="text-align:left;">Description</th><th>Rate</th><th>Dis%</th><th>Amount</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-          '<div class="header-row"><span>NO. OF ITEMS: ' + totalItems + '</span><span>SALES TAX: 0.00</span></div>' +
+          '<div class="header-row"><span>NO. OF ITEMS: ' + G.bi.length + '</span><span>SALES TAX: 0.00</span></div>' +
           '<div class="grand-total-box">' +
-          '<div class="total-row"><span>GROSS:</span><b>' + gr.toFixed(2) + '</b><span>BILL AMOUNT:</span><b>' + nt.toFixed(2) + '</b></div>' +
-          '<div class="total-row"><span>DISCOUNT:</span><b>' + sd.toFixed(2) + '</b><span>PREVIOUS:</span><b>' + prevBal.toFixed(2) + '</b></div>' +
-          '<div class="total-row"><span>CR.NOTE:</span><b>0.00</b><span>Cash Received:</span><b>' + nt.toFixed(2) + '</b></div>' +
-          '<div class="total-row"><span>ADD/LESS:</span><b>0.00</b><span>NET BALANCE:</span><b>0.00</b></div>' +
+          '<div class="total-row"><span>GROSS:</span><b>' + gr.toFixed(2) + '</b><span>PREV BAL:</span><b>' + (prevBal + nt).toFixed(2) + '</b></div>' +
+          '<div class="total-row"><span>BILL TOTAL:</span><b>' + nt.toFixed(2) + '</b><span>RECEIVED:</span><b>' + (parseFloat((g('fra')||{value:0}).value)||0).toFixed(2) + '</b></div>' +
+          '<div class="total-row" style="border-top:1px solid #000;margin-top:2px;padding-top:2px;font-size:11pt;"><span>NET BALANCE:</span><b>' + party.bal.toFixed(2) + '</b></div>' +
           '</div>' +
           '<div class="footer-text">SOFTWARE DEVELOPED BY: SMART BUSINESS SOFTWARE | 0322 3729770</div>' +
           '</body></html>');
@@ -1583,10 +1630,31 @@
       }
       function showLedger() {
         var tb = g('lb2'); tb.innerHTML = '';
-        G.parties.forEach(function (p) {
-          var c = p.bal > 0 ? '#cc3300' : '#228822';
+        var isSalesman = G.sess.r === 'salesman';
+        var myName = G.sess.u;
+        
+        var filteredParties = G.parties.filter(function (p) {
+          if (!isSalesman) return true; // Admin sees all
+          
+          // Show party if salesman has made a bill for them
+          var hasOrder = G.bills.some(b => b.cust === p.name && b.salesman === myName);
+          if (hasOrder) return true;
+
+          // Show party if salesman added a transaction manually
+          return p.transactions && p.transactions.some(function(t) { 
+             return t.desc && t.desc.includes('[by:' + myName + ']'); 
+          });
+        });
+
+        // Special for salesmen: if nothing matched, don't show empty screen, allow them to search/see all CUSTOMERS
+        if (isSalesman && filteredParties.length === 0) {
+           filteredParties = G.parties.filter(p => p.type !== 'Supplier');
+        }
+
+        filteredParties.forEach(function (p) {
+          var c = p.bal < 0 ? '#cc3300' : '#228822';
           var tr = document.createElement('tr');
-          tr.innerHTML = '<td>' + p.name + '</td><td>' + p.type + '</td><td style="font-weight:700;color:' + c + ';">Rs.' + Math.abs(p.bal).toFixed(2) + (p.bal > 0 ? ' (Dr)' : ' (Cr)') + '</td>';
+          tr.innerHTML = '<td>' + p.name + '</td><td>' + p.type + '</td><td style="font-weight:700;color:' + c + ';">Rs.' + Math.abs(p.bal).toFixed(2) + (p.bal < 0 ? ' (Cr)' : ' (Dr)') + '</td>';
           tr.onclick = function () { showPartyDetail(p.name); };
           tb.appendChild(tr);
         });
@@ -1610,8 +1678,8 @@
         var totalDr = 0, totalCr = 0;
         txs.forEach(t => { if (t.type === 'Dr') totalDr += t.amt; else totalCr += t.amt; });
         var netPending = Math.abs(p.bal);
-        var netLabel = p.bal > 0 ? 'Dr (Receivable)' : p.bal < 0 ? 'Cr (Payable)' : 'Nil';
-        var summaryColor = p.bal > 0 ? '#cc0000' : p.bal < 0 ? '#006600' : '#333';
+        var netLabel = p.bal < 0 ? 'Cr (Receivable)' : p.bal > 0 ? 'Dr (Payable)' : 'Nil';
+        var summaryColor = p.bal < 0 ? '#cc0000' : p.bal > 0 ? '#006600' : '#333';
 
         var html = '<div class="mb2" style="min-width:760px;"><div class="mh">Ledger: ' + name + ' <span style="font-size:11px;font-weight:400;margin-left:10px;">' + partyInfo + '</span><span onclick="cm(\'pdm\')" style="margin-left:auto;">&#10006;</span></div>' +
           '<div class="mbd">' +
@@ -1972,7 +2040,7 @@
         var paid = parseFloat((g('ppaid') || { value: '0' }).value) || 0;
         var due = Math.max(0, tot - paid);
 
-        var p_bill = { no: inv, date: tds(), supplier: su, pay_mode: pm, paid: paid, due: due, items: JSON.parse(JSON.stringify(G.pi)), total: tot };
+        var p_bill = { no: inv, date: tds(), supplier: su, pay_mode: pm, paid: paid, due: due, items: JSON.parse(JSON.stringify(G.pi)), total: tot, salesman: G.sess.u };
 
         var old_p = G.purchases.find(x => x.no === inv);
         if (old_p) {
@@ -2009,13 +2077,13 @@
         var party = G.parties.find(p => p.name === su);
         if (!party) { party = { name: su, type: 'Supplier', bal: 0, transactions: [] }; G.parties.push(party); }
         if (!party.transactions) party.transactions = [];
-        // Credit entry = we owe supplier
-        party.transactions.push({ date: tds(), desc: 'Purchase Inv ' + inv + ' [' + pm + ']', type: 'Cr', amt: tot });
-        party.bal -= tot;
-        // If partial payment made, record as Dr (we paid)
+        // Debit entry = Amount goes to DEBIT for purchase (per user request)
+        party.transactions.push({ date: tds(), desc: 'Purchase Inv ' + inv + ' [' + pm + '] [by:' + G.sess.u + ']', type: 'Dr', amt: tot });
+        party.bal = (parseFloat(party.bal) || 0) + parseFloat(tot);
+        // Payment made = Amount goes to CREDIT
         if (paid > 0) {
-          party.transactions.push({ date: tds(), desc: 'Payment against ' + inv + ' [' + pm + ']', type: 'Dr', amt: paid });
-          party.bal += paid;
+          party.transactions.push({ date: tds(), desc: 'Payment against ' + inv + ' [' + pm + '] [by:' + G.sess.u + ']', type: 'Cr', amt: paid });
+          party.bal = (parseFloat(party.bal) || 0) - parseFloat(paid);
         }
 
         fetch(API_BASE + '/api/savePurchase', {
@@ -2023,7 +2091,7 @@
           body: JSON.stringify({ purchase: p_bill, items: G.items, party: party })
         }).then(r => r.json()).then(d => {
           sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-          alert('Purchase saved! [' + pm + '] | Paid: Rs.' + paid.toFixed(2) + ' | Due: Rs.' + due.toFixed(2));
+          alert('Purchase saved! [' + pm + '] | Paid: Rs.' + paid.toFixed(2) + ' | Due: Rs.' + (tot - paid).toFixed(2));
           showDash();
         }).catch(e => {
           sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
@@ -2036,7 +2104,7 @@
         if (G.purchases.length === 0) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">No purchases yet</td></tr>'; }
         G.purchases.slice().reverse().forEach(function (p) {
           var tr = document.createElement('tr');
-          tr.innerHTML = '<td>' + p.no + '</td><td>' + p.date + '</td><td>' + p.supplier + '</td><td>' + p.items.length + '</td><td>Rs.' + parseFloat(p.total).toFixed(2) + '</td>' +
+          tr.innerHTML = '<td>' + p.no + '</td><td>' + p.date + '</td><td>' + p.supplier + (G.sess.r==='admin'?'<div style="font-size:10px;color:#999;">By: '+(p.salesman||'Admin')+'</div>':'') + '</td><td>' + p.items.length + '</td><td>Rs.' + parseFloat(p.total).toFixed(2) + '</td>' +
             '<td><button class="bsm" style="background:linear-gradient(#eef,#ccf);border:1px solid #668;margin-right:4px;padding:2px 8px;cursor:pointer;">LOAD</button>' +
             '<button class="bsm" style="background:linear-gradient(#f88,#d33);color:#fff;border:1px solid #833;padding:2px 8px;cursor:pointer;">DEL</button></td>';
           var btns = tr.querySelectorAll('button');
@@ -2113,24 +2181,80 @@
 
       function showHist() {
         var tb = g('hb'); tb.innerHTML = '';
-        if (G.bills.length === 0) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">No bills yet</td></tr>'; }
-        G.bills.slice().reverse().forEach(function (b) {
+        var bills = G.bills.slice();
+        if (G.sess.r === 'salesman') bills = bills.filter(b => b.salesman === G.sess.u);
+        
+        if (bills.length === 0) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">No bills yet</td></tr>'; }
+        bills.reverse().forEach(function (b) {
           var pm = b.pay_mode || 'N/A';
-          var pmColor = pm === 'Cash' ? '#006600' : pm === 'Credit' ? '#cc4400' : pm === 'Online' ? '#003399' : '#555';
+          var stat = b.status || 'Completed';
+          var profit = 0;
+          if (G.sess.r === 'admin') {
+             var totalCost = b.items.reduce((acc, i) => acc + ( (i.cp || (i.ra * 0.8)) * i.q ), 0);
+             profit = (b.net_amt - (b.spl_disc || 0)) - totalCost;
+          }
           var tr = document.createElement('tr');
+          if (stat === 'Pending') tr.style.background = '#fff8e8';
+          
           tr.innerHTML = '<td>' + b.no + '</td><td>' + b.date + '</td>' +
-            '<td>' + b.cust + (b.phone ? '<br><span style="font-size:10px;color:#555;">' + b.phone + '</span>' : '') + '</td>' +
-            '<td>' + b.items.length + '</td><td>Rs.' + (b.net_amt ? (b.net_amt - (b.spl_disc || 0)) : (parseFloat(b.net) || 0)).toFixed(2) + '</td>' +
-            '<td style="font-weight:700;color:' + pmColor + ';">' + pm + '</td>' +
-            '<td><button class="bsm" style="background:linear-gradient(#eef,#ccf);border:1px solid #668;margin-right:4px;padding:2px 8px;cursor:pointer;">LOAD</button>' +
-            '<button class="bsm" style="background:linear-gradient(#f88,#d33);color:#fff;border:1px solid #833;padding:2px 8px;cursor:pointer;">DEL</button></td>';
+            '<td>' + b.cust + (G.sess.r==='admin'?'<div style="font-size:10px;color:#999;">By: '+(b.salesman||'Admin')+'</div>':'') + '</td>' +
+            '<td>' + b.items.length + '</td><td>Rs.' + (b.net_amt - (b.spl_disc || 0)).toFixed(2) + 
+            (G.sess.r === 'admin' ? '<br><span style="color:#006600;font-size:10px;">Profit: Rs.' + profit.toFixed(2) + '</span>' : '') + '</td>' +
+            '<td><span style="font-size:11px;padding:2px 4px;border-radius:3px;background:' + (stat==='Pending'?'#e6af2e':'#28a745') + ';color:#fff;">' + stat.toUpperCase() + '</span></td>' +
+            '<td><button class="bsm">LOAD</button>' +
+            (G.sess.r === 'admin' && stat === 'Pending' ? '<button class="bsm" style="background:#28a745;color:#fff;">APPROVE</button>' : '') +
+            '<button class="bsm" style="background:#d33;color:#fff;">DEL</button></td>';
+            
           var btns = tr.querySelectorAll('button');
           btns[0].onclick = function () { loadB(b.no); };
-          btns[1].onclick = function () { delB(b.no); };
+          if (G.sess.r === 'admin' && stat === 'Pending') {
+            btns[1].onclick = function () { approveBill(b.no); };
+            btns[2].onclick = function () { delB(b.no); };
+          } else {
+            btns[1].onclick = function () { delB(b.no); };
+          }
           tb.appendChild(tr);
         });
-        var mh = document.querySelector('#hm .mh'); if (mh) mh.innerHTML = 'Sale Bill History <span onclick="cm(\'hm\')">&#10006;</span>';
         document.getElementById('hm').classList.add('show');
+      }
+
+      function approveBill(no) {
+        var b = G.bills.find(x => x.no === no);
+        if (!b) return;
+        if (!confirm('Approve order and deduct from stock?')) return;
+        
+        // 1. Deduct Stock
+        b.items.forEach(function(r) {
+           var idx = G.items.findIndex(i => i.name === r.name);
+           if (idx >= 0) {
+              G.items[idx].stock = Math.max(0, G.items[idx].stock - r.q);
+              if (G.items[idx].batches) {
+                 var rem = r.q;
+                 G.items[idx].batches.forEach(bt => {
+                    if (rem <= 0) return;
+                    var d = Math.min(bt.qty, rem);
+                    bt.qty -= d; rem -= d;
+                 });
+              }
+           }
+        });
+        
+        // 2. Update Ledger
+        var party = G.parties.find(p => p.name === b.cust);
+        if (party) {
+           if (!party.transactions) party.transactions = [];
+           var finalNet = (b.net_amt - (b.spl_disc || 0));
+           party.transactions.push({ date: tds(), desc: 'Sale Bill ' + b.no + ' (Approved)', type: 'Cr', amt: finalNet });
+           party.bal = (parseFloat(party.bal)||0) - finalNet;
+           if (b.rcvd_amt > 0) {
+              party.transactions.push({ date: tds(), desc: 'Payment ' + b.no, type: 'Dr', amt: b.rcvd_amt });
+              party.bal = (parseFloat(party.bal)||0) + b.rcvd_amt;
+           }
+        }
+        
+        b.status = 'Completed';
+        fetch(API_BASE + '/api/saveBill', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({bill:b, items:G.items, party: party}) })
+        .then(() => { sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties); showHist(); alert('Order Approved!'); });
       }
 
       function loadB(no) {
@@ -2163,10 +2287,12 @@
           if (idx >= 0) G.items[idx].stock += r.q;
         });
 
-        // 3. Party balance revert karein
+        // 3. Party balance revert karein - Logic flipped
         var party = G.parties.find(p => p.name === b.cust);
-        if (party) {
-          var netSale = b.net_amt ? (b.net_amt - (b.spl_disc || 0)) : (parseFloat(b.net) || 0); var alreadyPaid = parseFloat(b.rcvd_amt || 0); party.bal = (parseFloat(party.bal) || 0) - (netSale - alreadyPaid);
+        if (party && b.status !== 'Pending') { // Only revert if it was approved/deducted
+          var netSale = (b.net_amt - (b.spl_disc || 0)); 
+          var alreadyPaid = parseFloat(b.rcvd_amt || 0); 
+          party.bal = (parseFloat(party.bal) || 0) + (netSale - alreadyPaid);
           if (party.transactions) {
             party.transactions = party.transactions.filter(t => !t.desc.includes(no));
           }
@@ -2329,12 +2455,111 @@
          }
       }
 
+      function showUserMgmt() {
+        var modal = document.getElementById('umm');
+        if (!modal) {
+          modal = document.createElement('div');
+          modal.id = 'umm';
+          modal.className = 'mo';
+          document.body.appendChild(modal);
+        }
+        
+        var userRows = G.users.map((u, i) => {
+          // Force legacy roles to admin
+          if (u.r === 'user') u.r = 'admin';
+          var roleColor = u.r === 'admin' ? '#003366' : '#854d0e';
+          return `
+          <tr>
+            <td>${u.u}</td>
+            <td style="font-family:monospace; color:#555;">${u.p}</td>
+            <td style="font-weight:700; color:${roleColor};">${u.r.toUpperCase()}</td>
+            <td><button class="bsm" onclick="editUser(${i})">Edit</button> <button class="bsm" style="color:red;" onclick="deleteUser(${i})">&#10006;</button></td>
+          </tr>`;
+        }).join('');
+
+        modal.innerHTML = `
+          <div class="mb2" style="min-width:400px; max-height:80vh; overflow-y:auto;">
+            <div class="mh">User Management <span onclick="cm('umm')">&#10006;</span></div>
+            <div class="mbd">
+              <table class="mt">
+                <thead><tr><th>Username</th><th>Password</th><th>Role</th><th>Action</th></tr></thead>
+                <tbody id="um-list">${userRows}</tbody>
+              </table>
+              <div style="margin-top:20px; padding:15px; background:#f4f7f9; border-top:2px solid #3a6a9a;">
+                <h3 style="margin-bottom:10px; color:#003366;">Add / Edit User</h3>
+                <input type="hidden" id="um-idx" value="-1">
+                <div class="lf2"><label>Username</label><input id="um-u" placeholder="Account name"></div>
+                <div class="lf2"><label>Password</label><input id="um-p" type="text" placeholder="Password (Visible)"></div>
+                <div class="lf2"><label>System Role</label>
+                  <select id="um-r" style="height:25px; padding:2px; width:100%;">
+                    <option value="admin">ADMIN (Full Access)</option>
+                    <option value="salesman">SALESMAN (Mobile Ordering)</option>
+                  </select>
+                </div>
+                <button class="lbtn" style="margin-top:15px; background:linear-gradient(#28a745, #1e7e34); color:#fff; font-size:16px; font-weight:800; padding:10px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);" onclick="saveUser()">💾 SAVE & SYNC USER</button>
+              </div>
+            </div>
+          </div>
+        `;
+        modal.classList.add('show');
+      }
+
+      function editUser(i) {
+        var u = G.users[i];
+        document.getElementById('um-u').value = u.u;
+        document.getElementById('um-p').value = u.p;
+        document.getElementById('um-r').value = u.r;
+        document.getElementById('um-idx').value = i;
+      }
+
+      function deleteUser(i) {
+        if (G.users[i].u === 'admin') return alert('Cannot delete primary admin account!');
+        if (!confirm('Permanently delete this user account?')) return;
+        G.users.splice(i, 1);
+        syncUsers();
+      }
+
+      function saveUser() {
+        var u = document.getElementById('um-u').value.trim();
+        var p = document.getElementById('um-p').value.trim();
+        var r = document.getElementById('um-r').value;
+        var idx = parseInt(document.getElementById('um-idx').value);
+        
+        if (!u || !p) return alert('Please enter both username and password!');
+        
+        if (idx === -1) {
+           if (G.users.find(x => x.u === u)) return alert('Username already exists!');
+           G.users.push({u: u, p: p, r: r});
+        } else {
+           G.users[idx] = {u: u, p: p, r: r};
+        }
+        syncUsers();
+      }
+
+      function syncUsers() {
+        fetch(API_BASE + '/api/saveUsers', {
+           method: 'POST',
+           headers: {'Content-Type': 'application/json'},
+           body: JSON.stringify({users: G.users})
+        }).then(r => r.json()).then(d => {
+           sv('mg2_users', G.users);
+           alert('Users synchronized successfully!');
+           showUserMgmt();
+        }).catch(e => {
+           sv('mg2_users', G.users);
+           alert('Saved locally (Server offline)');
+           showUserMgmt();
+        });
+      }
+
       function showAllReports() {
         var h = '<div id="rep-sc" style="display:flex;flex-direction:column;height:100%;background:#d4e4f0;overflow-y:auto;padding:10px;">' +
           '<div class="dt">Comprehensive Reporting Dashboard</div>' +
           '<div style="display:flex;gap:10px;margin-bottom:15px;border-bottom:2px solid #5a7fa8;padding-bottom:10px;background:#c8dce8;padding:10px;border-radius:4px;">' + 
           '<button class="bsm" style="padding:6px 16px;font-size:14px;font-weight:700;height:auto;" onclick="renderRep(\'stock\')">📦 Medicine Stock Report</button>' +
           '<button class="bsm" style="padding:6px 16px;font-size:14px;font-weight:700;height:auto;background:linear-gradient(#fff,#eee);" onclick="renderRep(\'pnl\')">💰 Profit & Loss Report</button>' +
+          '<button class="bsm" style="padding:6px 16px;font-size:14px;font-weight:700;height:auto;" onclick="renderRep(\'daily\')">📅 Daily Profit Summary</button>' +
+          '<button class="bsm" style="padding:6px 16px;font-size:14px;font-weight:700;height:auto;" onclick="renderRep(\'salesman\')">👤 Salesman Performance</button>' +
           '<button class="bsm" style="padding:6px 16px;font-size:14px;font-weight:700;height:auto;" onclick="renderRep(\'ledger\')">📖 Ledger Summary Report</button>' +
           '</div>' +
           '<div id="rep-body" style="background:#fff;border:1px solid #8aabcc;padding:20px;min-height:350px;flex:1;overflow-y:auto;box-shadow:2px 2px 8px rgba(0,0,0,0.1);">' +
@@ -2391,19 +2616,64 @@
            var totalReceivable = 0; var totalPayable = 0;
            var tbody = G.parties.map(p => {
               var bal = parseFloat(p.bal) || 0;
-              if (bal > 0) totalReceivable += bal;
-              if (bal < 0) totalPayable += Math.abs(bal);
-              var c = bal > 0 ? 'color:#cc0000;' : (bal < 0 ? 'color:#006600;' : 'color:#555;');
-              return '<tr><td style="text-align:left;">' + p.name + '</td><td style="text-align:center;">' + p.type + '</td><td style="font-weight:700;text-align:right;' + c + '">Rs.' + Math.abs(bal).toFixed(2) + (bal>0?' (Dr)':' (Cr)') + '</td></tr>';
+              if (bal < 0) totalReceivable += Math.abs(bal);
+              if (bal > 0) totalPayable += bal;
+              var c = bal < 0 ? 'color:#cc0000;' : (bal > 0 ? 'color:#006600;' : 'color:#555;');
+              return '<tr><td style="text-align:left;">' + p.name + '</td><td style="text-align:center;">' + p.type + '</td><td style="font-weight:700;text-align:right;' + c + '">Rs.' + Math.abs(bal).toFixed(2) + (bal<0?' (Cr)':' (Dr)') + '</td></tr>';
            }).join('');
            
            v.innerHTML = '<h2 style="color:#003366;margin-bottom:15px;border-bottom:2px solid #3a6a9a;padding-bottom:5px;">Ledger Details & Balances Report</h2>' +
              '<div class="g4" style="margin-bottom:20px;">' +
-             '<div class="cd rd"><div class="ct">Total Market Receivables (Dr)</div><div class="cv">Rs.' + totalReceivable.toFixed(2) + '</div></div>' +
-             '<div class="cd gr"><div class="ct">Total Payables / Debt (Cr)</div><div class="cv">Rs.' + totalPayable.toFixed(2) + '</div></div>' +
+             '<div class="cd rd"><div class="ct">Total Market Receivables (Cr)</div><div class="cv">Rs.' + totalReceivable.toFixed(2) + '</div></div>' +
+             '<div class="cd gr"><div class="ct">Total Payables / Debt (Dr)</div><div class="cv">Rs.' + totalPayable.toFixed(2) + '</div></div>' +
              '<div class="cd"><div class="ct">Net Position</div><div class="cv" style="font-size:20px;">Rs.' + Math.abs(totalReceivable - totalPayable).toFixed(2) + ((totalReceivable - totalPayable) > 0 ? ' (Dr)' : ' (Cr)') + '</div></div>' +
              '</div>' +
              '<table class="mt" style="width:100%;"><thead><tr><th style="background:#3a6a9a;color:#fff;text-align:left;">Party / Ledger Name</th><th style="background:#3a6a9a;color:#fff;text-align:center;">Type</th><th style="background:#3a6a9a;color:#fff;text-align:right;">Current Final Balance</th></tr></thead><tbody>' + tbody + '</tbody></table>';
+        } else if (type === 'daily') {
+            var d = tds();
+            var billsToday = G.bills.filter(b => b.date === d);
+            var saleToday = 0; var discToday = 0; var costToday = 0; var taxToday = 0;
+            billsToday.forEach(b => {
+               saleToday += parseFloat(b.net_amt) || 0;
+               discToday += parseFloat(b.spl_disc) || 0;
+               b.items.forEach(i => {
+                  var cost = i.cp || (i.ra * 0.8);
+                  costToday += (cost * i.q);
+                  var itemTax = (i.ra * i.q) * (parseFloat(i.gs || 0) / 100);
+                  taxToday += itemTax;
+               });
+            });
+            var profitToday = (saleToday - discToday) - taxToday - costToday;
+            v.innerHTML = '<h2 style="color:#003366;margin-bottom:15px;border-bottom:2px solid #3a6a9a;padding-bottom:5px;">Daily Profit Summary</h2>' +
+              '<div class="grand-total-box" style="font-size:18px; line-height:2; background:#f0f8ff; padding:20px; border-radius:8px; border:1px solid #3a6a9a;">' +
+              '<div style="display:flex; justify-content:space-between;"><span>Today\'s Gross Sales:</span> <b>Rs.' + saleToday.toFixed(2) + '</b></div>' +
+              '<div style="display:flex; justify-content:space-between; color:#c00;"><span>Total Discounts:</span> <b>- Rs.' + discToday.toFixed(2) + '</b></div>' +
+              '<div style="display:flex; justify-content:space-between; color:#850;"><span>Total Taxes (GST):</span> <b>- Rs.' + taxToday.toFixed(2) + '</b></div>' +
+              '<div style="display:flex; justify-content:space-between; color:#555;"><span>Cost of Goods (COGS):</span> <b>- Rs.' + costToday.toFixed(2) + '</b></div>' +
+              '<hr style="border:1px solid #3a6a9a; margin:10px 0;">' +
+              '<div style="display:flex; justify-content:space-between; color:#006600; font-size:26px;"><span><b>Net Profit Today:</b></span> <b>Rs.' + profitToday.toFixed(2) + '</b></div>' +
+              '</div>';
+        } else if (type === 'salesman') {
+           var stats = {};
+           G.users.filter(u => u.r === 'salesman').forEach(u => stats[u.u] = { month: 0, today: 0, orders: 0 });
+           var today = tds();
+           var curMonth = today.split('/')[1] + '/' + today.split('/')[2];
+           
+           G.bills.forEach(b => {
+              var s = b.salesman || 'Admin/Other';
+              if (!stats[s]) stats[s] = { month: 0, today: 0, orders: 0 };
+              var amt = (b.net_amt - (b.spl_disc || 0));
+              stats[s].orders++;
+              if (b.date === today) stats[s].today += amt;
+              if (b.date && b.date.includes(curMonth)) stats[s].month += amt;
+           });
+           
+           var tbody = Object.keys(stats).map(name => {
+              return '<tr><td>' + name + '</td><td>' + stats[name].orders + '</td><td>Rs.' + stats[name].today.toFixed(2) + '</td><td style="font-weight:700;">Rs.' + stats[name].month.toFixed(2) + '</td></tr>';
+           }).join('');
+           
+           v.innerHTML = '<h2 style="color:#003366;margin-bottom:15px;border-bottom:2px solid #3a6a9a;padding-bottom:5px;">Salesman Performance</h2>' +
+             '<table class="mt" style="width:100%;"><thead><tr><th>Salesman Name</th><th>Total Orders</th><th>Today Sales</th><th>Monthly Sales</th></tr></thead><tbody>' + tbody + '</tbody></table>';
         }
       }
 
@@ -2445,12 +2715,23 @@
             if (d.items) G.items = d.items;
             if (d.bills) { G.bills = d.bills; G.nbn = 10001 + G.bills.length; }
             if (d.purchases) G.purchases = d.purchases;
-            if (d.users) G.users = d.users;
+            if (d.users) { 
+               G.users = d.users;
+               // Migration: Convert legacy 'user' roles to 'admin'
+               G.users.forEach(u => { if (u.r === 'user') u.r = 'admin'; });
+            }
             if (d.parties) G.parties = d.parties;
             if (d.profile) G.profile = d.profile;
 
             var s = ld('mg2_sess', {});
-            if (s.on) { document.getElementById('ls').style.display = 'none'; var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN'); showDash(); }
+            if (s.on) { 
+               G.sess = s; // Sync global session state
+               document.getElementById('ls').style.display = 'none'; 
+               var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; 
+               document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN'); 
+               applyPermissions();
+               showDash(); 
+            }
           }).catch(function (e) {
             console.warn("MongoDB offline, falling back to local storage.", e);
             // FALLBACK TO LOCAL STORAGE
@@ -2462,7 +2743,14 @@
             var lpu = ld('mg2_purchases', null); if (lpu) G.purchases = lpu;
 
             var s = ld('mg2_sess', {});
-            if (s.on) { document.getElementById('ls').style.display = 'none'; var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN') + ' (Local Mode)'; showDash(); }
+            if (s.on) { 
+               G.sess = s;
+               document.getElementById('ls').style.display = 'none'; 
+               var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; 
+               document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN') + ' (Local Mode)'; 
+               applyPermissions();
+               showDash(); 
+            }
           });
       };
     </script>
