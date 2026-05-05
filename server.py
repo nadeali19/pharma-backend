@@ -212,28 +212,5 @@ def save_bill():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/saveUsers', methods=['POST'])
-def save_users():
-    if db is None:
-        return jsonify({"error": "Database not connected"}), 503
-    try:
-        data = request.json
-        users = data.get('users')
-        if users is None:
-            return jsonify({"error": "Missing users data"}), 400
-        
-        # Sterilize by removing _id for clean insertion
-        for u in users:
-            if '_id' in u:
-                del u['_id']
-        
-        # Replace all users to keep it simple for this ERP synchronization
-        db.users.delete_many({})
-        if users:
-            db.users.insert_many(users)
-        return jsonify({"success": True})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
