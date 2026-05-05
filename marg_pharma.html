@@ -629,67 +629,92 @@
     }
 
     #ls {
-      position: fixed;
-      inset: 0;
-      background: #c8dce8;
+      background: linear-gradient(135deg, #003366, #1c5e91);
+      height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 9999;
+      font-family: 'Inter', sans-serif;
     }
 
     .lb {
-      background: #d4e4f0;
-      border: 2px solid #5a7fa8;
-      padding: 24px;
-      width: 300px;
-      box-shadow: 4px 4px 12px rgba(0, 0, 0, .3);
+      background: rgba(255, 255, 255, 0.95);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255,255,255,0.3);
     }
 
     .lbt {
-      background: #003366;
-      color: #fff;
-      margin: -24px -24px 16px;
-      padding: 10px 16px;
-      font-size: 15px;
-      font-weight: 700;
+      font-size: 24px;
+      font-weight: 800;
+      color: #003366;
+      margin-bottom: 30px;
+      letter-spacing: -1px;
     }
 
     .lf2 {
-      margin-bottom: 10px;
+      margin-bottom: 20px;
+      text-align: left;
     }
 
     .lf2 label {
       display: block;
       font-weight: 700;
-      margin-bottom: 3px;
+      font-size: 13px;
+      color: #555;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      margin-left: 2px;
     }
 
     .lf2 input {
       width: 100%;
-      padding: 4px 6px;
-      border: 1px solid #7799bb;
-      background: #fff;
-      height: 24px;
-      font-size: 13px;
+      padding: 12px 15px;
+      border-radius: 10px;
+      border: 2px solid #e1e9f0;
+      font-size: 16px;
+      transition: all 0.3s;
+      outline: none;
+    }
+
+    .lf2 input:focus {
+      border-color: #003366;
+      box-shadow: 0 0 0 4px rgba(0,51,102,0.1);
     }
 
     .lbtn {
       width: 100%;
-      padding: 7px;
-      background: linear-gradient(#3a6adc, #0a3a8c);
+      padding: 14px;
+      background: linear-gradient(90deg, #003366, #1a5599);
       color: #fff;
       border: none;
-      cursor: pointer;
-      font-size: 14px;
+      border-radius: 10px;
+      font-size: 16px;
       font-weight: 700;
-      margin-top: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .lbtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,51,102,0.3);
+    }
+
+    .lbtn:active {
+      transform: translateY(0);
     }
 
     .lerr {
-      color: red;
-      font-size: 11px;
-      margin-top: 4px;
+      color: #d33;
+      margin-top: 15px;
+      font-size: 14px;
+      font-weight: 600;
     }
 
     ::-webkit-scrollbar {
@@ -760,16 +785,22 @@
 <body>
   <div id="ls">
     <div class="lb">
-      <div class="lbt">&#127973; Marg ERP 9+ [Pharma Special]</div>
-      <div class="lf2"><label>Username:</label><input id="lu" value="admin" onkeydown="if(event.key=='Enter')doLogin()">
+      <div class="lbt">Marg ERP 9+ <br><span style="font-size:14px; font-weight:400; opacity:0.8;">Pharma Special Edition</span></div>
+      <div class="lf2">
+        <label>Username</label>
+        <input id="lu" value="admin" placeholder="Enter username" onkeydown="if(event.key=='Enter')doLogin()">
       </div>
-      <div class="lf2"><label>Password:</label><input id="lp" type="password" value="admin123"
-          onkeydown="if(event.key=='Enter')doLogin()"></div>
-      <button class="lbtn" onclick="doLogin()">LOGIN</button>
+      <div class="lf2">
+        <label>Password</label>
+        <input id="lp" type="password" value="admin123" placeholder="Enter password" onkeydown="if(event.key=='Enter')doLogin()">
+      </div>
+      <button class="lbtn" onclick="doLogin()">SIGN IN</button>
       <div class="lerr" id="lerr"></div>
-      <p style="font-size:10px;color:#555;margin-top:8px;text-align:center;">admin/admin123 | salesman1/sales123</p>
-      <p id="f-warn" style="font-size:9px;color:#a33;margin-top:4px;text-align:center;display:none;">Security check: Use
-        localhost:5000 for full features.</p>
+      <div style="margin-top:25px; border-top:1px solid #eee; padding-top:15px;">
+        <p style="font-size:11px;color:#888;margin-top:4px;text-align:center;">Test Credentials:</p>
+        <p style="font-size:11px;color:#555;margin-top:4px;text-align:center;font-weight:600;">admin / admin123</p>
+        <p style="font-size:11px;color:#555;margin-top:2px;text-align:center;font-weight:600;">salesman1 / sales123</p>
+      </div>
     </div>
   </div>
   <div id="app" style="display:none;height:100vh;flex-direction:column;">
