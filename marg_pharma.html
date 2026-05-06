@@ -927,6 +927,8 @@
         <a onclick="showPurchHist();tsb()">&#128226; Purchase Hist</a>
         <a onclick="showAllReports();tsb()">&#128188; Final Reports</a>
         <a onclick="showCompanyProfile();tsb()">&#9881; ERP Settings</a>
+        <h4 id="m-admin-hdr" style="margin-top:10px;display:none;">Administration</h4>
+        <a onclick="showUserMgmt();tsb()" id="m-usermgmt" style="display:none;">&#128101; User Management</a>
       </nav>
       <div class="ma" id="ma"></div>
     </div>
@@ -1181,11 +1183,52 @@
       function ld(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
       function sv(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
       G.sess = ld('mg2_sess', {});
+      function applyRoleUI() {
+        var isA = G.sess && G.sess.r === 'admin';
+        var h = g('m-admin-hdr'), l = g('m-usermgmt');
+        if(h) h.style.display = isA ? 'block' : 'none';
+        if(l) l.style.display = isA ? 'flex' : 'none';
+      }
       function doLogin() {
         var u = document.getElementById('lu').value.trim(), p = document.getElementById('lp').value.trim();
-        var f = G.users.find(function (x) { return x.u === u && x.p === p; });
-        if (f) { G.sess = { u: u, r: f.r, on: true }; sv('mg2_sess', G.sess); document.getElementById('ls').style.display = 'none'; var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; document.getElementById('hi').innerText = 'User: ' + u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN'); showDash(); }
-        else document.getElementById('lerr').innerText = 'Invalid credentials!';
+        if(!u || !p) { document.getElementById('lerr').innerText = 'Enter username and password!'; return; }
+        
+        fetch(API_BASE + '/api/login', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ u: u, p: p })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            G.sess = { u: u, r: data.user.r, on: true };
+            sv('mg2_sess', G.sess);
+            document.getElementById('ls').style.display = 'none';
+            var a = document.getElementById('app');
+            a.style.display = 'flex';
+            a.style.flexDirection = 'column';
+            document.getElementById('hi').innerText = 'User: ' + u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN');
+            applyRoleUI();
+            showDash();
+          } else {
+            document.getElementById('lerr').innerText = data.error || 'Invalid credentials!';
+          }
+        })
+        .catch(err => {
+          // Fallback for local/offline mode
+          var f = G.users.find(function (x) { return x.u === u && x.p === p; });
+          if (f) { 
+            G.sess = { u: u, r: f.r, on: true }; 
+            sv('mg2_sess', G.sess); 
+            document.getElementById('ls').style.display = 'none'; 
+            var a = document.getElementById('app'); 
+            a.style.display = 'flex'; 
+            a.style.flexDirection = 'column'; 
+            document.getElementById('hi').innerText = 'User: ' + u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN') + ' (Offline)'; 
+            applyRoleUI();
+            showDash(); 
+          }
+          else document.getElementById('lerr').innerText = 'Invalid credentials or Server offline!';
+        });
       }
       function doLogout() { sv('mg2_sess', {}); location.reload(); }
       function setMA(h) { document.getElementById('ma').innerHTML = h; }
@@ -1551,13 +1594,13 @@
 
         if (party) {
           if (!party.transactions) party.transactions = [];
-          // 1. Debit the sale (after special discount)
-          party.transactions.push({ date: tds(), desc: 'Sale Bill ' + no + ' (Net)', type: 'Dr', amt: finalNet });
-          party.bal = (parseFloat(party.bal) || 0) + parseFloat(finalNet);
-          // 2. Credit the payment if any
+          // 1. Credit the sale (Sale = income, shown in Cr column)
+          party.transactions.push({ date: tds(), desc: 'Sale Bill ' + no + ' (Net)', type: 'Cr', amt: finalNet });
+          party.bal = (parseFloat(party.bal) || 0) - parseFloat(finalNet);
+          // 2. Debit the payment if any (payment received reduces receivable)
           if (newB.rcvd_amt > 0) {
-            party.transactions.push({ date: tds(), desc: 'Payment Recv ' + no + ' [' + pm + ']', type: 'Cr', amt: newB.rcvd_amt });
-            party.bal = (parseFloat(party.bal) || 0) - parseFloat(newB.rcvd_amt);
+            party.transactions.push({ date: tds(), desc: 'Payment Recv ' + no + ' [' + pm + ']', type: 'Dr', amt: newB.rcvd_amt });
+            party.bal = (parseFloat(party.bal) || 0) + parseFloat(newB.rcvd_amt);
           }
         }
 
@@ -1770,9 +1813,13 @@
       function showLedger() {
         var tb = g('lb2'); tb.innerHTML = '';
         G.parties.forEach(function (p) {
-          var c = p.bal > 0 ? '#cc3300' : '#228822';
+          // New convention: Customer Cr (negative) = they owe us = red; Supplier Dr (positive) = we owe them = red
+          var isCust = (p.type === 'Customer' || p.type !== 'Supplier');
+          var isAlert = (isCust && p.bal < 0) || (!isCust && p.bal > 0);
+          var c = isAlert ? '#cc3300' : '#228822';
+          var balLabel = p.bal < 0 ? ' (Cr)' : p.bal > 0 ? ' (Dr)' : ' (Nil)';
           var tr = document.createElement('tr');
-          tr.innerHTML = '<td>' + p.name + '</td><td>' + p.type + '</td><td style="font-weight:700;color:' + c + ';">Rs.' + Math.abs(p.bal).toFixed(2) + (p.bal > 0 ? ' (Dr)' : ' (Cr)') + '</td>';
+          tr.innerHTML = '<td>' + p.name + '</td><td>' + p.type + '</td><td style="font-weight:700;color:' + c + ';">Rs.' + Math.abs(p.bal).toFixed(2) + balLabel + '</td>';
           tr.onclick = function () { showPartyDetail(p.name); };
           tb.appendChild(tr);
         });
@@ -1796,77 +1843,127 @@
         var totalDr = 0, totalCr = 0;
         txs.forEach(t => { if (t.type === 'Dr') totalDr += t.amt; else totalCr += t.amt; });
         var netPending = Math.abs(p.bal);
-        var netLabel = p.bal > 0 ? 'Dr (Receivable)' : p.bal < 0 ? 'Cr (Payable)' : 'Nil';
-        var summaryColor = p.bal > 0 ? '#cc0000' : p.bal < 0 ? '#006600' : '#333';
+        // New convention: Customer Cr bal (negative) = receivable; Supplier Dr bal (positive) = payable
+        var isCust = (p.type === 'Customer' || p.type !== 'Supplier');
+        var netLabel = isCust
+          ? (p.bal < 0 ? 'Cr (Receivable)' : p.bal > 0 ? 'Dr (Advance)' : 'Nil')
+          : (p.bal > 0 ? 'Dr (Payable)' : p.bal < 0 ? 'Cr (Advance)' : 'Nil');
+        var summaryColor = (isCust && p.bal < 0) || (!isCust && p.bal > 0) ? '#cc0000' : (p.bal !== 0 ? '#006600' : '#333');
 
-        var html = '<div class="mb2" style="min-width:760px;"><div class="mh">Ledger: ' + name + ' <span style="font-size:11px;font-weight:400;margin-left:10px;">' + partyInfo + '</span><span onclick="cm(\'pdm\')" style="margin-left:auto;">&#10006;</span></div>' +
-          '<div class="mbd">' +
-          '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;background:#e8f0f8;padding:8px;border:1px solid #8aabcc;">' +
-          '<div class="cd" style="padding:5px;"><div class="ct">Total Dr</div><div class="cv" style="font-size:16px;">Rs.' + totalDr.toFixed(2) + '</div></div>' +
-          '<div class="cd" style="padding:5px;"><div class="ct">Total Cr</div><div class="cv" style="font-size:16px;">Rs.' + totalCr.toFixed(2) + '</div></div>' +
-          '<div class="cd" style="padding:5px;border-top-color:' + summaryColor + '"><div class="ct">Pending Balance</div><div class="cv" style="font-size:16px;color:' + summaryColor + '">Rs.' + netPending.toFixed(2) + '</div></div>' +
-          '<div class="cd" style="padding:5px;"><div class="ct">Status</div><div class="cv" style="font-size:13px;color:' + summaryColor + '">' + netLabel + '</div></div>' +
+        // Store current party name globally to avoid quote-escaping issues in onclick
+        window._ledgerParty = name;
+
+        // Define context-aware labels for manual transactions
+        var isSup = p.type === 'Supplier';
+        var type1Label = isSup ? 'Debit (Payment Made)' : 'Credit (Payment Received)';
+        var type1Val = isSup ? 'Dr' : 'Cr';
+        var type2Label = isSup ? 'Credit (Purchase Added)' : 'Debit (Added Charge)';
+        var type2Val = isSup ? 'Cr' : 'Dr';
+
+        var html = '<div class="mb2" style="min-width:800px; border-radius:12px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.25); border:none;">' +
+          '<div class="mh" style="background:linear-gradient(135deg, #1e3a5f, #2a5a8a); color:#fff; padding:15px 20px; font-size:18px; display:flex; align-items:center; border:none;">' +
+          '📖 Ledger: <strong style="margin-left:8px;">' + name + '</strong> ' +
+          '<span style="font-size:12px; opacity:0.8; margin-left:15px; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:20px;">' + partyInfo + '</span>' +
+          '<span onclick="cm(\'pdm\')" style="margin-left:auto; cursor:pointer; font-size:24px; line-height:1;">&times;</span></div>' +
+          '<div class="mbd" style="padding:20px; background:#f4f7f9;">' +
+          
+          // Summary Cards
+          '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:20px;">' +
+          '<div class="cd" style="padding:12px; border-radius:10px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.05); border-left:4px solid #3498db;">' +
+            '<div class="ct" style="font-size:11px; text-transform:uppercase; color:#7f8c8d; font-weight:600;">Total Dr</div>' +
+            '<div class="cv" style="font-size:20px; color:#2c3e50;">Rs.' + totalDr.toLocaleString(undefined,{minimumFractionDigits:2}) + '</div>' +
           '</div>' +
-          '<table class="mt"><thead><tr><th>Date</th><th>Description</th><th>Debit (Dr)</th><th>Credit (Cr)</th><th style="background:#2a5a8a;">Running Balance</th></tr></thead><tbody>';
+          '<div class="cd" style="padding:12px; border-radius:10px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.05); border-left:4px solid #2ecc71;">' +
+            '<div class="ct" style="font-size:11px; text-transform:uppercase; color:#7f8c8d; font-weight:600;">Total Cr</div>' +
+            '<div class="cv" style="font-size:20px; color:#2c3e50;">Rs.' + totalCr.toLocaleString(undefined,{minimumFractionDigits:2}) + '</div>' +
+          '</div>' +
+          '<div class="cd" style="padding:12px; border-radius:10px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.05); border-left:4px solid ' + summaryColor + ';">' +
+            '<div class="ct" style="font-size:11px; text-transform:uppercase; color:#7f8c8d; font-weight:600;">Pending Balance</div>' +
+            '<div class="cv" style="font-size:20px; color:' + summaryColor + ';">Rs.' + netPending.toLocaleString(undefined,{minimumFractionDigits:2}) + '</div>' +
+          '</div>' +
+          '<div class="cd" style="padding:12px; border-radius:10px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.05); border-left:4px solid ' + summaryColor + ';">' +
+            '<div class="ct" style="font-size:11px; text-transform:uppercase; color:#7f8c8d; font-weight:600;">Status</div>' +
+            '<div class="cv" style="font-size:14px; color:' + summaryColor + '; font-weight:700;">' + netLabel + '</div>' +
+          '</div>' +
+          '</div>' +
+
+          // Transaction Table
+          '<div style="background:#fff; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.05); overflow:hidden; margin-bottom:20px;">' +
+          '<table class="mt" style="width:100%; border-collapse:separate; border-spacing:0;">' +
+          '<thead>' +
+            '<tr style="background:#2c3e50; color:#fff;">' +
+              '<th style="padding:12px; text-align:left; border:none;">Date</th>' +
+              '<th style="padding:12px; text-align:left; border:none;">Description</th>' +
+              '<th style="padding:12px; text-align:right; border:none;">Debit (Dr)</th>' +
+              '<th style="padding:12px; text-align:right; border:none;">Credit (Cr)</th>' +
+              '<th style="padding:12px; text-align:right; border:none; background:#1a252f;">Running Bal</th>' +
+              '<th style="padding:12px; text-align:center; border:none; width:40px;"></th>' +
+            '</tr>' +
+          '</thead><tbody>';
 
         // Opening balance row
-        html += '<tr style="background:#e8f4e8;"><td colspan="4" style="font-weight:700;color:#006600;">Opening Balance</td><td style="font-weight:700;color:#006600;">' +
-          Math.abs(openBal).toFixed(2) + (openBal > 0 ? ' Dr' : openBal < 0 ? ' Cr' : ' Nil') + '</td></tr>';
+        html += '<tr style="background:#ecf0f1;"><td colspan="4" style="padding:10px 12px; font-weight:700; color:#34495e;">Opening Balance</td>' +
+          '<td style="padding:10px 12px; text-align:right; font-weight:700; color:#2c3e50;">' +
+          Math.abs(openBal).toLocaleString(undefined,{minimumFractionDigits:2}) + (openBal > 0 ? ' Dr' : openBal < 0 ? ' Cr' : ' Nil') + '</td><td></td></tr>';
 
         var bal = openBal;
         if (txs.length === 0) {
-          // No transaction history but balance exists (initial MongoDB data / legacy)
           if (p.bal !== 0) {
-            html += '<tr style="background:#fff8e8;"><td>-</td>' +
-              '<td style="color:#555;font-style:italic;">Balance Brought Forward (No transaction history)</td>' +
-              '<td style="color:#cc0000;">' + (p.bal > 0 ? 'Rs.' + Math.abs(p.bal).toFixed(2) : '-') + '</td>' +
-              '<td style="color:#006600;">' + (p.bal < 0 ? 'Rs.' + Math.abs(p.bal).toFixed(2) : '-') + '</td>' +
-              '<td style="font-weight:700;color:' + (p.bal > 0 ? '#cc0000' : '#006600') + ';">' + Math.abs(p.bal).toFixed(2) + (p.bal > 0 ? ' Dr' : ' Cr') + '</td></tr>';
+            html += '<tr style="background:#fff;"><td>-</td>' +
+              '<td style="color:#7f8c8d;font-style:italic;">Balance Brought Forward (No transaction history)</td>' +
+              '<td style="text-align:right; color:#e74c3c;">' + (p.bal > 0 ? 'Rs.' + Math.abs(p.bal).toFixed(2) : '-') + '</td>' +
+              '<td style="text-align:right; color:#27ae60;">' + (p.bal < 0 ? 'Rs.' + Math.abs(p.bal).toFixed(2) : '-') + '</td>' +
+              '<td style="padding:10px 12px; text-align:right; font-weight:700; color:' + (p.bal > 0 ? '#e74c3c' : '#27ae60') + ';">' + Math.abs(p.bal).toFixed(2) + (p.bal > 0 ? ' Dr' : ' Cr') + '</td><td></td></tr>';
             bal = p.bal;
           } else {
-            html += '<tr><td colspan="5" style="text-align:center;color:#777;padding:10px;">No transactions recorded</td></tr>';
+            html += '<tr><td colspan="6" style="text-align:center;color:#95a5a6;padding:30px;">No transactions recorded for this ledger.</td></tr>';
           }
         } else {
-          txs.forEach(t => {
-            var prev = bal;
+          txs.forEach((t, index) => {
             if (t.type === 'Dr') bal += t.amt; else bal -= t.amt;
-            var balColor = bal > 0 ? '#cc0000' : bal < 0 ? '#006600' : '#333';
+            var balColor = bal > 0 ? '#e74c3c' : bal < 0 ? '#27ae60' : '#34495e';
             var balLabel = bal > 0 ? ' Dr' : bal < 0 ? ' Cr' : ' Nil';
-            var rowBg = t.type === 'Dr' ? 'background:#fff8f0;' : 'background:#f0fff0;';
+            var rowBg = t.type === 'Dr' ? 'background:#fffafa;' : 'background:#fafffa;';
 
-            // Make bill IDs clickable
             var desc = t.desc;
             var billMatch = desc.match(/(SI-\d+|INV-\w+)/);
             if (billMatch) {
               var billNo = billMatch[0];
               var clickFn = billNo.startsWith('SI-') ? 'loadB' : 'loadPB';
-              desc = desc.replace(billNo, '<a href="#" onclick="cm(\'pdm\'); ' + clickFn + '(\'' + billNo + '\'); return false;" style="color:#003399;font-weight:700;text-decoration:underline;">' + billNo + '</a>');
+              desc = desc.replace(billNo, '<a href="#" onclick="cm(\'pdm\'); ' + clickFn + '(\'' + billNo + '\'); return false;" style="color:#2980b9;font-weight:700;text-decoration:none;border-bottom:1px dashed #2980b9;">' + billNo + '</a>');
             }
 
-            html += '<tr style="' + rowBg + '"><td>' + t.date + '</td>' +
-              '<td>' + desc + '</td>' +
-              '<td style="color:#cc0000;font-weight:' + (t.type === 'Dr' ? '700' : '400') + ';">' + (t.type === 'Dr' ? 'Rs.' + t.amt.toFixed(2) : '-') + '</td>' +
-              '<td style="color:#006600;font-weight:' + (t.type === 'Cr' ? '700' : '400') + ';">' + (t.type === 'Cr' ? 'Rs.' + t.amt.toFixed(2) : '-') + '</td>' +
-              '<td style="font-weight:700;color:' + balColor + ';">' + Math.abs(bal).toFixed(2) + balLabel + '</td></tr>';
+            html += '<tr style="' + rowBg + '; border-bottom:1px solid #eee;">' +
+              '<td style="padding:10px 12px;">' + t.date + '</td>' +
+              '<td style="padding:10px 12px;">' + desc + '</td>' +
+              '<td style="padding:10px 12px; text-align:right; color:#e74c3c; font-weight:' + (t.type === 'Dr' ? '700' : '400') + ';">' + (t.type === 'Dr' ? 'Rs.' + t.amt.toFixed(2) : '-') + '</td>' +
+              '<td style="padding:10px 12px; text-align:right; color:#27ae60; font-weight:' + (t.type === 'Cr' ? '700' : '400') + ';">' + (t.type === 'Cr' ? 'Rs.' + t.amt.toFixed(2) : '-') + '</td>' +
+              '<td style="padding:10px 12px; text-align:right; font-weight:700; color:' + balColor + ';">' + Math.abs(bal).toFixed(2) + balLabel + '</td>' +
+              '<td style="text-align:center;"><button class="del-tx-btn" data-idx="' + index + '" title="Delete" style="background:none;border:none;color:#e74c3c;cursor:pointer;font-size:18px;padding:4px 8px;">🗑️</button></td></tr>';
           });
         }
 
-        // Closing balance — always use p.bal as source of truth
         var closingBal = p.bal;
-        var closingColor = closingBal > 0 ? '#cc0000' : closingBal < 0 ? '#006600' : '#333';
+        var closingColor = closingBal > 0 ? '#e74c3c' : closingBal < 0 ? '#27ae60' : '#34495e';
         var closingLabel = closingBal > 0 ? ' Dr (Receivable)' : closingBal < 0 ? ' Cr (Payable)' : ' Nil';
-        html += '<tr style="background:#d0e8ff;border-top:2px solid #5a7fa8;"><td colspan="4" style="font-weight:700;color:#003366;">Closing Balance</td>' +
-          '<td style="font-weight:700;color:' + closingColor + ';font-size:13px;">' + Math.abs(closingBal).toFixed(2) + closingLabel + '</td></tr>';
+        html += '<tr style="background:#e8f0fe; border-top:2px solid #3498db;"><td colspan="4" style="padding:12px; font-weight:700; color:#1a5276; text-transform:uppercase; letter-spacing:0.5px;">Closing Balance</td>' +
+          '<td style="padding:12px; text-align:right; font-weight:800; color:' + closingColor + '; font-size:15px;">' + Math.abs(closingBal).toLocaleString(undefined,{minimumFractionDigits:2}) + closingLabel + '</td><td></td></tr>';
 
-        html += '</tbody></table>' +
-          '<div style="margin-top:15px;background:#fffde8;border:1px dashed #8aabcc;padding:10px;">' +
-          '<div style="font-weight:700;margin-bottom:8px;color:#003366;">📤 Add Manual Transaction (e.g. Receive Payment)</div>' +
-          '<div style="display:flex;gap:10px;align-items:flex-end;">' +
-          '<div class="ri" style="flex:1;"><label>Description</label><input id="mtx-desc" placeholder="e.g. Cash Payment Received"></div>' +
-          '<div class="ri" style="width:100px;"><label>Type</label><select id="mtx-type" style="height:18px;border:1px solid #7799bb;"><option value="Cr">Credit (Received)</option><option value="Dr">Debit (Added)</option></select></div>' +
-          '<div class="ri" style="width:100px;"><label>Amount</label><input id="mtx-amt" type="number" placeholder="0.00"></div>' +
-          '<div class="ri" style="width:100px;"><label>Date</label><input id="mtx-date" value="' + tds() + '"></div>' +
-          '<button class="bsm" onclick="saveManualTx(\'' + name + '\')" style="background:linear-gradient(#3a6adc,#0a3a8c);color:#fff;border:none;">Save Tx</button>' +
+        html += '</tbody></table></div>' +
+          
+          // Manual Transaction Form
+          '<div style="background:#fff; border-radius:10px; border:1px solid #d6eaf8; box-shadow:0 4px 15px rgba(0,0,0,0.05); padding:15px;">' +
+          '<div style="font-weight:700;margin-bottom:12px;color:#2c3e50;display:flex;align-items:center;"><span style="font-size:20px;margin-right:8px;">➕</span> Add Manual Transaction</div>' +
+          '<div style="display:flex;gap:15px;align-items:flex-end;">' +
+          '<div class="ri" style="flex:2;"><label style="font-weight:600;color:#566573;margin-bottom:4px;display:block;">Description</label><input id="mtx-desc" style="width:100%;" placeholder="e.g. Cash Payment Received"></div>' +
+          '<div class="ri" style="flex:1.5;"><label style="font-weight:600;color:#566573;margin-bottom:4px;display:block;">Transaction Type</label>' +
+            '<select id="mtx-type" style="width:100%; height:32px; border:1px solid #bdc3c7; border-radius:4px; padding:0 8px; background:#fff;">' +
+              '<option value="' + type1Val + '">' + type1Label + '</option>' +
+              '<option value="' + type2Val + '">' + type2Label + '</option>' +
+            '</select></div>' +
+          '<div class="ri" style="flex:1;"><label style="font-weight:600;color:#566573;margin-bottom:4px;display:block;">Amount (Rs)</label><input id="mtx-amt" type="number" step="0.01" style="width:100%;" placeholder="0.00"></div>' +
+          '<div class="ri" style="flex:1;"><label style="font-weight:600;color:#566573;margin-bottom:4px;display:block;">Date</label><input id="mtx-date" style="width:100%;" value="' + tds() + '"></div>' +
+          '<button id="mtx-save-btn" class="bsm" style="background:linear-gradient(to right, #3498db, #2980b9); color:#fff; border:none; padding:8px 20px; border-radius:6px; font-weight:700; cursor:pointer; height:32px; transition:all 0.2s; box-shadow:0 3px 6px rgba(52,152,219,0.3);">Save Entry</button>' +
           '</div></div>' +
           '</div></div>';
 
@@ -1877,18 +1974,28 @@
         }
         m.innerHTML = html;
         m.classList.add('show');
+
+        // Attach delete listeners AFTER HTML is injected — no onclick string issues
+        m.querySelectorAll('.del-tx-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            deleteManualTx(parseInt(this.getAttribute('data-idx')));
+          });
+        });
+
+        // Attach save listener AFTER HTML is injected
+        var saveBtn = m.querySelector('#mtx-save-btn');
+        if (saveBtn) saveBtn.addEventListener('click', saveManualTx);
       }
 
-      function saveManualTx(pname) {
-        var desc = g('mtx-desc').value.trim();
-        var amt = parseFloat(g('mtx-amt').value) || 0;
-        var type = g('mtx-type').value;
-        var date = g('mtx-date').value;
+      function saveManualTx() {
+        var pname = window._ledgerParty;
+        if (!pname) { alert('Party name nahi mili!'); return; }
+        var dEl = g('mtx-desc'), aEl = g('mtx-amt'), tEl = g('mtx-type'), dtEl = g('mtx-date');
+        if (!dEl || !aEl || !tEl || !dtEl) { alert('Form elements nahi mile!'); return; }
+        var desc = dEl.value.trim(), amt = parseFloat(aEl.value) || 0, type = tEl.value, date = dtEl.value;
 
         if (!desc || amt <= 0) { alert('Sahi description aur amount enter karein!'); return; }
-
-        var p = G.parties.find(x => x.name === pname);
-        if (!p) return;
+        var p = G.parties.find(x => x.name === pname); if (!p) return;
 
         if (!p.transactions) p.transactions = [];
         p.transactions.push({ date: date, desc: desc, type: type, amt: amt });
@@ -1898,14 +2005,37 @@
 
         fetch(API_BASE + '/api/saveBill', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items: G.items, party: p }) // Re-using saveBill route which handles party updates
+          body: JSON.stringify({ items: G.items, party: p })
         }).then(r => r.json()).then(d => {
           sv('mg2_parties', G.parties);
-          alert('Transaction saved successfully!');
-          showPartyDetail(pname); // Refresh modal
+          showPartyDetail(pname);
         }).catch(e => {
           sv('mg2_parties', G.parties);
-          alert('Saved locally!');
+          showPartyDetail(pname);
+        });
+      }
+
+      function deleteManualTx(index) {
+        var pname = window._ledgerParty;
+        if (!pname) { alert('Party identify nahi ho saki!'); return; }
+        if (!confirm('Kya aap waqai ye transaction delete karna chahte hain?')) return;
+        var p = G.parties.find(x => x.name === pname); if (!p || !p.transactions) return;
+        
+        var t = p.transactions[index];
+        // Revert balance
+        if (t.type === 'Dr') p.bal -= t.amt;
+        else p.bal += t.amt;
+
+        p.transactions.splice(index, 1);
+
+        fetch(API_BASE + '/api/saveBill', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: G.items, party: p })
+        }).then(r => r.json()).then(d => {
+          sv('mg2_parties', G.parties);
+          showPartyDetail(pname);
+        }).catch(e => {
+          sv('mg2_parties', G.parties);
           showPartyDetail(pname);
         });
       }
@@ -1970,10 +2100,10 @@
           if (idx >= 0) G.items[idx].stock += r.q;
         });
 
-        // 2. Revert Old Ledger
+        // 2. Revert Old Ledger (old sale was Cr = bal -=, so revert by +=)
         var party = G.parties.find(p => p.name === b_old.cust);
         if (party) {
-          party.bal -= parseFloat(b_old.net);
+          party.bal += parseFloat(b_old.net);
           party.transactions = party.transactions.filter(t => t.desc !== 'Sale Bill ' + b_old.no);
         }
 
@@ -1983,12 +2113,12 @@
           if (idx >= 0) G.items[idx].stock -= r.q;
         });
 
-        // 4. Apply New Ledger
+        // 4. Apply New Ledger (Sale = Cr, bal -=)
         var new_net = b_new.items.reduce((a, x) => a + x.am, 0);
         b_new.net = new_net;
         if (party) {
-          party.bal = (parseFloat(party.bal) || 0) + parseFloat(new_net);
-          party.transactions.push({ date: tds(), desc: 'Sale Bill ' + b_new.no + ' (Modified)', type: 'Dr', amt: new_net });
+          party.bal = (parseFloat(party.bal) || 0) - parseFloat(new_net);
+          party.transactions.push({ date: tds(), desc: 'Sale Bill ' + b_new.no + ' (Modified)', type: 'Cr', amt: new_net });
         }
 
         // 5. Update Local Array
@@ -2034,8 +2164,9 @@
           var alreadyPaid = parseFloat(b.rcvd_amt || 0);
           var netDue = netSale - alreadyPaid;
 
-          party.transactions.push({ date: tds(), desc: 'Return Bill ' + b.no, type: 'Cr', amt: netDue });
-          party.bal = (parseFloat(party.bal) || 0) - netDue;
+          // Return reverses sale (Cr): so Dr entry, bal += to restore receivable toward 0
+          party.transactions.push({ date: tds(), desc: 'Return Bill ' + b.no, type: 'Dr', amt: netDue });
+          party.bal = (parseFloat(party.bal) || 0) + netDue;
         }
 
         // 3. Remove Bill
@@ -2195,13 +2326,13 @@
         var party = G.parties.find(p => p.name === su);
         if (!party) { party = { name: su, type: 'Supplier', bal: 0, transactions: [] }; G.parties.push(party); }
         if (!party.transactions) party.transactions = [];
-        // Credit entry = we owe supplier
-        party.transactions.push({ date: tds(), desc: 'Purchase Inv ' + inv + ' [' + pm + ']', type: 'Cr', amt: tot });
-        party.bal -= tot;
-        // If partial payment made, record as Dr (we paid)
+        // Debit entry = Purchase expense (shown in Dr column, we owe supplier → bal +=)
+        party.transactions.push({ date: tds(), desc: 'Purchase Inv ' + inv + ' [' + pm + ']', type: 'Dr', amt: tot });
+        party.bal += tot;
+        // If partial payment made, record as Cr (we reduced what we owe)
         if (paid > 0) {
-          party.transactions.push({ date: tds(), desc: 'Payment against ' + inv + ' [' + pm + ']', type: 'Dr', amt: paid });
-          party.bal += paid;
+          party.transactions.push({ date: tds(), desc: 'Payment against ' + inv + ' [' + pm + ']', type: 'Cr', amt: paid });
+          party.bal -= paid;
         }
 
         fetch(API_BASE + '/api/savePurchase', {
@@ -2250,7 +2381,8 @@
         // 3. Supplier Ledger revert karein
         var party = G.parties.find(x => x.name === p.supplier);
         if (party) {
-          var netEffect = (parseFloat(p.total) || 0) - (parseFloat(p.paid) || 0); party.bal += netEffect;
+          // Purchase was Dr (bal +=), so revert by -=
+          var netEffect = (parseFloat(p.total) || 0) - (parseFloat(p.paid) || 0); party.bal -= netEffect;
           if (party.transactions) {
             party.transactions = party.transactions.filter(t => !t.desc.includes(no));
           }
@@ -2352,7 +2484,8 @@
         // 3. Party balance revert karein
         var party = G.parties.find(p => p.name === b.cust);
         if (party) {
-          var netSale = b.net_amt ? (b.net_amt - (b.spl_disc || 0)) : (parseFloat(b.net) || 0); var alreadyPaid = parseFloat(b.rcvd_amt || 0); party.bal = (parseFloat(party.bal) || 0) - (netSale - alreadyPaid);
+          // Sale was Cr (bal -=), Payment was Dr (bal +=). Net effect: -(netSale - alreadyPaid). Revert: +
+          var netSale = b.net_amt ? (b.net_amt - (b.spl_disc || 0)) : (parseFloat(b.net) || 0); var alreadyPaid = parseFloat(b.rcvd_amt || 0); party.bal = (parseFloat(party.bal) || 0) + (netSale - alreadyPaid);
           if (party.transactions) {
             party.transactions = party.transactions.filter(t => !t.desc.includes(no));
           }
@@ -2631,21 +2764,211 @@
             if (d.profile) G.profile = d.profile;
 
             var s = ld('mg2_sess', {});
-            if (s.on) { document.getElementById('ls').style.display = 'none'; var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN'); showDash(); }
+            if (s.on) { 
+              G.sess = s;
+              document.getElementById('ls').style.display = 'none'; 
+              var a = document.getElementById('app'); 
+              a.style.display = 'flex'; 
+              a.style.flexDirection = 'column'; 
+              document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN'); 
+              applyRoleUI();
+              showDash(); 
+            }
           }).catch(function (e) {
             console.warn("MongoDB offline, falling back to local storage.", e);
             // FALLBACK TO LOCAL STORAGE
             var li = ld('mg2_items', null); if (li) G.items = li;
             var lb = ld('mg2_bills', null); if (lb) { G.bills = lb; G.nbn = 10001 + G.bills.length; }
             var lu = ld('mg2_users', null); if (lu) G.users = lu;
-            var lp = ld('mg2_parties', null); if (lp) G.parties = lp;
+            var lp = ld('mg2_parties', null); if (lp) { G.parties = lp; }
             var lcp = ld('mg2_profile', null); if (lcp) G.profile = lcp;
             var lpu = ld('mg2_purchases', null); if (lpu) G.purchases = lpu;
 
             var s = ld('mg2_sess', {});
-            if (s.on) { document.getElementById('ls').style.display = 'none'; var a = document.getElementById('app'); a.style.display = 'flex'; a.style.flexDirection = 'column'; document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN') + ' (Local Mode)'; showDash(); }
+            if (s.on) { 
+              G.sess = s;
+              document.getElementById('ls').style.display = 'none'; 
+              var a = document.getElementById('app'); 
+              a.style.display = 'flex'; 
+              a.style.flexDirection = 'column'; 
+              document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN') + ' (Local Mode)'; 
+              applyRoleUI();
+              showDash(); 
+            }
           });
       };
+
+      function showUserMgmt() {
+        if (G.sess.r !== 'admin') { alert('Access Denied!'); return; }
+        var adminCount = G.users.filter(u => u.r === 'admin').length;
+        var staffCount = G.users.filter(u => u.r !== 'admin').length;
+        
+        var h = '<div id="user-sc" style="display:flex;flex-direction:column;height:100%;overflow:hidden;background:#f8fafc;">' +
+          '<div class="sh" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6);padding:15px 20px;">' +
+          '👤 Staff & User Management &nbsp;<span style="font-size:12px;opacity:0.8;">Secure System - No IDs Exposed</span></div>' +
+          '<div class="mbd" style="padding:25px;background:#fff;border-bottom:1px solid #e2e8f0;">' +
+          '<div class="g4" style="margin-bottom:25px;">' +
+          '<div class="cd bl" style="border-left:5px solid #3b82f6;"><div class="ct">Total Users</div><div class="cv">' + G.users.length + '</div></div>' +
+          '<div class="cd gr" style="border-left:5px solid #10b981;"><div class="ct">Admins</div><div class="cv">' + adminCount + '</div></div>' +
+          '<div class="cd or" style="border-left:5px solid #f59e0b;"><div class="ct">Staff / Users</div><div class="cv">' + staffCount + '</div></div>' +
+          '<div class="cd" style="border-left:5px solid #6366f1;justify-content:center;align-items:center;cursor:pointer;" onclick="openAddUser()">' +
+          '<div style="font-size:24px;">➕</div><div class="ct" style="font-weight:700;">Add New User</div></div>' +
+          '</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">' +
+          '<input id="user-search" placeholder="Search by username or role..." style="width:300px;padding:8px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;" onkeyup="filterUsers()">' +
+          '<button class="bsm" style="background:#1e3a8a;color:#fff;border:none;padding:8px 20px;border-radius:8px;font-weight:700;" onclick="openAddUser()">Create User Account</button>' +
+          '</div>' +
+          '<div class="cs" style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">' +
+          '<div class="bta" style="border:none;">' +
+          '<div class="th" style="background:#f1f5f9;color:#475569;font-weight:700;border-bottom:1.5px solid #e2e8f0;">' +
+          '<div class="c1" style="border:none;">#</div><div class="c2" style="border:none;">Username</div>' +
+          '<div style="flex:1;padding:8px 10px;border:none;">Display Name</div>' +
+          '<div style="width:120px;padding:8px 10px;text-align:center;border:none;">Account Role</div>' +
+          '<div style="width:150px;padding:8px 10px;text-align:center;border:none;">Action</div>' +
+          '</div>' +
+          '<div class="tb2" id="user-list"></div></div>' +
+          '</div></div></div>';
+
+        setMA(h);
+        renderUserList();
+      }
+
+      function filterUsers() {
+        var q = g('user-search').value.toLowerCase();
+        Array.from(g('user-list').children).forEach(tr => {
+          tr.style.display = tr.innerText.toLowerCase().includes(q) ? '' : 'none';
+        });
+      }
+
+      function renderUserList() {
+        var c = g('user-list');
+        if (!c) return;
+        c.innerHTML = '';
+        G.users.forEach((u, idx) => {
+          var isMe = u.u === G.sess.u;
+          var roleColor = u.r === 'admin' ? '#ef4444' : '#10b981';
+          var roleBg = u.r === 'admin' ? '#fef2f2' : '#f0fdf4';
+          var d = document.createElement('div'); d.className = 'tr';
+          d.style.height = '50px'; d.style.alignItems = 'center';
+          d.innerHTML = '<div class="c1" style="border:none;">' + (idx + 1) + '</div>' +
+            '<div class="c2" style="border:none;font-weight:700;color:#1e293b;">' + u.u + (isMe ? ' <span style="font-size:10px;background:#e2e8f0;padding:2px 6px;border-radius:10px;margin-left:5px;">YOU</span>' : '') + '</div>' +
+            '<div style="flex:1;padding:8px 10px;border:none;color:#64748b;">' + (u.dn || 'N/A') + '</div>' +
+            '<div style="width:120px;padding:8px 10px;text-align:center;border:none;">' +
+            '<span style="background:' + roleBg + ';color:' + roleColor + ';padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid ' + roleColor + '20;">' + u.r.toUpperCase() + '</span></div>' +
+            '<div style="width:150px;padding:8px 10px;text-align:center;border:none;display:flex;gap:8px;justify-content:center;">' +
+            '<button class="bsm" style="background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:4px 10px;border-radius:6px;font-size:12px;" onclick="editUser(\'' + u.u + '\')">Edit</button>' +
+            (isMe ? '' : '<button class="bsm" style="background:#fff1f2;color:#e11d48;border:1px solid #fecaca;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:bold;" onclick="deleteUser(\'' + u.u + '\')">Del</button>') +
+            '</div>';
+          c.appendChild(d);
+        });
+      }
+
+      function openAddUser() {
+        var m = g('um-modal');
+        if (!m) {
+          m = document.createElement('div'); m.id = 'um-modal'; m.className = 'mo';
+          document.body.appendChild(m);
+        }
+        m.innerHTML = '<div class="mb2" style="min-width:400px;border-radius:16px;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);border:none;">' +
+          '<div class="mh" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6);padding:15px;color:#fff;border:none;">' +
+          '🔑 User Account Setup <span onclick="cm(\'um-modal\')" style="cursor:pointer;font-size:20px;">&times;</span></div>' +
+          '<div class="mbd" style="padding:24px;background:#fff;">' +
+          '<input type="hidden" id="um-mode" value="add">' +
+          '<div class="lf2"><label style="color:#64748b;font-size:12px;">Login Username</label><input id="um-u" placeholder="e.g. john_doe" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;margin-top:4px;"></div>' +
+          '<div class="lf2" style="margin-top:15px;"><label style="color:#64748b;font-size:12px;">Display Name</label><input id="um-dn" placeholder="e.g. John Doe" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;margin-top:4px;"></div>' +
+          '<div class="lf2" style="margin-top:15px;"><label style="color:#64748b;font-size:12px;">Password</label><input type="password" id="um-p" placeholder="••••••••" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;margin-top:4px;"></div>' +
+          '<div class="lf2" style="margin-top:15px;"><label style="color:#64748b;font-size:12px;">Confirm Password</label><input type="password" id="um-pc" placeholder="••••••••" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;margin-top:4px;"></div>' +
+          '<div class="lf2" style="margin-top:15px;"><label style="color:#64748b;font-size:12px;">Account Role</label>' +
+          '<select id="um-r" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;margin-top:4px;background:#fff;">' +
+          '<option value="user">Standard User (Staff)</option><option value="admin">Administrator (Full Access)</option></select></div>' +
+          '<p id="um-msg" style="font-size:11px;color:#e11d48;margin-top:10px;text-align:center;"></p>' +
+          '<button class="lbtn" style="margin-top:20px;background:#1e3a8a;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:700;box-shadow:0 4px 6px -1px rgba(30,58,138,0.2);" onclick="saveUser()">Register User Account</button>' +
+          '</div></div>';
+        m.classList.add('show');
+        g('um-u').readOnly = false; g('um-u').style.background = '#fff';
+        ['um-u', 'um-dn', 'um-p', 'um-pc', 'um-msg'].forEach(id => g(id).value = '');
+        g('um-r').value = 'user'; g('um-mode').value = 'add';
+        g('um-u').focus();
+      }
+
+      function editUser(uname) {
+        openAddUser();
+        var u = G.users.find(x => x.u === uname);
+        if (!u) return;
+        g('um-mode').value = 'edit';
+        g('um-u').value = u.u; g('um-u').readOnly = true; g('um-u').style.background = '#f8fafc';
+        g('um-dn').value = u.dn || '';
+        g('um-r').value = u.r;
+        g('um-msg').innerText = 'Note: Leave password blank to keep existing.';
+        g('um-msg').style.color = '#64748b';
+        var btn = document.querySelector('#um-modal button');
+        if(btn) btn.innerText = 'Update User Account';
+      }
+
+      function saveUser() {
+        var mode = g('um-mode').value;
+        var u = g('um-u').value.trim(), dn = g('um-dn').value.trim(), p = g('um-p').value, pc = g('um-pc').value, r = g('um-r').value;
+        var msg = g('um-msg');
+
+        if (!u) { msg.innerText = 'Username is required!'; return; }
+        if (mode === 'add' && !p) { msg.innerText = 'Password is required for new users!'; return; }
+        if (p !== pc) { msg.innerText = 'Passwords do not match!'; return; }
+
+        var userObj = { u: u, r: r, dn: dn };
+        if (p) userObj.p = p; 
+
+        var payload = {};
+        if (mode === 'add') payload.user_add = userObj;
+        else payload.user_update = userObj;
+
+        fetch(API_BASE + '/api/manageUser', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(res => res.json()).then(data => {
+          if (data.error) { msg.innerText = data.error; return; }
+          if (data.users) G.users = data.users;
+          sv('mg2_users', G.users);
+          alert('User ' + (mode === 'add' ? 'added' : 'updated') + ' successfully!');
+          cm('um-modal');
+          if (g('user-list')) renderUserList();
+        }).catch(err => {
+          // Local fallback
+          if (mode === 'add') {
+             if(G.users.find(x => x.u === u)) { msg.innerText = 'Username exists!'; return; }
+             G.users.push(userObj);
+          } else {
+             var idx = G.users.findIndex(x => x.u === u);
+             if(idx >= 0) {
+                G.users[idx].r = r; G.users[idx].dn = dn;
+                if(p) G.users[idx].p = p;
+             }
+          }
+          sv('mg2_users', G.users);
+          alert('Saved locally!');
+          cm('um-modal');
+          if (g('user-list')) renderUserList();
+        });
+      }
+
+      function deleteUser(uname) {
+        if (uname === G.sess.u) { alert('You cannot delete your own account!'); return; }
+        if (!confirm('Are you sure you want to delete user ' + uname + '?')) return;
+
+        fetch(API_BASE + '/api/manageUser', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_delete: uname })
+        }).then(res => res.json()).then(data => {
+          if (data.users) G.users = data.users;
+          sv('mg2_users', G.users);
+          alert('User deleted!');
+          if (g('user-list')) renderUserList();
+        }).catch(err => {
+          G.users = G.users.filter(x => x.u !== uname);
+          sv('mg2_users', G.users);
+          alert('Deleted locally!');
+          if (g('user-list')) renderUserList();
+        });
+      }
     </script>
 </body>
 

@@ -12,10 +12,8 @@ MONGO_URI = "mongodb+srv://nadeali:alinade1926@cluster0.hgwzx4r.mongodb.net/phar
 try:
     print("Connecting to MongoDB Atlas...")
     client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000, tlsAllowInvalidCertificates=True)
-    # Trigger a connection to verify
-    client.admin.command('ismaster')
     db = client['pharma_db']
-    print("SUCCESS: Connected to MongoDB!")
+    print("SUCCESS: Connection to MongoDB client initialized!")
     db_err = None
 except Exception as e:
     db_err = str(e)
@@ -93,7 +91,7 @@ def get_data():
         items = sterilize(list(db.items.find({})))
         bills = sterilize(list(db.bills.find({})))
         purchases = sterilize(list(db.purchases.find({})))
-        users = sterilize(list(db.users.find({})))
+        users = sterilize(list(db.users.find({}, {"_id": 0, "p": 0})))
         parties = sterilize(list(db.parties.find({})))
         profile = sterilize(db.profile.find_one({}))
         return jsonify({"items": items, "bills": bills, "purchases": purchases, "users": users, "parties": parties, "profile": profile})
@@ -212,5 +210,58 @@ def save_bill():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "ok", "message": "Server is responsive"})
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    if db is None:
+        return jsonify({"error": "Database not connected"}), 503
+    try:
+        data = request.json
+        u = data.get('u')
+        p = data.get('p')
+        user = db.users.find_one({"u": u, "p": p}, {"_id": 0, "p": 0})
+        if user:
+            return jsonify({"success": True, "user": user})
+        else:
+            return jsonify({"success": False, "error": "Invalid credentials"}), 401
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/manageUser', methods=['POST'])
+def manage_user():
+    if db is None:
+        return jsonify({"error": "Database not connected"}), 503
+    try:
+        data = request.json
+        user_add = data.get('user_add')
+        user_update = data.get('user_update')
+        user_delete = data.get('user_delete')
+
+        if user_delete:
+            db.users.delete_one({"u": user_delete})
+
+        if user_add:
+            existing = db.users.find_one({"u": user_add.get("u")})
+            if existing:
+                return jsonify({"error": "Username already exists"}), 400
+            clean = {k: v for k, v in user_add.items() if k != '_id'}
+            db.users.insert_one(clean)
+
+        if user_update:
+            uname = user_update.get('u')
+            update_fields = {k: v for k, v in user_update.items() if k not in ('u', '_id')}
+            if uname and update_fields:
+                db.users.update_one({"u": uname}, {"$set": update_fields})
+
+        # Return sanitized user list — NO _id, NO passwords
+        users = sterilize(list(db.users.find({}, {"_id": 0, "p": 0})))
+        return jsonify({"success": True, "users": users})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5000, host='0.0.0.0')
