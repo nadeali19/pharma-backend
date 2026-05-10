@@ -886,15 +886,20 @@
   <div id="ls">
     <div class="lb">
       <div class="lbt">&#127973; Marg ERP 9+ [Pharma Special]</div>
-      <div class="lf2"><label>Username:</label><input id="lu" value="admin" onkeydown="if(event.key=='Enter')doLogin()">
+      <div id="office-login-box">
+        <div class="lf2"><label>Username:</label><input id="lu" value="admin" onkeydown="if(event.key=='Enter')doLogin()"></div>
+        <div class="lf2"><label>Password:</label><input id="lp" type="password" value="admin123" onkeydown="if(event.key=='Enter')doLogin()"></div>
+        <button class="lbtn" onclick="doLogin()">LOGIN</button>
       </div>
-      <div class="lf2"><label>Password:</label><input id="lp" type="password" value="admin123"
-          onkeydown="if(event.key=='Enter')doLogin()"></div>
-      <button class="lbtn" onclick="doLogin()">LOGIN</button>
+      <div id="portal-login-box" style="display:none;">
+        <div class="lf2"><label>ID / Phone:</label><input id="portal-id" placeholder="Phone No or Company Name" onkeydown="if(event.key=='Enter')portalLgn()"></div>
+        <button class="lbtn" style="background:linear-gradient(#e8f0ff, #c0d8ff);color:#1e3a8a;" onclick="portalLgn()">ACCESS PORTAL</button>
+      </div>
       <div class="lerr" id="lerr"></div>
+      <p style="font-size:10px;color:#555;margin-top:8px;text-align:center;">
+        <a href="#" id="toggle-portal" onclick="toggleLoginMode(event)" style="color:var(--primary);text-decoration:none;font-weight:700;">Switch to Customer/Company Portal</a>
+      </p>
       <p style="font-size:10px;color:#555;margin-top:8px;text-align:center;">admin/admin123 | user1/1234</p>
-      <p id="f-warn" style="font-size:9px;color:#a33;margin-top:4px;text-align:center;display:none;">Security check: Use
-        localhost:5000 for full features.</p>
     </div>
   </div>
   <div id="app" style="display:none;height:100vh;flex-direction:column;">
@@ -1173,7 +1178,9 @@
         bills: [],
         purchases: [],
         users: [{ u: 'admin', p: 'admin123', r: 'admin' }, { u: 'user1', p: '1234', r: 'user' }],
-        parties: [],
+        parties: [
+          { name: 'Dr. Afaq Saleem', phone: '0300-7358302', type: 'Customer', bal: -5000, transactions: [{date:'10/05/26', desc:'Opening Balance', type:'Cr', amt:5000}] }
+        ],
         profile: { name: 'HAMZA MEDICINE COMPANY', phone: '061-2079422, 0300-7358302', addr: 'H-NO: 15-16 Shams abad, Multan.', ntn: '36102-7250390-3' },
         sess: {},
         bi: [],
@@ -1183,12 +1190,137 @@
       function ld(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
       function sv(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
       G.sess = ld('mg2_sess', {});
-      function applyRoleUI() {
-        var isA = G.sess && G.sess.r === 'admin';
-        var h = g('m-admin-hdr'), l = g('m-usermgmt');
-        if(h) h.style.display = isA ? 'block' : 'none';
-        if(l) l.style.display = isA ? 'flex' : 'none';
+      function toggleLoginMode(e) {
+        if (e) e.preventDefault();
+        var officeBox = document.getElementById('office-login-box');
+        var portalBox = document.getElementById('portal-login-box');
+        var toggleLink = document.getElementById('toggle-portal');
+        if (officeBox.style.display === 'none') {
+          officeBox.style.display = 'block';
+          portalBox.style.display = 'none';
+          toggleLink.innerText = 'Switch to Customer/Company Portal';
+        } else {
+          officeBox.style.display = 'none';
+          portalBox.style.display = 'block';
+          toggleLink.innerText = 'Switch to Staff Login';
+        }
       }
+
+      function portalLgn() {
+        var id = document.getElementById('portal-id').value.trim();
+        if (!id) { alert('Please enter Phone No or Company Name'); return; }
+
+        // Clean ID for comparison (remove dashes/spaces)
+        var cleanId = id.replace(/[-\s]/g, '');
+
+        // Try to find as a Party (Customer)
+        var p = G.parties.find(x => {
+          var cleanPhone = (x.phone || '').replace(/[-\s]/g, '');
+          return cleanPhone === cleanId || x.name.toLowerCase() === id.toLowerCase();
+        });
+
+        // Hardcoded fallback for testing if not found
+        if (!p && cleanId === '03007358302') {
+          p = { name: 'Dr. Afaq Saleem', phone: '0300-7358302', type: 'Customer', bal: -5000, transactions: [{date:'10/05/26', desc:'Opening Balance', type:'Cr', amt:5000}] };
+          G.parties.push(p);
+          sv('mg2_parties', G.parties);
+        }
+
+        if (p) {
+          G.sess = { on: true, u: p.name, r: 'Customer', id: p.name };
+          sv('mg2_sess', G.sess);
+          document.getElementById('ls').style.display = 'none';
+          var a = document.getElementById('app');
+          a.style.display = 'flex';
+          a.style.flexDirection = 'column';
+          document.getElementById('hi').innerText = 'Welcome: ' + p.name + ' (Customer)';
+          applyRoleUI();
+          showPartyDetail(p.name);
+          return;
+        }
+
+        // Try to find as a Company Rep
+        var compExists = G.items.some(i => i.company.toLowerCase() === id.toLowerCase());
+        if (compExists) {
+          G.sess = { on: true, u: id, r: 'Company', id: id };
+          sv('mg2_sess', G.sess);
+          document.getElementById('ls').style.display = 'none';
+          var a = document.getElementById('app');
+          a.style.display = 'flex';
+          a.style.flexDirection = 'column';
+          document.getElementById('hi').innerText = 'Welcome: ' + id.toUpperCase() + ' (Company Portal)';
+          applyRoleUI();
+          showCompanySales(id);
+          return;
+        }
+
+        alert('Access Denied: Record not found for ' + id + '. Please contact office.');
+      }
+
+      function applyRoleUI() {
+        if (!G.sess) return;
+        var r = G.sess.r;
+        var nav = document.getElementById('sl');
+        var sidebar = document.getElementById('sl');
+        var topSearch = document.querySelector('.search-box');
+        var menuBtn = document.querySelector('.hm-btn');
+
+        if (r === 'Customer' || r === 'Company') {
+          // Strictly hide sidebar and admin features for portal users
+          if (sidebar) sidebar.style.display = 'none';
+          if (topSearch) topSearch.style.display = 'none';
+          if (menuBtn) menuBtn.style.display = 'none';
+          document.documentElement.style.setProperty('--drawer-width', '0px');
+        } else {
+          // Restore for Admin/Staff
+          if (sidebar) sidebar.style.display = 'flex';
+          if (topSearch) topSearch.style.display = 'flex';
+          if (menuBtn) menuBtn.style.display = 'flex';
+          document.documentElement.style.setProperty('--drawer-width', '260px');
+          
+          if (nav) {
+            var links = nav.querySelectorAll('a, h4');
+            links.forEach(l => l.style.display = 'block');
+          }
+        }
+      }
+
+      function showCompanySales(compName) {
+        var comp_lower = compName.toLowerCase();
+        var compItems = G.items.filter(i => i.company.toLowerCase() === comp_lower);
+        var totalStockVal = 0;
+        var totalSaleVal = 0;
+        
+        compItems.forEach(i => {
+          totalStockVal += (parseFloat(i.stock) || 0) * (parseFloat(i.rate) || 0);
+        });
+
+        var companyBills = G.bills.filter(b => b.items.some(it => {
+          var originalItem = G.items.find(gi => gi.name === it.name);
+          return originalItem && originalItem.company.toLowerCase() === comp_lower;
+        }));
+
+        companyBills.forEach(b => {
+          b.items.forEach(it => {
+            var originalItem = G.items.find(gi => gi.name === it.name);
+            if (originalItem && originalItem.company.toLowerCase() === comp_lower) {
+              totalSaleVal += parseFloat(it.am) || 0;
+            }
+          });
+        });
+
+        setMA('<div id="comp-portal-sc" style="padding:20px;">' +
+          '<div class="sh">' + compName.toUpperCase() + ' - Sales & Stock Report</div>' +
+          '<div class="g4" style="margin-top:20px;">' +
+          '<div class="cd bl"><div class="ct">Total Market Sales</div><div class="cv">Rs.' + totalSaleVal.toFixed(2) + '</div></div>' +
+          '<div class="cd gr"><div class="ct">Current Stock Valuation</div><div class="cv">Rs.' + totalStockVal.toFixed(2) + '</div></div>' +
+          '</div>' +
+          '<div class="dst" style="margin-top:30px;">Your Products Status</div>' +
+          '<table class="mt"><thead><tr><th>Product Name</th><th>Pack</th><th>Available Stock</th><th>Current Rate</th></tr></thead><tbody>' +
+          compItems.map(i => '<tr><td>' + i.name + '</td><td>' + i.pack + '</td><td style="font-weight:700;">' + i.stock + '</td><td>Rs.' + i.rate + '</td></tr>').join('') +
+          '</tbody></table></div>');
+      }
+
       function doLogin() {
         var u = document.getElementById('lu').value.trim(), p = document.getElementById('lp').value.trim();
         if(!u || !p) { document.getElementById('lerr').innerText = 'Enter username and password!'; return; }
@@ -1316,12 +1448,191 @@
           '<button class="bsm" onclick="showHist()">📜 Sale History</button>' +
           '<button class="bsm" onclick="showStock()">📦 Stock Status</button>' +
           '<button class="bsm" onclick="showLedger()">👥 Party Ledger</button>' +
+          '<button class="bsm" style="background:linear-gradient(#e8f0ff, #c0d8ff); color:#1e3a8a;" onclick="showOrderBooking()">📝 Book Order</button>' +
+          '<button class="bsm" style="background:linear-gradient(#f0e8ff, #d8c0ff); color:#3a1e8a;" onclick="showOrderManagement()">📋 Manage Orders</button>' +
+          '<button id="sync-btn" class="bsm" style="background:linear-gradient(#ffe8e8, #ffc0c0); color:#c00; font-weight:700;" onclick="syncDataOnline()">🔄 Sync Online</button>' +
+          '<button id="download-btn" class="bsm" style="background:linear-gradient(#e8fff0, #c0ffda); color:#006600; font-weight:700;" onclick="downloadFromCloud()">📥 Download Data</button>' +
           '</div><div class="dst">🆕 Recent Transactions</div>' +
           '<table class="mt" style="border-radius:12px;overflow:hidden;box-shadow:var(--shadow);"><thead><tr><th>No</th><th>Date</th><th>Customer</th><th>P-Mode</th><th>Net Amount</th></tr></thead><tbody>' +
           G.bills.slice(-6).reverse().map(function (b) { 
             return '<tr><td>' + b.no + '</td><td>' + b.date + '</td><td>' + (b.cust||'Cash') + '</td><td>' + (b.pay_mode||'Cash') + '</td><td style="font-weight:700;color:var(--primary);">Rs.' + (b.net_amt ? (b.net_amt - (b.spl_disc || 0)) : (parseFloat(b.net) || 0)).toFixed(2) + '</td></tr>'; 
           }).join('') +
           '</tbody></table></div>');
+      }
+
+      function showOrderBooking() {
+        var t = tds();
+        setMA('<div id="order-sc">' +
+          '<div class="sh">Salesman Order Booking &nbsp;<span>Date: ' + t + '</span></div>' +
+          '<div class="bt">' +
+          '<div class="br"><label>Sector <input id="osec" list="sector-list" style="width:100px;" placeholder="Sector" oninput="updateOrderTowns()"></label>' +
+          '<datalist id="sector-list"></datalist>' +
+          '<label style="margin-left:6px;">Town <input id="otwn" list="town-list" style="width:100px;" placeholder="Town" oninput="updateOrderParties()"></label>' +
+          '<datalist id="town-list"></datalist>' +
+          '<label style="margin-left:6px;">Customer <input id="ocu" list="party-list" style="min-width:180px;" placeholder="Customer Name" oninput="findOrderParty()"></label>' +
+          '<datalist id="party-list"></datalist></div>' +
+          '</div>' +
+          '<div class="pib">' +
+          '<label>Product <input id="opn" style="min-width:155px;cursor:pointer;background:#ffe;" onclick="openIM()" readonly placeholder="F2/Click"></label>' +
+          '<label>Qty <input id="oqt" type="number" value="1" style="width:42px;"></label>' +
+          '<button class="bsm" style="background:linear-gradient(#c0eec0,#7acc7a);font-weight:700;" onclick="addOrderRow()">ADD</button>' +
+          '</div>' +
+          '<div class="cs">' +
+          '<div class="bta">' +
+          '<div class="th"><div class="c1">#</div><div class="c2">Product Name</div><div class="c5">Qty</div><div class="c7">Action</div></div>' +
+          '<div class="tb2" id="or2"></div></div>' +
+          '</div>' +
+          '<div class="ab">' +
+          '<button class="abg" onclick="saveOrderOnline()">Send Online</button>' +
+          '<button onclick="downloadOrderFile()">Share via WhatsApp (File)</button>' +
+          '<button onclick="G.oi=[];ro();">Clear</button>' +
+          '<button onclick="showDash()">Home</button>' +
+          '</div></div>');
+        G.oi = []; ro();
+        updateOrderTowns();
+      }
+
+      function updateOrderTowns() {
+        var sec = g('osec').value.trim();
+        var towns = [...new Set(G.parties.filter(p => p.type !== 'Supplier' && (!sec || p.sector === sec)).map(p => p.town))].filter(Boolean);
+        var dl = g('town-list');
+        if (dl) dl.innerHTML = towns.map(t => '<option value="' + t + '">' + t + '</option>').join('');
+        updateOrderParties();
+      }
+
+      function updateOrderParties() {
+        var sec = g('osec').value.trim();
+        var twn = g('otwn').value.trim();
+        var parties = G.parties.filter(p => p.type !== 'Supplier' && (!sec || p.sector === sec) && (!twn || p.town === twn));
+        var dl = g('party-list');
+        if (dl) dl.innerHTML = parties.map(p => '<option value="' + p.name + '">' + p.name + '</option>').join('');
+      }
+
+      function findOrderParty() {
+        var q = g('ocu').value.trim();
+        var p = G.parties.find(x => x.name.toLowerCase() === q.toLowerCase());
+        if (p) {
+          if (g('osec') && p.sector) g('osec').value = p.sector;
+          if (g('otwn') && p.town) g('otwn').value = p.town;
+        }
+      }
+
+      function addOrderRow() {
+        var nm = g('opn').value.trim(); if (!nm) { alert('Product select karein!'); openIM(); return; }
+        var q = parseFloat(g('oqt').value) || 0; if (q <= 0) { alert('Quantity enter karein!'); return; }
+        G.oi.push({ sno: G.oi.length + 1, name: nm, q: q });
+        ro();
+        g('opn').value = ''; g('oqt').value = 1; g('opn').focus();
+      }
+
+      function ro() {
+        var c = g('or2'); if (!c) return; c.innerHTML = '';
+        G.oi.forEach(function (r, i) {
+          var d = document.createElement('div'); d.className = 'tr';
+          d.innerHTML = '<div class="c1">' + r.sno + '</div><div class="c2">' + r.name + '</div><div class="c5">' + r.q + '</div>' +
+            '<div class="c7"><button onclick="G.oi.splice(' + i + ',1);G.oi.forEach((x,j)=>x.sno=j+1);ro();" style="color:red;border:none;background:none;cursor:pointer;">&#10006;</button></div>';
+          c.appendChild(d);
+        });
+      }
+
+      function saveOrderOnline() {
+        if (G.oi.length === 0) { alert('Items add karein!'); return; }
+        var cu = g('ocu').value.trim(); if (!cu) { alert('Customer name!'); return; }
+        var order = { no: 'ORD-' + Date.now(), date: tds(), cust: cu, items: JSON.parse(JSON.stringify(G.oi)) };
+        fetch(API_BASE + '/api/saveOrder', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order: order })
+        }).then(r => r.json()).then(d => {
+          alert('Order sent successfully!');
+          showDash();
+        }).catch(e => alert('Error sending order online!'));
+      }
+
+      function downloadOrderFile() {
+        if (G.oi.length === 0) { alert('Items add karein!'); return; }
+        var cu = g('ocu').value.trim(); if (!cu) { alert('Customer name!'); return; }
+        var order = { no: 'ORD-' + Date.now(), date: tds(), cust: cu, items: G.oi };
+        var blob = new Blob([JSON.stringify(order)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'Order_' + cu.replace(/ /g, '_') + '_' + Date.now() + '.json';
+        a.click();
+      }
+
+      function showOrderManagement() {
+        setMA('<div id="order-mgmt-sc">' +
+          '<div class="sh">Order Management (Office)</div>' +
+          '<div class="bt">' +
+          '<button class="bsm" onclick="g(\'file-inp\').click()">📤 Upload Order File (WhatsApp)</button>' +
+          '<input type="file" id="file-inp" style="display:none;" onchange="uploadOrderFile(event)">' +
+          '</div>' +
+          '<div class="dst">Pending Orders</div>' +
+          '<div id="pending-orders-list" style="margin-top:10px;"></div>' +
+          '<div class="ab"><button onclick="showDash()">Home</button></div>' +
+          '</div>');
+        renderPendingOrders();
+      }
+
+      function renderPendingOrders() {
+        fetch(API_BASE + '/api/data').then(r => r.json()).then(d => {
+          var list = g('pending-orders-list'); if (!list) return;
+          if (!d.orders || d.orders.length === 0) { list.innerHTML = '<p style="padding:20px;color:#666;">No pending orders.</p>'; return; }
+          list.innerHTML = d.orders.map(o => '<div class="tr" style="background:#fff;border-radius:8px;padding:10px;margin-bottom:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:center;">' +
+            '<div><strong style="color:var(--primary);">' + o.cust + '</strong><br><span style="font-size:12px;color:#666;">' + o.date + ' | ' + o.items.length + ' items</span></div>' +
+            '<div><button class="bsm" onclick="convertOrderToBill(\'' + encodeURIComponent(JSON.stringify(o)) + '\')">Create Bill</button></div></div>').join('');
+        });
+      }
+
+      function uploadOrderFile(e) {
+        var file = e.target.files[0]; if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            var order = JSON.parse(e.target.result);
+            fetch(API_BASE + '/api/saveOrder', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ order: order })
+            }).then(r => r.json()).then(d => {
+              alert('Order file uploaded and merged successfully!');
+              renderPendingOrders();
+            });
+          } catch (ex) { alert('Invalid order file!'); }
+        };
+        reader.readAsText(file);
+      }
+
+      function convertOrderToBill(orderStr) {
+        var o = JSON.parse(decodeURIComponent(orderStr));
+        showSale();
+        setTimeout(() => {
+          se('bcu', o.cust);
+          findParty();
+          G.bi = o.items.map((it, idx) => {
+            var itemData = G.items.find(i => i.name === it.name);
+            var res = { sno: idx + 1, name: it.name, q: it.q, pk: '-', bt: '-', ex: '-', bo: 0, mr: 0, ra: 0, di: 0, gs: 0, veg: 0, ga: 0, am: 0 };
+            if (itemData) {
+              res.pk = itemData.pack;
+              res.mr = itemData.mrp;
+              res.ra = itemData.rate;
+              res.gs = itemData.gst;
+              if (itemData.batches && itemData.batches.length > 0) {
+                res.bt = itemData.batches[0].b;
+                res.ex = itemData.batches[0].exp;
+              }
+              res.veg = res.q * res.ra;
+              res.ga = res.veg * res.gs / 100;
+              res.am = res.veg + res.ga;
+            }
+            return res;
+          });
+          rr(); cf();
+          // Mark order as processed
+          fetch(API_BASE + '/api/processOrder', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order_no: o.no })
+          });
+        }, 100);
       }
 
       function showSale() {
@@ -1341,7 +1652,11 @@
           '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Qty</span>' +
           '<span style="background:#c0d8f0;border:1px solid #8aabcc;padding:1px 5px;font-weight:700;font-size:11px;">Price</span>' +
           '</div></div>' +
-          '<div class="br"><label>Customer <input id="bcu" list="party-list" style="min-width:180px;" placeholder="Cash / Customer Name" oninput="findParty()"></label>' +
+          '<div class="br"><label>Sector <input id="bsec" list="sector-list" style="width:100px;" placeholder="Sector" oninput="updateTowns()"></label>' +
+          '<datalist id="sector-list"></datalist>' +
+          '<label style="margin-left:6px;">Town <input id="btwn" list="town-list" style="width:100px;" placeholder="Town" oninput="updateParties()"></label>' +
+          '<datalist id="town-list"></datalist>' +
+          '<label style="margin-left:6px;">Customer <input id="bcu" list="party-list" style="min-width:180px;" placeholder="Cash / Customer Name" oninput="findParty()"></label>' +
           '<datalist id="party-list"></datalist>' +
           '<label style="margin-left:6px;">Phone <input id="bph" style="width:110px;" placeholder="0300-XXXXXXX" oninput="findParty()"></label>' +
           '<div id="p-bal" style="font-weight:700;color:#c00;margin-left:10px;font-size:11px;">Bal: 0.00</div>' +
@@ -1351,14 +1666,14 @@
           '</div>' +
           '<div class="pib">' +
           '<label>Product <input id="pn" style="min-width:155px;cursor:pointer;background:#ffe;" onclick="openIM()" readonly placeholder="F2/Click"></label>' +
-          '<label>Pack <input id="ppk" style="width:42px;"></label>' +
-          '<label>Batch <input id="pbt" style="width:58px;"></label>' +
-          '<label>Exp <input id="pex" style="width:50px;"></label>' +
           '<label>Qty <input id="pqt" type="number" value="1" style="width:42px;" oninput="cpv()"></label>' +
           '<label>Bonus <input id="pbo" type="number" value="0" style="width:38px;"></label>' +
+          '<label>Disc% <input id="pdi" type="number" value="0" style="width:38px;" oninput="cpv()"></label>' +
+          '<label>Pack <input id="ppk" style="width:42px;" readonly style="background:#eee;"></label>' +
+          '<label>Batch <input id="pbt" style="width:58px;"></label>' +
+          '<label>Exp <input id="pex" style="width:50px;"></label>' +
           '<label>MRP <input id="pmr" type="number" style="width:52px;" oninput="cpv()"></label>' +
           '<label>Rate <input id="pra" type="number" style="width:52px;" oninput="cpv()"></label>' +
-          '<label>Disc% <input id="pdi" type="number" value="0" style="width:38px;" oninput="cpv()"></label>' +
           '<label>GST% <input id="pgs" type="number" value="0" style="width:38px;" oninput="cpv()"></label>' +
           '<label>Amt <input id="pam" style="width:62px;" readonly></label>' +
           '<button class="bsm" style="background:linear-gradient(#c0eec0,#7acc7a);font-weight:700;" onclick="addRow()">ADD</button>' +
@@ -1403,10 +1718,12 @@
           '<button class="abr" onclick="showDash()">Home</button>' +
           '</div></div>');
         G.bi = []; rr();
-        var dl = g('party-list');
-        if (dl) {
-          dl.innerHTML = G.parties.filter(p => p.type !== 'Supplier').map(p => '<option value="' + p.name + '">' + p.name + (p.phone ? ' | ' + p.phone : '') + '</option>').join('');
+        var sdl = g('sector-list');
+        if (sdl) {
+          var sectors = [...new Set(G.parties.filter(p => p.type !== 'Supplier').map(p => p.sector))].filter(Boolean);
+          sdl.innerHTML = sectors.map(s => '<option value="' + s + '">' + s + '</option>').join('');
         }
+        updateTowns();
       }
 
       function cpv() {
@@ -1484,15 +1801,25 @@
         return convert(n) + ' ONLY';
       }
 
+      function updateTowns() {
+        var sec = g('bsec').value.trim();
+        var towns = [...new Set(G.parties.filter(p => p.type !== 'Supplier' && (!sec || p.sector === sec)).map(p => p.town))].filter(Boolean);
+        var dl = g('town-list');
+        if (dl) dl.innerHTML = towns.map(t => '<option value="' + t + '">' + t + '</option>').join('');
+        updateParties();
+      }
+
+      function updateParties() {
+        var sec = g('bsec').value.trim();
+        var twn = g('btwn').value.trim();
+        var parties = G.parties.filter(p => p.type !== 'Supplier' && (!sec || p.sector === sec) && (!twn || p.town === twn));
+        var dl = g('party-list');
+        if (dl) dl.innerHTML = parties.map(p => '<option value="' + p.name + '">' + p.name + (p.phone ? ' | ' + p.phone : '') + '</option>').join('');
+      }
+
       function findParty() {
         var q = (g('bcu') || { value: '' }).value.trim();
         var ph = (g('bph') || { value: '' }).value.trim();
-
-        // Populate suggestions from start
-        var dl = g('party-list');
-        if (dl && dl.innerHTML === '') {
-          dl.innerHTML = G.parties.filter(p => p.type !== 'Supplier').map(p => '<option value="' + p.name + '">' + p.name + (p.phone ? ' | ' + p.phone : '') + '</option>').join('');
-        }
 
         // Match by name (case-insensitive)
         var p = G.parties.find(x => x.name.toLowerCase() === q.toLowerCase());
@@ -1503,16 +1830,20 @@
         var lt = g('p-last-tx');
         var phInput = g('bph');
         var fpdEl = g('fpd');
+        var secInput = g('bsec');
+        var twnInput = g('btwn');
 
         if (p) {
-          // Auto-fill phone if found by name but phone is empty
+          // Auto-fill details if found
           if (phInput && !ph && p.phone) phInput.value = p.phone;
+          if (secInput && p.sector) secInput.value = p.sector;
+          if (twnInput && p.town) twnInput.value = p.town;
 
           // Balance display with color
           if (be) {
             var balAmt = Math.abs(p.bal).toFixed(2);
             var balType = p.bal > 0 ? ' (Dr)' : (p.bal < 0 ? ' (Cr)' : ' Nil');
-            be.innerHTML = 'Prev Bal: <span style="font-size:13px;">Rs. ' + balAmt + '</span>' + balType;
+            be.innerHTML = (p.sector ? p.sector + ' | ' : '') + (p.town ? p.town + ' | ' : '') + 'Prev Bal: <span style="font-size:13px;">Rs. ' + balAmt + '</span>' + balType;
             be.style.color = p.bal > 0 ? '#cc0000' : (p.bal < 0 ? '#006600' : '#333');
           }
           // Auto-fill Prev Bal field in footer
@@ -1535,6 +1866,55 @@
         }
       }
 
+      function syncDataOnline() {
+        var btn = g('sync-btn');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerText = 'Syncing...';
+        }
+
+        var payload = {
+          items: G.items,
+          bills: G.bills,
+          purchases: G.purchases,
+          parties: G.parties,
+          profile: G.profile,
+          orders: G.orders || []
+        };
+
+        fetch(API_BASE + '/api/syncAll', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert('Data synced successfully with online server!');
+            // Update UI to show Online status
+            document.getElementById('hi').innerText = 'User: ' + G.sess.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN') + ' (Online Connected)';
+            // Update local storage to ensure consistency
+            sv('mg2_items', G.items);
+            sv('mg2_bills', G.bills);
+            sv('mg2_parties', G.parties);
+            sv('mg2_profile', G.profile);
+            sv('mg2_purchases', G.purchases);
+          } else {
+            alert('Sync failed: ' + (data.error || 'Unknown error'));
+          }
+        })
+        .catch(err => {
+          console.error('Sync error:', err);
+          alert('Sync failed! Server offline ya internet ka masla hai.');
+        })
+        .finally(() => {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = '🔄 Sync Online';
+          }
+        });
+      }
+
       function saveBill() {
         if (G.bi.length === 0) { alert('Koi item nahi!'); return; }
         var cu = (g('bcu') || { value: 'Cash' }).value || 'Cash';
@@ -1549,14 +1929,14 @@
         if (!party) party = G.parties.find(p => p.name.toLowerCase() === cu_lower);
 
         if (!party && cu_lower !== 'cash') {
-          party = { name: cu, type: 'Customer', phone: ph, bal: 0, transactions: [] };
+          party = { name: cu, type: 'Customer', phone: ph, bal: 0, transactions: [], sector: g('bsec').value, town: g('btwn').value };
           G.parties.push(party);
         }
         if (party && ph && !party.phone) party.phone = ph;
 
         var oldB = G.bills.find(x => x.no === no);
         if (oldB) {
-          // Revert balance/transactions
+          // Revert logic... (kept same as existing)
           var oldParty = G.parties.find(p => p.name === oldB.cust);
           if (oldParty) {
             var oldNetSale = oldB.net_amt ? (oldB.net_amt - (oldB.spl_disc || 0)) : (parseFloat(oldB.net) || 0);
@@ -1564,7 +1944,6 @@
             oldParty.bal -= (oldNetSale - oldPaid);
             if (oldParty.transactions) oldParty.transactions = oldParty.transactions.filter(t => !t.desc.includes(no));
           }
-          // Revert stock
           oldB.items.forEach(r => {
             var idx = G.items.findIndex(i => i.name === r.name);
             if (idx >= 0) {
@@ -1582,7 +1961,8 @@
         var newB = {
           no, date: tds(), cust: cu, phone: ph, pay_mode: pm, items: JSON.parse(JSON.stringify(G.bi)),
           net_amt: nt, spl_disc: parseFloat((g('fsd') || { value: 0 }).value) || 0,
-          rcvd_amt: parseFloat((g('fra') || { value: 0 }).value) || 0
+          rcvd_amt: parseFloat((g('fra') || { value: 0 }).value) || 0,
+          sector: g('bsec').value, town: g('btwn').value
         };
         var finalNet = parseFloat(newB.net_amt - newB.spl_disc);
 
@@ -1594,22 +1974,18 @@
 
         if (party) {
           if (!party.transactions) party.transactions = [];
-          // 1. Credit the sale (Sale = income, shown in Cr column)
           party.transactions.push({ date: tds(), desc: 'Sale Bill ' + no + ' (Net)', type: 'Cr', amt: finalNet });
           party.bal = (parseFloat(party.bal) || 0) - parseFloat(finalNet);
-          // 2. Debit the payment if any (payment received reduces receivable)
           if (newB.rcvd_amt > 0) {
             party.transactions.push({ date: tds(), desc: 'Payment Recv ' + no + ' [' + pm + ']', type: 'Dr', amt: newB.rcvd_amt });
             party.bal = (parseFloat(party.bal) || 0) + parseFloat(newB.rcvd_amt);
           }
         }
 
-        // Update stock: item-level AND batch-level (FIFO)
         G.bi.forEach(function (r) {
           var idx = G.items.findIndex(function (i) { return i.name === r.name; });
           if (idx >= 0) {
             G.items[idx].stock = Math.max(0, G.items[idx].stock - r.q);
-            // Batch-level FIFO deduction
             if (G.items[idx].batches) {
               var remain = r.q;
               G.items[idx].batches.forEach(function (bt) {
@@ -1622,18 +1998,10 @@
           }
         });
 
-        fetch(API_BASE + '/api/saveBill', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ bill: newB, items: G.items, party: party })
-        }).then(function (r) { return r.json() }).then(function (d) {
-          sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-          alert('Bill ' + no + ' saved! [' + pm + ']');
-          clearBill(); showDash();
-        }).catch(function (e) {
-          sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-          alert('Saved Locally! [' + pm + ']');
-          clearBill(); showDash();
-        });
+        // Save only to LocalStorage for offline mode
+        sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+        alert('Bill ' + no + ' saved locally! Sync Online par click karein jab internet ho.');
+        clearBill(); showDash();
       }
 
       function printBill() {
@@ -1669,6 +2037,8 @@
         var totalAdvTax = G.bi.reduce((a, b) => a + (b.am * 0.005), 0).toFixed(2);
         var netWithTax = (nt + parseFloat(totalAdvTax)).toFixed(2);
         var inWords = numToWords(Math.round(netWithTax));
+        var addr = party && party.address ? party.address : ', MATI TILL ROAD, MULTAN-1';
+        var ntn = party && party.ntn ? party.ntn : G.profile.ntn;
 
         var w = window.open('', '_blank');
         w.document.write('<!DOCTYPE html><html><head><title>Invoice ' + no + '</title>' +
@@ -1677,7 +2047,7 @@
           'body { font-family: Arial, sans-serif; font-size: 10pt; margin: 0; padding: 0; color: #000; -webkit-print-color-adjust: exact; }' +
           '.a4-container { width: 190mm; margin: auto; padding: 5mm; }' +
           '.header { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #000; padding-bottom: 10px; }' +
-          '.company-info h1 { font-size: 18pt; margin: 0; color: #000; }' +
+          '.company-info h1 { font-size: 18pt; margin: 0; color: #000; text-transform: uppercase; }' +
           '.company-info p { margin: 2px 0; font-size: 9pt; }' +
           '.invoice-title { text-align: right; }' +
           '.invoice-title h1 { font-size: 22pt; margin: 0; color: #000; }' +
@@ -1698,13 +2068,13 @@
           '.warranty { font-size: 7.5pt; margin-top: 15px; border-top: 1px solid #000; padding-top: 8px; line-height: 1.3; }' +
           '.signature { margin-top: 30px; text-align: right; }' +
           '.signature p { margin: 0; font-weight: bold; }' +
-          '.print-footer { font-size: 14pt; text-align: center; margin-top: 40px; border-top: 3px solid #000; padding-top: 15px; color: #000; position: fixed; bottom: 10mm; width: 190mm; font-weight: bold; text-transform: uppercase; background: #fff !important; }' +
+          '.print-footer { font-size: 9pt; text-align: left; margin-top: 40px; border-top: 1px solid #000; padding-top: 5px; color: #000; position: fixed; bottom: 10mm; width: 190mm; }' +
           '@media print { .no-print { display: none; } body { padding: 0; } .a4-container { width: 100%; padding: 0; } }' +
           '</style></head><body>' +
           '<div class="a4-container">' +
           '<div class="header"><div class="company-info"><h1>' + G.profile.name + '</h1><p>Ph: ' + G.profile.phone + '</p><p>' + G.profile.addr + '</p></div>' +
           '<div class="invoice-title"><h1>INVOICE</h1><p>Invoice No: <b>' + no.replace('SI-', '') + '</b></p><p>Cash Invoice | Duplicate</p><p>Invoice Date: ' + dt + '</p><p>Due Date: ' + dt + '</p></div></div>' +
-          '<div class="customer-box"><div><p><b>Customer:</b> ' + cu + '</p><p><b>Address:</b> , MATI TILL ROAD, MULTAN-1</p></div><div style="text-align: right;"><p>NTN: ' + G.profile.ntn + ', STN: </p><p>Filer <span style="margin-left: 20px;">Page 1 of 1</span></p></div></div>' +
+          '<div class="customer-box"><div><p><b>Customer:</b> ' + cu + '</p><p><b>Address:</b> ' + addr + '</p></div><div style="text-align: right;"><p>NTN: ' + ntn + ', STN: </p><p>Filer <span style="margin-left: 20px;">Page 1 of 1</span></p></div></div>' +
           '<table><colgroup><col style="width:7%"><col style="width:7%"><col style="width:30%"><col style="width:8%"><col style="width:10%"><col style="width:8%"><col style="width:8%"><col style="width:6%"><col style="width:8%"><col style="width:8%"><col style="width:10%"></colgroup>' +
           '<thead><tr><th>QTY</th><th>BNS</th><th>PRODUCT NAME</th><th>PACK</th><th>BATCH NO</th><th>EXPIRY</th><th>T.RATE</th><th>DISC%</th><th>GST/UNT</th><th>ADV TAX</th><th>VALUE</th></tr></thead><tbody>' + rows +
           '<tr class="subtotal-row"><td colspan="2" style="text-align: left;">GROSS :</td><td style="text-align: left;">' + gr.toFixed(2) + '</td><td>DISC 1 :</td><td>' + sd.toFixed(2) + '</td><td>C-DISC :</td><td>(0.00%)</td><td>0</td><td>NET :</td><td colspan="2" style="text-align: right;">' + nt.toFixed(2) + '</td></tr></tbody></table>' +
@@ -1713,8 +2083,8 @@
           '<p>I <b>M. Akhtar Hayyat</b> being a person resident in Pakistan carrying on business at Company Address ' + G.profile.addr + ' under the name ' + G.profile.name + ' and being an authorised agent, do hereby give this warranty that the drugs sold by me donot contravene in anyway the provisions of section 23 of the drug act 1976.</p>' +
           '<p><b>Note:</b> This Warranty doesn\'t apply to Unani, Homeopathic, Bio Chemic System of Medicine and General Items, if any mentioned in this bill/cash memo</p></div></div>' +
           '<div class="footer-right"><table><tr><td>Gross Amount :</td><td>' + gr.toFixed(2) + '</td></tr><tr><td>Discount + Sp. Disc :</td><td>' + sd.toFixed(2) + ' + 0.00</td></tr><tr><td>GST + Ftax :</td><td>' + gt.toFixed(2) + ' + 0.00</td></tr><tr><td>Advance Inc Tax :</td><td>' + totalAdvTax + '</td></tr><tr><td>Previous Balance :</td><td>' + prevBal.toFixed(2) + '</td></tr><tr class="net-amount"><td>Net Amount :</td><td>' + netWithTax + '</td></tr></table>' +
-          '<div class="signature"><p>___________________</p><p>For ' + G.profile.name + '</p></div></div></div>' +
-          '<div class="print-footer">SOFTWARE DEVELOPED BY: SMART BUSINESS SOFTWARE | 0322 3729770</div>' +
+          '<div class="signature"><div style="display:inline-block; text-align:center;"><img src="https://i.imgur.com/your-signature-image.png" style="width:100px; height:auto; display:block; margin:auto;"><p>___________________</p><p>For ' + G.profile.name + '</p></div></div></div></div>' +
+          '<div class="print-footer">Printed by Softronix Pharma Suite Plus. Copyright © 2026, Softronix (Pvt) Ltd, UAN : (042) 111 900 700</div>' +
           '</div></body></html>');
         w.document.close(); w.print();
       }
@@ -1786,15 +2156,24 @@
       function openIM() { document.getElementById('im').classList.add('show'); g('isi').value = ''; fi(); setTimeout(function () { g('isi').focus(); }, 100); }
       function fi() {
         var q = g('isi').value.toLowerCase(), tb = g('isb'); tb.innerHTML = '';
-        G.items.filter(function (i) { return i.name.toLowerCase().includes(q) || i.salt.toLowerCase().includes(q) || i.id.toLowerCase().includes(q) || i.company.toLowerCase().includes(q); })
-          .forEach(function (i) { var tr = document.createElement('tr'); tr.innerHTML = '<td>' + i.id + '</td><td>' + i.name + '</td><td>' + i.salt + '</td><td>' + i.company + '</td><td>' + i.pack + '</td><td>' + i.stock + '</td><td>' + i.rate + '</td>'; tr.onclick = function () { si(i); }; g('isb').appendChild(tr); });
+        G.items.filter(function (i) { 
+          return i.name.toLowerCase().includes(q) || 
+                 i.salt.toLowerCase().includes(q) || 
+                 i.id.toLowerCase().includes(q) || 
+                 i.company.toLowerCase().includes(q) ||
+                 (i.comp_code && i.comp_code.toLowerCase().includes(q)); 
+        })
+          .forEach(function (i) { var tr = document.createElement('tr'); tr.innerHTML = '<td>' + (i.comp_code || i.id) + '</td><td>' + i.name + '</td><td>' + i.salt + '</td><td>' + i.company + '</td><td>' + i.pack + '</td><td>' + i.stock + '</td><td>' + i.rate + '</td>'; tr.onclick = function () { si(i); }; g('isb').appendChild(tr); });
       }
       function si(item) {
-        se('pn', item.name); se('ppk', item.pack); se('pmr', item.mrp); se('pra', item.rate); se('pgs', item.gst);
+        se('pn', item.name); se('ppk', item.pack); se('pmr', item.mrp); se('pra', item.rate); 
+        // Auto-apply GST from item data
+        var gstVal = parseFloat(item.gst) || 0;
+        se('pgs', gstVal);
         if (item.batches && item.batches.length > 0) {
           var bt = item.batches[0]; se('pbt', bt.b); se('pex', bt.exp);
           var rb = g('rbi'); if (rb) rb.innerHTML = item.batches.map(function (b) { return '<tr><td>' + b.b + '</td><td>' + b.exp + '</td><td>' + b.qty + '</td><td>' + b.cost + '</td></tr>'; }).join('');
-          se('rlp', bt.cost); se('rtp', item.rate); se('rgs', item.gst + '%');
+          se('rlp', bt.cost); se('rtp', item.rate); se('rgs', gstVal + '%');
         }
         cpv(); cm('im'); var e = g('pqt'); if (e) { e.focus(); e.select(); }
       }
@@ -2003,16 +2382,9 @@
         if (type === 'Dr') p.bal = (parseFloat(p.bal) || 0) + amt;
         else p.bal = (parseFloat(p.bal) || 0) - amt;
 
-        fetch(API_BASE + '/api/saveBill', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items: G.items, party: p })
-        }).then(r => r.json()).then(d => {
-          sv('mg2_parties', G.parties);
-          showPartyDetail(pname);
-        }).catch(e => {
-          sv('mg2_parties', G.parties);
-          showPartyDetail(pname);
-        });
+        // Save only to LocalStorage for offline mode
+        sv('mg2_parties', G.parties);
+        showPartyDetail(pname);
       }
 
       function deleteManualTx(index) {
@@ -2028,16 +2400,9 @@
 
         p.transactions.splice(index, 1);
 
-        fetch(API_BASE + '/api/saveBill', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items: G.items, party: p })
-        }).then(r => r.json()).then(d => {
-          sv('mg2_parties', G.parties);
-          showPartyDetail(pname);
-        }).catch(e => {
-          sv('mg2_parties', G.parties);
-          showPartyDetail(pname);
-        });
+        // Save only to LocalStorage for offline mode
+        sv('mg2_parties', G.parties);
+        showPartyDetail(pname);
       }
       function findBillForReturn() {
         var id = g('rsi').value.trim();
@@ -2125,18 +2490,10 @@
         var b_idx = G.bills.findIndex(x => x.no === b_new.no);
         G.bills[b_idx] = b_new;
 
-        // 6. Sync
-        fetch(API_BASE + '/api/saveBill', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ bill_update: b_new, items: G.items, party: party })
-        }).then(r => r.json()).then(d => {
-          alert('Bill updated successfully!');
-          cm('rm'); showDash();
-        }).catch(e => {
-          sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-          alert('Updated locally!');
-          cm('rm'); showDash();
-        });
+        // 6. Save locally
+        sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+        alert('Bill updated locally!');
+        cm('rm'); showDash();
       }
 
       function processReturn() {
@@ -2164,7 +2521,6 @@
           var alreadyPaid = parseFloat(b.rcvd_amt || 0);
           var netDue = netSale - alreadyPaid;
 
-          // Return reverses sale (Cr): so Dr entry, bal += to restore receivable toward 0
           party.transactions.push({ date: tds(), desc: 'Return Bill ' + b.no, type: 'Dr', amt: netDue });
           party.bal = (parseFloat(party.bal) || 0) + netDue;
         }
@@ -2172,18 +2528,10 @@
         // 3. Remove Bill
         G.bills = G.bills.filter(x => x.no !== b.no);
 
-        // 4. Sync with Server
-        fetch(API_BASE + '/api/saveBill', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ bill_delete: b.no, items: G.items, party: party })
-        }).then(r => r.json()).then(d => {
-          alert('Return processed successfully!');
-          cm('rm'); showDash();
-        }).catch(e => {
-          sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-          alert('Return processed locally!');
-          cm('rm'); showDash();
-        });
+        // 4. Save locally
+        sv('mg2_bills', G.bills); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+        alert('Return processed locally!');
+        cm('rm'); showDash();
       }
       function showPurch() {
         var t = tds();
@@ -2198,13 +2546,15 @@
           '<div id="sup-bal" style="font-weight:700;color:#c00;font-size:11px;margin-left:8px;"></div></div>' +
           '</div>' +
           '<div class="pib">' +
-          '<label>Product <input id="ppn" style="min-width:140px;"></label>' +
+          '<label>Product <input id="ppn" style="min-width:140px;" onkeydown="if(event.key===\'F2\')openIM()"></label>' +
+          '<label>Qty <input id="pqt2" type="number" value="1" style="width:42px;" oninput="cpv2()"></label>' +
+          '<label>Bonus <input id="pbo2" type="number" value="0" style="width:38px;"></label>' +
+          '<label>Disc% <input id="pdi2" type="number" value="0" style="width:38px;"></label>' +
           '<label>Salt <input id="psl" style="width:100px;"></label>' +
           '<label>Comp <input id="pco" style="width:100px;"></label>' +
-          '<label>Pack <input id="ppk2" style="width:42px;"></label>' +
+          '<label>Pack <input id="ppk2" style="width:42px;" readonly style="background:#eee;"></label>' +
           '<label>Batch <input id="pbt2" style="width:58px;"></label>' +
           '<label>Exp <input id="pex2" style="width:50px;"></label>' +
-          '<label>Qty <input id="pqt2" type="number" value="1" style="width:42px;" oninput="cpv2()"></label>' +
           '<label>Cost <input id="pcp" type="number" style="width:52px;" oninput="cpv2()"></label>' +
           '<label>Sell <input id="psp" type="number" style="width:52px;"></label>' +
           '<label>Amt <input id="pam2" style="width:62px;" readonly></label>' +
@@ -2212,7 +2562,7 @@
           '</div>' +
           '<div class="cs">' +
           '<div class="bta">' +
-          '<div class="th"><div class="c1">#</div><div class="c2">Product</div><div class="c3">Salt/Comp</div><div class="c4">Batch/Exp</div><div class="c5">Qty</div><div class="c7">Cost</div><div class="c7">Sell</div><div class="c9">Amount</div></div>' +
+          '<div class="th"><div class="c1">#</div><div class="c2">Product</div><div class="c3">Salt/Comp</div><div class="c4">Batch/Exp</div><div class="c5">Qty</div><div class="c6">Bonus</div><div class="c7">Disc%</div><div class="c7">Cost</div><div class="c7">Sell</div><div class="c9">Amount</div></div>' +
           '<div class="tb2" id="pr2"></div></div>' +
           '</div>' +
           '<div class="bf">' +
@@ -2239,11 +2589,13 @@
       function addPurchRow() {
         var nm = g('ppn').value.trim(); if (!nm) { alert('Product name!'); return; }
         var q = parseFloat(g('pqt2').value) || 0; if (q <= 0) { alert('Qty!'); return; }
+        var bo = parseFloat(g('pbo2').value) || 0;
+        var di = parseFloat(g('pdi2').value) || 0;
         var sl = g('psl').value, co = g('pco').value, pk = g('ppk2').value, bt = g('pbt2').value, ex = g('pex2').value;
-        var cp = parseFloat(g('pcp').value) || 0, sp = parseFloat(g('psp').value) || 0, am = q * cp;
-        G.pi.push({ sno: G.pi.length + 1, name: nm, salt: sl, comp: co, pk, bt, ex, q, cp, sp, am });
+        var cp = parseFloat(g('pcp').value) || 0, sp = parseFloat(g('psp').value) || 0, am = q * cp * (1 - di / 100);
+        G.pi.push({ sno: G.pi.length + 1, name: nm, salt: sl, comp: co, pk, bt, ex, q, bo, di, cp, sp, am });
         rp();
-        ['ppn', 'psl', 'pco', 'ppk2', 'pbt2', 'pex2', 'pcp', 'psp', 'pam2'].forEach(id => g(id).value = '');
+        ['ppn', 'psl', 'pco', 'ppk2', 'pbt2', 'pex2', 'pbo2', 'pdi2', 'pcp', 'psp', 'pam2'].forEach(id => { var e = g(id); if (e) e.value = ''; });
         g('pqt2').value = 1; g('ppn').focus();
       }
 
@@ -2254,7 +2606,7 @@
           tot += r.am;
           var d = document.createElement('div'); d.className = 'tr';
           d.innerHTML = '<div class="c1">' + r.sno + '</div><div class="c2">' + r.name + '</div><div class="c3">' + r.salt + '/' + r.comp + '</div>' +
-            '<div class="c4">' + r.bt + ' ' + r.ex + '</div><div class="c5">' + r.q + '</div><div class="c7">' + r.cp.toFixed(2) + '</div>' +
+            '<div class="c4">' + r.bt + ' ' + r.ex + '</div><div class="c5">' + r.q + '</div><div class="c6">' + (r.bo || 0) + '</div><div class="c7">' + (r.di || 0) + '%</div><div class="c7">' + r.cp.toFixed(2) + '</div>' +
             '<div class="c7">' + r.sp.toFixed(2) + '</div><div class="c9">' + r.am.toFixed(2) + '</div>';
           d.ondblclick = function () { G.pi.splice(i, 1); G.pi.forEach((x, j) => x.sno = j + 1); rp(); };
           c.appendChild(d);
@@ -2297,7 +2649,6 @@
             var idx = G.items.findIndex(i => i.name.toLowerCase() === p.name.toLowerCase());
             if (idx >= 0) {
               G.items[idx].stock = Math.max(0, G.items[idx].stock - p.q);
-              // Revert batch qty too
               if (G.items[idx].batches) {
                 G.items[idx].batches.forEach(bt => { if (bt.b === p.bt) bt.qty = Math.max(0, bt.qty - p.q); });
               }
@@ -2313,7 +2664,6 @@
           if (idx >= 0) {
             G.items[idx].stock += p.q;
             if (!G.items[idx].batches) G.items[idx].batches = [];
-            // Check if batch exists, update qty; else add new
             var existBt = G.items[idx].batches.find(b => b.b === p.bt);
             if (existBt) { existBt.qty += p.q; existBt.cost = p.cp; }
             else G.items[idx].batches.push({ b: p.bt, exp: p.ex, qty: p.q, cost: p.cp });
@@ -2326,26 +2676,17 @@
         var party = G.parties.find(p => p.name === su);
         if (!party) { party = { name: su, type: 'Supplier', bal: 0, transactions: [] }; G.parties.push(party); }
         if (!party.transactions) party.transactions = [];
-        // Debit entry = Purchase expense (shown in Dr column, we owe supplier → bal +=)
         party.transactions.push({ date: tds(), desc: 'Purchase Inv ' + inv + ' [' + pm + ']', type: 'Dr', amt: tot });
         party.bal += tot;
-        // If partial payment made, record as Cr (we reduced what we owe)
         if (paid > 0) {
           party.transactions.push({ date: tds(), desc: 'Payment against ' + inv + ' [' + pm + ']', type: 'Cr', amt: paid });
           party.bal -= paid;
         }
 
-        fetch(API_BASE + '/api/savePurchase', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ purchase: p_bill, items: G.items, party: party })
-        }).then(r => r.json()).then(d => {
-          sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-          alert('Purchase saved! [' + pm + '] | Paid: Rs.' + paid.toFixed(2) + ' | Due: Rs.' + due.toFixed(2));
-          showDash();
-        }).catch(e => {
-          sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
-          alert('Saved locally! [' + pm + ']'); showDash();
-        });
+        // Save only to LocalStorage for offline mode
+        sv('mg2_purchases', G.purchases); sv('mg2_items', G.items); sv('mg2_parties', G.parties);
+        alert('Purchase saved locally! Sync Online par click karein jab internet ho.');
+        showDash();
       }
 
       function showPurchHist() {
@@ -2570,13 +2911,14 @@
           '<input type="hidden" id="am-id">' +
           '<div class="lf2"><label>Product Name</label><input id="am-nm" placeholder="e.g. PANADOL"></div>' +
           '<div class="lf2"><label>Salt / Composition</label><input id="am-sl" placeholder="e.g. PARACETAMOL"></div>' +
-          '<div class="lf2"><label>Company</label><input id="am-co" placeholder="e.g. GSK"></div>' +
+          '<div class="lf2" style="display:flex;gap:10px;"><div style="flex:1;"><label>Company</label><input id="am-co" placeholder="e.g. GSK"></div>' +
+          '<div style="flex:1;"><label>Company Code</label><input id="am-cc" placeholder="e.g. 02"></div></div>' +
           '<div class="lf2" style="display:flex;gap:10px;"><div style="flex:1;"><label>Pack Size</label><input id="am-pk" placeholder="e.g. 10X10"></div>' +
           '<div style="flex:1;"><label>Sale Rate (Rs)</label><input type="number" id="am-rt" placeholder="0.00"></div></div>' +
           '<button class="lbtn" style="margin-top:15px;background:linear-gradient(#c0eec0,#7acc7a);color:#000;" onclick="saveMed()">Save Custom Medicine</button>' +
           '</div></div>';
         m.classList.add('show');
-        ['am-id', 'am-nm', 'am-sl', 'am-co', 'am-pk', 'am-rt'].forEach(id => { var e = g(id); if (e) e.value = ''; });
+        ['am-id', 'am-nm', 'am-sl', 'am-co', 'am-cc', 'am-pk', 'am-rt'].forEach(id => { var e = g(id); if (e) e.value = ''; });
         g('am-nm').focus();
       }
 
@@ -2584,7 +2926,7 @@
         openAddMed();
         var i = G.items.find(x => x.id === id);
         if (i) {
-          se('am-id', i.id); se('am-nm', i.name); se('am-sl', i.salt); se('am-co', i.company); se('am-pk', i.pack); se('am-rt', i.rate);
+          se('am-id', i.id); se('am-nm', i.name); se('am-sl', i.salt); se('am-co', i.company); se('am-cc', i.comp_code || ''); se('am-pk', i.pack); se('am-rt', i.rate);
         }
       }
 
@@ -2597,12 +2939,13 @@
           var idx = G.items.findIndex(x => x.id === id);
           if (idx >= 0) {
             G.items[idx].name = name; G.items[idx].salt = g('am-sl').value; G.items[idx].company = g('am-co').value;
+            G.items[idx].comp_code = g('am-cc').value;
             G.items[idx].pack = g('am-pk').value; G.items[idx].rate = parseFloat(g('am-rt').value) || 0;
             savedItem = G.items[idx];
           }
         } else {
           var newId = 'M-' + Date.now();
-          savedItem = { id: newId, name: name, salt: g('am-sl').value, company: g('am-co').value, pack: g('am-pk').value, stock: 0, rate: parseFloat(g('am-rt').value) || 0, mrp: parseFloat(g('am-rt').value) || 0, gst: 0, batches: [] };
+          savedItem = { id: newId, name: name, salt: g('am-sl').value, company: g('am-co').value, comp_code: g('am-cc').value, pack: g('am-pk').value, stock: 0, rate: parseFloat(g('am-rt').value) || 0, mrp: parseFloat(g('am-rt').value) || 0, gst: 0, batches: [] };
           G.items.push(savedItem);
         }
 
@@ -2650,6 +2993,7 @@
           '<button class="bsm" style="padding:6px 16px;font-size:14px;font-weight:700;height:auto;" onclick="renderRep(\'stock\')">📦 Medicine Stock Report</button>' +
           '<button class="bsm" style="padding:6px 16px;font-size:14px;font-weight:700;height:auto;background:linear-gradient(#fff,#eee);" onclick="renderRep(\'pnl\')">💰 Profit & Loss Report</button>' +
           '<button class="bsm" style="padding:6px 16px;font-size:14px;font-weight:700;height:auto;" onclick="renderRep(\'ledger\')">📖 Ledger Summary Report</button>' +
+          '<button class="bsm" style="padding:6px 16px;font-size:14px;font-weight:700;height:auto;background:linear-gradient(#e8fff0,#c0ffda);" onclick="renderRep(\'area\')">📍 Area Sales Report</button>' +
           '</div>' +
           '<div id="rep-body" style="background:#fff;border:1px solid #8aabcc;padding:20px;min-height:350px;flex:1;overflow-y:auto;box-shadow:2px 2px 8px rgba(0,0,0,0.1);">' +
           '<h3 style="color:#555;">Select a report to view...</h3></div>' +
@@ -2719,6 +3063,23 @@
             '</div>' +
             '<table class="mt" style="width:100%;"><thead><tr><th style="background:#3a6a9a;color:#fff;text-align:left;">Party / Ledger Name</th><th style="background:#3a6a9a;color:#fff;text-align:center;">Type</th><th style="background:#3a6a9a;color:#fff;text-align:right;">Current Final Balance</th></tr></thead><tbody>' + tbody + '</tbody></table>';
         }
+        else if (type === 'area') {
+          var areaSales = {};
+          G.bills.forEach(b => {
+            var area = (b.sector || 'Unknown') + ' - ' + (b.town || 'Unknown');
+            var amt = parseFloat(b.net_amt ? (b.net_amt - (b.spl_disc || 0)) : (parseFloat(b.net) || 0)) || 0;
+            if (!areaSales[area]) areaSales[area] = { sales: 0, count: 0 };
+            areaSales[area].sales += amt;
+            areaSales[area].count++;
+          });
+
+          var tbody = Object.keys(areaSales).map(area => {
+            return '<tr><td>' + area + '</td><td style="text-align:center;">' + areaSales[area].count + '</td><td style="text-align:right;font-weight:700;">Rs.' + areaSales[area].sales.toFixed(2) + '</td></tr>';
+          }).join('');
+
+          v.innerHTML = '<h2 style="color:#003366;margin-bottom:15px;border-bottom:2px solid #3a6a9a;padding-bottom:5px;">Area-Wise Sales Report</h2>' +
+            '<table class="mt" style="width:100%;"><thead><tr><th style="background:#3a6a9a;color:#fff;text-align:left;">Sector - Town</th><th style="background:#3a6a9a;color:#fff;text-align:center;">Total Bills</th><th style="background:#3a6a9a;color:#fff;text-align:right;">Total Sales Value</th></tr></thead><tbody>' + (tbody || '<tr><td colspan="3" style="text-align:center;padding:20px;">No area sales data available</td></tr>') + '</tbody></table>';
+        }
       }
 
       function showCompanyProfile() {
@@ -2753,50 +3114,63 @@
       }
 
       window.onload = function () {
+        // Load strictly from LocalStorage for true offline behavior
+        var li = ld('mg2_items', null); if (li) G.items = li;
+        var lb = ld('mg2_bills', null); if (lb) { G.bills = lb; G.nbn = 10001 + G.bills.length; }
+        var lu = ld('mg2_users', null); if (lu) G.users = lu;
+        
+        // IMPORTANT: Ensure parties are loaded or use defaults
+        var lp = ld('mg2_parties', null); 
+        if (lp && lp.length > 0) { 
+          G.parties = lp; 
+        } else {
+          // If local storage is empty, use the hardcoded default party for testing
+          G.parties = [
+            { name: 'Dr. Afaq Saleem', phone: '0300-7358302', type: 'Customer', bal: -5000, transactions: [{date:'10/05/26', desc:'Opening Balance', type:'Cr', amt:5000}] }
+          ];
+          sv('mg2_parties', G.parties);
+        }
+
+        var lcp = ld('mg2_profile', null); if (lcp) G.profile = lcp;
+        var lpu = ld('mg2_purchases', null); if (lpu) G.purchases = lpu;
+
+        var s = ld('mg2_sess', {});
+        if (s.on) { 
+          G.sess = s;
+          document.getElementById('ls').style.display = 'none'; 
+          var a = document.getElementById('app'); 
+          a.style.display = 'flex'; 
+          a.style.flexDirection = 'column'; 
+          document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN') + ' (Offline Mode)'; 
+          applyRoleUI();
+          showDash(); 
+        }
+      };
+
+      function downloadFromCloud() {
+        if (!confirm('Kya aap cloud se latest data download karna chahte hain? Is se aapka local data overwrite ho sakta hai.')) return;
+        var btn = g('download-btn');
+        if (btn) { btn.disabled = true; btn.innerText = 'Downloading...'; }
+
         fetch(API_BASE + '/api/data')
           .then(function (r) { return r.json(); })
           .then(function (d) {
-            if (d.items) G.items = d.items;
-            if (d.bills) { G.bills = d.bills; G.nbn = 10001 + G.bills.length; }
-            if (d.purchases) G.purchases = d.purchases;
-            if (d.users) G.users = d.users;
-            if (d.parties) G.parties = d.parties;
-            if (d.profile) G.profile = d.profile;
-
-            var s = ld('mg2_sess', {});
-            if (s.on) { 
-              G.sess = s;
-              document.getElementById('ls').style.display = 'none'; 
-              var a = document.getElementById('app'); 
-              a.style.display = 'flex'; 
-              a.style.flexDirection = 'column'; 
-              document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN'); 
-              applyRoleUI();
-              showDash(); 
-            }
+            if (d.items) { G.items = d.items; sv('mg2_items', G.items); }
+            if (d.bills) { G.bills = d.bills; G.nbn = 10001 + G.bills.length; sv('mg2_bills', G.bills); }
+            if (d.purchases) { G.purchases = d.purchases; sv('mg2_purchases', G.purchases); }
+            if (d.users) { G.users = d.users; sv('mg2_users', G.users); }
+            if (d.parties) { G.parties = d.parties; sv('mg2_parties', G.parties); }
+            if (d.profile) { G.profile = d.profile; sv('mg2_profile', G.profile); }
+            alert('Data downloaded from cloud successfully!');
+            // Update UI to show Online status
+            document.getElementById('hi').innerText = 'User: ' + G.sess.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN') + ' (Online Connected)';
+            showDash();
           }).catch(function (e) {
-            console.warn("MongoDB offline, falling back to local storage.", e);
-            // FALLBACK TO LOCAL STORAGE
-            var li = ld('mg2_items', null); if (li) G.items = li;
-            var lb = ld('mg2_bills', null); if (lb) { G.bills = lb; G.nbn = 10001 + G.bills.length; }
-            var lu = ld('mg2_users', null); if (lu) G.users = lu;
-            var lp = ld('mg2_parties', null); if (lp) { G.parties = lp; }
-            var lcp = ld('mg2_profile', null); if (lcp) G.profile = lcp;
-            var lpu = ld('mg2_purchases', null); if (lpu) G.purchases = lpu;
-
-            var s = ld('mg2_sess', {});
-            if (s.on) { 
-              G.sess = s;
-              document.getElementById('ls').style.display = 'none'; 
-              var a = document.getElementById('app'); 
-              a.style.display = 'flex'; 
-              a.style.flexDirection = 'column'; 
-              document.getElementById('hi').innerText = 'User: ' + s.u.toUpperCase() + ' | ' + new Date().toLocaleDateString('en-IN') + ' (Local Mode)'; 
-              applyRoleUI();
-              showDash(); 
-            }
+            alert('Download failed! Server unreachable.');
+          }).finally(() => {
+            if (btn) { btn.disabled = false; btn.innerText = '📥 Download Data'; }
           });
-      };
+      }
 
       function showUserMgmt() {
         if (G.sess.r !== 'admin') { alert('Access Denied!'); return; }

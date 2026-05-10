@@ -94,7 +94,104 @@ def get_data():
         users = sterilize(list(db.users.find({}, {"_id": 0, "p": 0})))
         parties = sterilize(list(db.parties.find({})))
         profile = sterilize(db.profile.find_one({}))
-        return jsonify({"items": items, "bills": bills, "purchases": purchases, "users": users, "parties": parties, "profile": profile})
+        orders = sterilize(list(db.orders.find({"status": "pending"})))
+        return jsonify({"items": items, "bills": bills, "purchases": purchases, "users": users, "parties": parties, "profile": profile, "orders": orders})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/saveOrder', methods=['POST'])
+def save_order():
+    if db is None:
+        return jsonify({"error": "Database not connected"}), 503
+    try:
+        data = request.json
+        order = data.get('order')
+        if not order:
+            return jsonify({"error": "Missing order data"}), 400
+        
+        # Merge logic: if party has a pending order, merge items
+        existing_order = db.orders.find_one({"cust": order["cust"], "status": "pending"})
+        if existing_order:
+            # Merge items
+            new_items = existing_order.get("items", [])
+            for item in order["items"]:
+                # Check if item already exists in existing order
+                found = False
+                for ex_item in new_items:
+                    if ex_item["name"] == item["name"]:
+                        ex_item["q"] += item["q"]
+                        found = True
+                        break
+                if not found:
+                    new_items.append(item)
+            db.orders.update_one({"_id": existing_order["_id"]}, {"$set": {"items": new_items, "date": datetime.now().strftime("%d/%m/%y")}})
+        else:
+            order["status"] = "pending"
+            db.orders.insert_one(order)
+            
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/syncAll', methods=['POST'])
+def sync_all():
+    if db is None:
+        return jsonify({"error": "Database not connected"}), 503
+    try:
+        data = request.json
+        items = data.get('items', [])
+        bills = data.get('bills', [])
+        purchases = data.get('purchases', [])
+        parties = data.get('parties', [])
+        profile = data.get('profile')
+        orders = data.get('orders', [])
+
+        # Sync items
+        for item in items:
+            clean_item = {k: v for k, v in item.items() if k != '_id'}
+            db.items.update_one({"id": item["id"]}, {"$set": clean_item}, upsert=True)
+        
+        # Sync bills
+        for bill in bills:
+            clean_bill = {k: v for k, v in bill.items() if k != '_id'}
+            db.bills.update_one({"no": bill["no"]}, {"$set": clean_bill}, upsert=True)
+            
+        # Sync purchases
+        for purchase in purchases:
+            clean_purchase = {k: v for k, v in purchase.items() if k != '_id'}
+            db.purchases.update_one({"no": purchase["no"]}, {"$set": clean_purchase}, upsert=True)
+            
+        # Sync parties
+        for party in parties:
+            clean_party = {k: v for k, v in party.items() if k != '_id'}
+            db.parties.update_one({"name": party["name"]}, {"$set": clean_party}, upsert=True)
+            
+        # Sync orders
+        for order in orders:
+            clean_order = {k: v for k, v in order.items() if k != '_id'}
+            db.orders.update_one({"no": order["no"]}, {"$set": clean_order}, upsert=True)
+            
+        # Sync profile
+        if profile:
+            clean_profile = {k: v for k, v in profile.items() if k != '_id'}
+            db.profile.update_one({}, {"$set": clean_profile}, upsert=True)
+            
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/processOrder', methods=['POST'])
+def process_order():
+    if db is None:
+        return jsonify({"error": "Database not connected"}), 503
+    try:
+        data = request.json
+        order_no = data.get('order_no')
+        if not order_no:
+            return jsonify({"error": "Missing order number"}), 400
+        
+        db.orders.update_one({"no": order_no}, {"$set": {"status": "processed"}})
+        return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
