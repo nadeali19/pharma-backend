@@ -17,18 +17,17 @@ try:
     print("SUCCESS: Connection to MongoDB client initialized!")
     db_err = None
     
-    # Initialize/Upgrade default admin if connection successful
-    if db is not None:
-        admin_user = db.users.find_one({"u": "admin"})
-        if not admin_user:
-            hashed_pass = generate_password_hash("admin123")
-            db.users.insert_one({"u": "admin", "p": hashed_pass, "r": "admin"})
-            print("Default admin created with secure password.")
-        elif not admin_user["p"].startswith("pbkdf2:sha256"):
-            # Upgrade plain text password to hashed
-            hashed_pass = generate_password_hash(admin_user["p"])
-            db.users.update_one({"u": "admin"}, {"$set": {"p": hashed_pass}})
-            print("Admin password upgraded to secure hash.")
+    # Initialize default admin if not exists with hashed password
+    admin_user = db.users.find_one({"u": "admin"})
+    if not admin_user:
+        hashed_pass = generate_password_hash("admin123")
+        db.users.insert_one({"u": "admin", "p": hashed_pass, "r": "admin"})
+        print("Default admin created with secure password.")
+    else:
+        # ALWAYS force reset admin password to admin123 for now to fix login issues
+        hashed_pass = generate_password_hash("admin123")
+        db.users.update_one({"u": "admin"}, {"$set": {"p": hashed_pass, "r": "admin"}})
+        print("Admin password force-reset to 'admin123' for recovery.")
 except Exception as e:
     db_err = str(e)
     print(f"CRITICAL ERROR: Could not connect to MongoDB: {db_err}")
