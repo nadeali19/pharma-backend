@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from flask_cors import CORS
 import os
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 CORS(app)
@@ -15,6 +16,19 @@ try:
     db = client['pharma_db']
     print("SUCCESS: Connection to MongoDB client initialized!")
     db_err = None
+    
+    # Initialize/Upgrade default admin if connection successful
+    if db is not None:
+        admin_user = db.users.find_one({"u": "admin"})
+        if not admin_user:
+            hashed_pass = generate_password_hash("admin123")
+            db.users.insert_one({"u": "admin", "p": hashed_pass, "r": "admin"})
+            print("Default admin created with secure password.")
+        elif not admin_user["p"].startswith("pbkdf2:sha256"):
+            # Upgrade plain text password to hashed
+            hashed_pass = generate_password_hash(admin_user["p"])
+            db.users.update_one({"u": "admin"}, {"$set": {"p": hashed_pass}})
+            print("Admin password upgraded to secure hash.")
 except Exception as e:
     db_err = str(e)
     print(f"CRITICAL ERROR: Could not connect to MongoDB: {db_err}")
@@ -145,6 +159,7 @@ def sync_all():
         parties = data.get('parties', [])
         profile = data.get('profile')
         orders = data.get('orders', [])
+        users = data.get('users', [])
 
         # Sync items
         for item in items:
@@ -171,6 +186,14 @@ def sync_all():
             clean_order = {k: v for k, v in order.items() if k != '_id'}
             db.orders.update_one({"no": order["no"]}, {"$set": clean_order}, upsert=True)
             
+        # Sync users with password security
+        for user in users:
+            clean_user = {k: v for k, v in user.items() if k != '_id'}
+            # If syncing from local and it's a new user or plain password, hash it
+            if 'p' in clean_user and not clean_user['p'].startswith('pbkdf2:sha256'):
+                clean_user['p'] = generate_password_hash(clean_user['p'])
+            db.users.update_one({"u": clean_user["u"]}, {"$set": clean_user}, upsert=True)
+
         # Sync profile
         if profile:
             clean_profile = {k: v for k, v in profile.items() if k != '_id'}
@@ -319,11 +342,13 @@ def login():
         data = request.json
         u = data.get('u')
         p = data.get('p')
-        user = db.users.find_one({"u": u, "p": p}, {"_id": 0, "p": 0})
-        if user:
-            return jsonify({"success": True, "user": user})
+        
+        user = db.users.find_one({"u": u})
+        if user and check_password_hash(user['p'], p):
+            # Return sanitized user object
+            return jsonify({"success": True, "user": {"u": user['u'], "r": user['r']}})
         else:
-            return jsonify({"success": False, "error": "Invalid credentials"}), 401
+            return jsonify({"success": False, "error": "Invalid username or password"}), 401
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

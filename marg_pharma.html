@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Marg ERP 9+ Pharma</title>
   <style>
     :root {
@@ -33,6 +34,107 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
+    }
+
+    @media (max-width: 768px) {
+      :root {
+        --drawer-width: 0px !important;
+      }
+      body { overflow: auto; height: auto; position: relative; }
+      .ws { display: block; position: relative; }
+      .sl { 
+        position: fixed; 
+        left: -100%; 
+        top: 0; 
+        height: 100vh; 
+        width: 280px !important; 
+        z-index: 9999 !important; /* Ensure it's above everything */
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: #fff;
+        box-shadow: none;
+      }
+      .sl.show { 
+        left: 0; 
+        box-shadow: 10px 0 30px rgba(0,0,0,0.3);
+      }
+      .sb-ov {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9998 !important;
+        backdrop-filter: blur(3px);
+      }
+      .sb-ov.show {
+        display: block;
+      }
+      .ma { 
+        margin-left: 0 !important; 
+        width: 100% !important; 
+        padding: 10px !important;
+        min-height: calc(100vh - 65px);
+        background: var(--bg);
+      }
+      .tb { position: sticky; top: 0; z-index: 1001; }
+      .tb h1 { display: none; }
+      .search-box { display: none !important; }
+      
+      /* Form Layouts */
+      .br { flex-direction: column; gap: 8px; }
+      .br label { width: 100% !important; margin: 0 !important; display: flex; flex-direction: column; }
+      .br input, .br select { width: 100% !important; height: 40px; margin: 4px 0 !important; }
+      
+      .pib { 
+        display: grid !important; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 8px !important; 
+        background: #f0f4f8; 
+        padding: 10px !important; 
+        border-radius: 8px;
+      }
+      .pib label { width: 100% !important; font-size: 12px; }
+      .pib input { width: 100% !important; height: 38px !important; }
+      .pib label:first-child { grid-column: span 2; }
+      .pib .bsm { grid-column: span 2; height: 45px; margin-top: 5px; }
+
+      .g4 { grid-template-columns: 1fr !important; gap: 10px; }
+      .ab { flex-direction: column; gap: 10px; padding: 10px 0; }
+      .ab button { width: 100% !important; height: 50px; font-size: 16px; }
+
+      /* Table Card View */
+      .th { display: none !important; }
+      .tb2, .mt tbody { display: block; }
+      .tr { 
+        display: block !important;
+        margin-bottom: 15px; 
+        border: 1px solid #7799bb !important; 
+        border-radius: 10px !important; 
+        padding: 10px !important;
+        background: #fff !important;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+      }
+      .tr div { 
+        width: 100% !important; 
+        padding: 8px 0 !important; 
+        display: flex !important; 
+        justify-content: space-between !important; 
+        text-align: right !important;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+      }
+      .tr div:last-child { border-bottom: none; }
+      .tr div::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--primary);
+        text-align: left;
+        flex: 1;
+      }
+
+      /* Modals */
+      .mo { z-index: 10000 !important; }
+      .mb2 { width: 95% !important; margin: 10px auto; min-width: 0 !important; }
+      .mbd { padding: 15px !important; }
     }
 
     /* Modern Toolbar (Navbar) */
@@ -203,17 +305,39 @@
     @media (max-width: 768px) {
       .sl {
         position: fixed;
-        left: calc(-1 * var(--drawer-width));
+        left: -280px;
+        width: 280px !important;
+        z-index: 2001;
+        transition: 0.3s ease;
+        height: 100vh;
+        top: 0;
+        margin: 0;
+        border-radius: 0;
+        background: #fff;
       }
-      .sl.open {
+      .sl.show {
         left: 0;
-        box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+        box-shadow: 10px 0 30px rgba(0,0,0,0.3);
+      }
+      .sb-ov {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 2000;
+      }
+      .sb-ov.show {
+        display: block;
+      }
+      .ma {
+        margin-left: 0 !important;
+        width: 100% !important;
       }
       .search-box {
         margin: 0 5px;
       }
       .tb h1 {
-        display: none; /* Hide logo text on small mobile if needed */
+        display: none;
       }
     }
 
@@ -366,6 +490,36 @@
     .tr {
       display: flex;
       border-bottom: 1px solid #dde8f0;
+    }
+
+    /* Mobile Table Card View */
+    @media (max-width: 768px) {
+      .th { display: none; }
+      .tr { 
+        flex-direction: column; 
+        margin-bottom: 12px; 
+        border: 1px solid #7799bb; 
+        border-radius: 8px; 
+        padding: 8px !important;
+        background: #fff !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      }
+      .tr div { 
+        width: 100% !important; 
+        padding: 6px 0; 
+        display: flex; 
+        justify-content: space-between; 
+        text-align: right !important;
+        border-bottom: 1px dashed #eee;
+      }
+      .tr div:last-child { border-bottom: none; }
+      .tr div::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: #003366;
+        text-align: left;
+        margin-right: 10px;
+      }
     }
 
     .tr:nth-child(even) {
@@ -919,21 +1073,21 @@
     <div class="ws">
       <nav class="sl" id="sl">
         <h4 style="margin-top:10px;">Operational</h4>
-        <a onclick="showDash();tsb()" id="m-dash" class="active">&#127968; Dashboard</a>
-        <a onclick="showMedicines();tsb()">&#128138; Medicine Master</a>
-        <a onclick="showSale();tsb()">&#128221; New Sale Bill</a>
-        <a onclick="showPurch();tsb()">&#128666; Purchase Entry</a>
-        <a onclick="showLedger();tsb()">&#128202; Party Ledger</a>
-        <a onclick="showStock();tsb()">&#128230; Stock Status</a>
-        <a onclick="showExpiry();tsb()">&#9888; Near Expiry</a>
+        <a onclick="showDash()" id="m-dash" class="active">&#127968; Dashboard</a>
+        <a onclick="showMedicines()">&#128138; Medicine Master</a>
+        <a onclick="showSale()">&#128221; New Sale Bill</a>
+        <a onclick="showPurch()">&#128666; Purchase Entry</a>
+        <a onclick="showLedger()">&#128202; Party Ledger</a>
+        <a onclick="showStock()">&#128230; Stock Status</a>
+        <a onclick="showExpiry()">&#9888; Near Expiry</a>
         
         <h4 style="margin-top:10px;">History & Reports</h4>
-        <a onclick="showHist();tsb()">&#128196; Sale History</a>
-        <a onclick="showPurchHist();tsb()">&#128226; Purchase Hist</a>
-        <a onclick="showAllReports();tsb()">&#128188; Final Reports</a>
-        <a onclick="showCompanyProfile();tsb()">&#9881; ERP Settings</a>
+        <a onclick="showHist()">&#128196; Sale History</a>
+        <a onclick="showPurchHist()">&#128226; Purchase Hist</a>
+        <a onclick="showAllReports()">&#128188; Final Reports</a>
+        <a onclick="showCompanyProfile()">&#9881; ERP Settings</a>
         <h4 id="m-admin-hdr" style="margin-top:10px;display:none;">Administration</h4>
-        <a onclick="showUserMgmt();tsb()" id="m-usermgmt" style="display:none;">&#128101; User Management</a>
+        <a onclick="showUserMgmt()" id="m-usermgmt" style="display:none;">&#128101; User Management</a>
       </nav>
       <div class="ma" id="ma"></div>
     </div>
@@ -1134,19 +1288,32 @@
       function tsb() {
         var sl = document.getElementById('sl');
         var ov = document.getElementById('sb-ov');
-        if (window.innerWidth <= 768) {
-          sl.classList.toggle('open');
-          ov.classList.toggle('show');
+        if (sl.classList.contains('show')) {
+          sl.classList.remove('show');
+          if (ov) ov.classList.remove('show');
         } else {
-          // On Desktop toggle "mini" mode or hide
-          if (sl.style.width === '0px') {
-            sl.style.width = '280px';
-            sl.style.opacity = '1';
-          } else {
-            sl.style.width = '0px';
-            sl.style.opacity = '0';
-          }
+          sl.classList.add('show');
+          if (ov) ov.classList.add('show');
         }
+      }
+
+      function setMA(h) { 
+        // 1. Close all active modals/overlays
+        ['im', 'am-modal', 'rm', 'hm', 'cpm'].forEach(id => {
+          var m = document.getElementById(id);
+          if (m) m.classList.remove('show');
+        });
+        
+        // 2. Clear main area and reset scroll
+        var ma = document.getElementById('ma');
+        ma.innerHTML = h; 
+        ma.scrollTop = 0;
+
+        // 3. AUTO-CLOSE Sidebar on Mobile after selection
+        var sl = document.getElementById('sl');
+        var ov = document.getElementById('sb-ov');
+        if (sl) sl.classList.remove('show');
+        if (ov) ov.classList.remove('show');
       }
 
       function gs(q) {
@@ -1363,7 +1530,6 @@
         });
       }
       function doLogout() { sv('mg2_sess', {}); location.reload(); }
-      function setMA(h) { document.getElementById('ma').innerHTML = h; }
       function tds() { var d = new Date(); return d.getDate().toString().padStart(2, '0') + '/' + (d.getMonth() + 1).toString().padStart(2, '0') + '/' + d.getFullYear().toString().slice(2); }
       function mu(e) { var p = e.split('/'); if (p.length < 2) return 99; return (parseInt(p[1]) + 2000 - new Date().getFullYear()) * 12 + parseInt(p[0]) - (new Date().getMonth() + 1); }
       function cm(id) { document.getElementById(id).classList.remove('show'); }
@@ -1751,10 +1917,15 @@
         var c = g('br2'); if (!c) return; c.innerHTML = '';
         G.bi.forEach(function (r, i) {
           var d = document.createElement('div'); d.className = 'tr';
-          d.innerHTML = '<div class="c1">' + r.sno + '</div><div class="c2">' + r.name + '</div><div class="c3">' + r.pk + '</div>' +
-            '<div class="c4">' + r.bt + ' ' + r.ex + '</div><div class="c5">' + r.q + '</div><div class="c6">' + r.bo + '</div>' +
-            '<div class="c7">' + r.ra.toFixed(2) + '</div><div class="c8">' + r.di + '%</div>' +
-            '<div class="c9" style="font-weight:700;">' + r.am.toFixed(2) + '</div>';
+          d.innerHTML = '<div class="c1" data-label="#">' + r.sno + '</div>' +
+            '<div class="c2" data-label="Product">' + r.name + '</div>' +
+            '<div class="c3" data-label="Pack">' + r.pk + '</div>' +
+            '<div class="c4" data-label="Batch">' + r.bt + ' ' + r.ex + '</div>' +
+            '<div class="c5" data-label="Qty">' + r.q + '</div>' +
+            '<div class="c6" data-label="Bonus">' + r.bo + '</div>' +
+            '<div class="c7" data-label="Rate">' + r.ra.toFixed(2) + '</div>' +
+            '<div class="c8" data-label="Disc%">' + r.di + '%</div>' +
+            '<div class="c9" data-label="Value" style="font-weight:700;">' + r.am.toFixed(2) + '</div>';
           d.ondblclick = function () { if (confirm('Remove row ' + r.sno + '?')) { G.bi.splice(i, 1); G.bi.forEach(function (x, j) { x.sno = j + 1; }); rr(); cf(); } };
           c.appendChild(d);
         });
@@ -2163,7 +2334,18 @@
                  i.company.toLowerCase().includes(q) ||
                  (i.comp_code && i.comp_code.toLowerCase().includes(q)); 
         })
-          .forEach(function (i) { var tr = document.createElement('tr'); tr.innerHTML = '<td>' + (i.comp_code || i.id) + '</td><td>' + i.name + '</td><td>' + i.salt + '</td><td>' + i.company + '</td><td>' + i.pack + '</td><td>' + i.stock + '</td><td>' + i.rate + '</td>'; tr.onclick = function () { si(i); }; g('isb').appendChild(tr); });
+          .forEach(function (i) { 
+            var tr = document.createElement('tr'); 
+            tr.innerHTML = '<td data-label="ID">' + (i.comp_code || i.id) + '</td>' +
+                           '<td data-label="Product">' + i.name + '</td>' +
+                           '<td data-label="Salt">' + i.salt + '</td>' +
+                           '<td data-label="Company">' + i.company + '</td>' +
+                           '<td data-label="Pack">' + i.pack + '</td>' +
+                           '<td data-label="Stock">' + i.stock + '</td>' +
+                           '<td data-label="Rate">' + i.rate + '</td>'; 
+            tr.onclick = function () { si(i); }; 
+            g('isb').appendChild(tr); 
+          });
       }
       function si(item) {
         se('pn', item.name); se('ppk', item.pack); se('pmr', item.mrp); se('pra', item.rate); 
@@ -2605,9 +2787,16 @@
         G.pi.forEach((r, i) => {
           tot += r.am;
           var d = document.createElement('div'); d.className = 'tr';
-          d.innerHTML = '<div class="c1">' + r.sno + '</div><div class="c2">' + r.name + '</div><div class="c3">' + r.salt + '/' + r.comp + '</div>' +
-            '<div class="c4">' + r.bt + ' ' + r.ex + '</div><div class="c5">' + r.q + '</div><div class="c6">' + (r.bo || 0) + '</div><div class="c7">' + (r.di || 0) + '%</div><div class="c7">' + r.cp.toFixed(2) + '</div>' +
-            '<div class="c7">' + r.sp.toFixed(2) + '</div><div class="c9">' + r.am.toFixed(2) + '</div>';
+          d.innerHTML = '<div class="c1" data-label="#">' + r.sno + '</div>' +
+            '<div class="c2" data-label="Product">' + r.name + '</div>' +
+            '<div class="c3" data-label="Salt/Comp">' + r.salt + '/' + r.comp + '</div>' +
+            '<div class="c4" data-label="Batch/Exp">' + r.bt + ' ' + r.ex + '</div>' +
+            '<div class="c5" data-label="Qty">' + r.q + '</div>' +
+            '<div class="c6" data-label="Bonus">' + (r.bo || 0) + '</div>' +
+            '<div class="c7" data-label="Disc%">' + (r.di || 0) + '%</div>' +
+            '<div class="c7" data-label="Cost">' + r.cp.toFixed(2) + '</div>' +
+            '<div class="c7" data-label="Sell">' + r.sp.toFixed(2) + '</div>' +
+            '<div class="c9" data-label="Amount">' + r.am.toFixed(2) + '</div>';
           d.ondblclick = function () { G.pi.splice(i, 1); G.pi.forEach((x, j) => x.sno = j + 1); rp(); };
           c.appendChild(d);
         });
