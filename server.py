@@ -57,9 +57,18 @@ def initialize_db():
         if db.items.count_documents({}) == 0:
             db.items.insert_many(initial_items)
             print("Initialized default items in DB")
-        if db.users.count_documents({}) == 0:
-            db.users.insert_many(initial_users)
-            print("Initialized default users in DB")
+        
+        # Ensure all initial users exist
+        for u in initial_users:
+            existing = db.users.find_one({"u": u["u"]})
+            if not existing:
+                clean_u = u.copy()
+                # Hash password for initial users if not already hashed
+                if ":" not in clean_u["p"]:
+                    clean_u["p"] = generate_password_hash(clean_u["p"])
+                db.users.insert_one(clean_u)
+                print(f"Initialized default user: {u['u']}")
+
         if db.parties.count_documents({}) == 0:
             db.parties.insert_many(initial_parties)
             print("Initialized default parties in DB")
@@ -189,7 +198,7 @@ def sync_all():
         for user in users:
             clean_user = {k: v for k, v in user.items() if k != '_id'}
             # If syncing from local and it's a new user or plain password, hash it
-            if 'p' in clean_user and not clean_user['p'].startswith('pbkdf2:sha256'):
+            if 'p' in clean_user and ":" not in clean_user['p']:
                 clean_user['p'] = generate_password_hash(clean_user['p'])
             db.users.update_one({"u": clean_user["u"]}, {"$set": clean_user}, upsert=True)
 
@@ -343,11 +352,22 @@ def login():
         p = data.get('p')
         
         user = db.users.find_one({"u": u})
-        if user and check_password_hash(user['p'], p):
-            # Return sanitized user object
-            return jsonify({"success": True, "user": {"u": user['u'], "r": user['r']}})
-        else:
-            return jsonify({"success": False, "error": "Invalid username or password"}), 401
+        if user:
+            stored_p = user.get('p', '')
+            if not stored_p:
+                return jsonify({"success": False, "error": "User has no password set"})
+                
+            # Check if password is hashed (Werkzeug hashes contain :)
+            if ":" in stored_p:
+                is_valid = check_password_hash(stored_p, p)
+            else:
+                # Fallback for plain text passwords (legacy)
+                is_valid = (stored_p == p)
+                
+            if is_valid:
+                return jsonify({"success": True, "user": {"u": user['u'], "r": user['r']}})
+            
+        return jsonify({"success": False, "error": "Invalid username or password"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -369,11 +389,16 @@ def manage_user():
             if existing:
                 return jsonify({"error": "Username already exists"}), 400
             clean = {k: v for k, v in user_add.items() if k != '_id'}
+            # Secure password
+            if 'p' in clean and ":" not in clean['p']:
+                clean['p'] = generate_password_hash(clean['p'])
             db.users.insert_one(clean)
 
         if user_update:
             uname = user_update.get('u')
             update_fields = {k: v for k, v in user_update.items() if k not in ('u', '_id')}
+            if 'p' in update_fields and ":" not in update_fields['p']:
+                update_fields['p'] = generate_password_hash(update_fields['p'])
             if uname and update_fields:
                 db.users.update_one({"u": uname}, {"$set": update_fields})
 
@@ -385,4 +410,4 @@ def manage_user():
 
 
 if __name__ == '__main__':
-    app.run(debug=False, port=5000, host='0.0.0.0')
+    app.run(debug=False, port=5001, host='0.0.0.0')
