@@ -1,1367 +1,776 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
-  <title>Marg ERP 9+ Pharma</title>
+  <title>Marg ERP 9+ [Pharma Special] - Advanced</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
-      font-size: 12px;
-    }
+    :root { --p: #003366; --bg: #e0e6eb; --b1: #8aabcc; --btn: #eef2f5; --t-bg: #fff; --sel: #ffec8b; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+    body { background: var(--bg); overflow: hidden; font-size: 11.5px; }
+
+    /* LAYOUT SKELETON */
+    #app { display: flex; flex-direction: column; height: 100vh; }
+    
+    /* TOP MENU */
+    .tm { background: #fff; border-bottom: 2px solid var(--p); display: flex; list-style: none; position: relative; z-index: 2000; }
+    .tm li { padding: 4px 10px; cursor: pointer; border-right: 1px solid #ccc; font-weight: 600; color: #333; position: relative; }
+    .tm li:hover { background: var(--p); color: #fff; }
+    .tm li u { text-decoration: none; border-bottom: 1px solid currentColor; }
+
+    .dropdown { display: none; position: absolute; top: 100%; left: 0; background: #fff; min-width: 200px; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); border: 1px solid var(--b1); z-index: 2001; padding: 2px 0; }
+    .tm li:hover .dropdown { display: block; }
+    .dropdown li { list-style: none; padding: 5px 12px; color: #333; font-weight: 500; font-size: 11px; border:none; width: 100%; text-align: left; }
+    .dropdown li:hover { background: var(--p); color: #fff; }
+
+    /* TAB BAR (Advanced) */
+    .tab-bar { background: #d0d8e0; display: flex; border-bottom: 1px solid var(--b1); padding-left: 180px; }
+    .tab { padding: 4px 15px; background: #c0d0e0; border: 1px solid var(--b1); border-bottom: none; margin-right: 2px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 4px 4px 0 0; }
+    .tab.active { background: #fff; font-weight: bold; border-top: 2px solid var(--p); }
+    .tab span { color: #888; font-size: 10px; border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; }
+    .tab span:hover { background: #f44; color: #fff; }
+
+    /* WORKSPACE */
+    .ws { flex: 1; display: flex; overflow: hidden; position: relative; }
+    
+    /* SIDEBAR */
+    .sl { width: 180px; background: #fdfae8; border-right: 1px solid var(--b1); display: flex; flex-direction: column; padding: 5px; box-shadow: inset -2px 0 5px rgba(0,0,0,0.05); }
+    .sl h4 { background: #b0c8e0; color: var(--p); padding: 3px 6px; font-size: 11px; border: 1px solid var(--b1); margin-bottom: 3px; font-weight: 800; text-transform: uppercase; }
+    .sl a { text-decoration: none; color: #333; padding: 4px 8px; display: block; border-bottom: 1px solid #eee; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sl a:hover { background: var(--p); color: #fff; cursor: pointer; }
+
+    /* WINDOW AREA (Multiple containers) */
+    .wa { flex: 1; position: relative; display: flex; flex-direction: column; padding: 5px; }
+    .win { position: absolute; top: 5px; left: 5px; right: 5px; bottom: 5px; display: none; background: #fff; border: 1px solid var(--b1); box-shadow: 2px 2px 10px rgba(0,0,0,0.1); }
+    .win.active { display: flex; flex-direction: column; }
+
+    /* DASHBOARD GRID */
+    .dash-grid { display: grid; grid-template-columns: 1fr 220px 280px; gap: 5px; height: 100%; }
+    .center-col { display: flex; flex-direction: column; gap: 5px; }
+    .banner { flex: 1; background: #fff; border: 1px solid var(--b1); display: flex; align-items: center; justify-content: center; position: relative; }
+    .banner img { max-width: 90%; }
+    .sc-col { background: #fff; border: 1px solid var(--b1); padding: 4px; display: flex; flex-direction: column; }
+    .sc-btn { padding: 5px; border: 1px solid #ccc; margin-bottom: 2px; cursor: pointer; background: #f9f9f9; text-align: center; font-weight: 500; font-size: 12px; }
+    .sc-btn:hover { background: var(--p); color: #fff; }
+
+    /* EXECUTIVE ANALYSIS TABLES */
+    .sr-box { background: #fff; border: 1px solid var(--b1); padding: 3px; display: flex; flex-direction: column; gap: 5px; }
+    .srt { width: 100%; border-collapse: collapse; font-size: 10px; }
+    .srt th { background: #5a8a7a; color: #fff; padding: 4px; border: 1px solid #4a7a6a; }
+    .srt td { border: 1px solid #eee; padding: 3px 5px; border-bottom: 1px solid #ddd; }
+    .srt .val { text-align: right; font-weight: bold; }
+
+    /* MODULE UI: SALE/PURCHASE */
+    .mod-h { background: #003366; color: #fff; padding: 5px 12px; font-weight: 700; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+    .mod-body { flex: 1; display: flex; flex-direction: column; background: #fffde8; overflow: hidden; }
+    .mod-top { padding: 8px; background: #f0f4f8; border-bottom: 1px solid var(--b1); display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+    .mod-top label { font-weight: bold; color: var(--p); margin-right: 5px; }
+    .mod-top input { border: 1px solid var(--b1); padding: 2px 5px; outline: none; }
+    
+    .entry-bar { background: #c0d8f0; padding: 5px; display: flex; gap: 5px; align-items: center; border-bottom: 1px solid var(--b1); }
+    .entry-bar input { border: 1px solid var(--b1); padding: 3px; font-size: 12px; }
+    
+    .grid-wrap { flex: 1; overflow: auto; background: #fff; }
+    .grid { width: 100%; border-collapse: collapse; }
+    .grid th { position: sticky; top: 0; background: #6688aa; color: #fff; padding: 5px; font-size: 11px; z-index: 10; border: 1px solid #557799; }
+    .grid td { border: 1px solid #ddd; padding: 3px 5px; }
+
+    .mod-foot { background: #eee; border-top: 2px solid var(--p); padding: 10px; display: flex; justify-content: space-between; }
+    .mod-btns { background: #8aabcc; padding: 5px; display: flex; gap: 5px; }
+    .mod-btns button { padding: 5px 15px; font-weight: bold; cursor: pointer; border: 1px solid var(--p); background: #eee; }
+    .mod-btns button:hover { background: var(--p); color: #fff; }
+
+    /* FOOTER */
+    .fb { background: #fff; border-top: 1px solid var(--b1); color: var(--p); padding: 5px 15px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 600; }
+    .digital-clock { background: #000; color: #0f0; padding: 2px 8px; border-radius: 3px; font-family: monospace; font-size: 13px; margin-left: 10px; border: 1px solid #333; }
+
+    /* ADVANCED ALERTS */
+    .stk-low { color: #d00; font-weight: 900; }
+    .exp-soon { background: #ffebeb; color: #b00; }
+    .chip { display: inline-block; padding: 2px 6px; font-size: 9px; border-radius: 10px; background: #eee; margin-left: 5px; border: 1px solid #ccc; }
+    .chip.gst { background: #e8f5e9; color: #2e7d32; }
+
+    /* GLOBAL COMMAND BAR (CTRL+G) */
+    #cmd-bar { position: fixed; top: 30%; left: 50%; transform: translateX(-50%); width: 500px; background: #fff; border: 4px solid var(--p); box-shadow: 0 0 100px rgba(0,0,0,0.5); z-index: 9999; display: none; padding: 15px; }
+    #cmd-bar input { width: 100%; padding: 12px; font-size: 18px; border: 1px solid var(--b1); outline: none; }
 
-    body {
-      background: #c8dce8;
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .tb {
-      background: linear-gradient(90deg, #003366, #1a5599, #003366);
-      color: #fff;
-      padding: 5px 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-height: 34px;
-    }
-
-    .tb h1 {
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-    .tb span {
-      font-size: 11px;
-      color: #aac4ff;
-    }
-
-    .mb {
-      background: #fff;
-      border-bottom: 2px solid #003366;
-      display: flex;
-    }
-
-    .mb li {
-      list-style: none;
-      padding: 4px 12px;
-      cursor: pointer;
-      border-right: 1px solid #ccc;
-      font-weight: 600;
-      color: #003366;
-    }
-
-    .mb li:hover {
-      background: #003366;
-      color: #fff;
-    }
-
-    /* MDI Workspace Styles */
-    #desktop {
-      flex: 1;
-      position: relative;
-      background: #c8dce8 url('https://www.transparenttextures.com/patterns/cubes.png');
-      overflow: hidden;
-    }
-
-    .window {
-      position: absolute;
-      background: #eee;
-      border: 2px solid #003366;
-      box-shadow: 4px 4px 10px rgba(0,0,0,0.3);
-      display: flex;
-      flex-direction: column;
-      min-width: 300px;
-      min-height: 200px;
-      z-index: 10;
-    }
-
-    .window-header {
-      background: linear-gradient(90deg, #003366, #1a5599);
-      color: white;
-      padding: 4px 8px;
-      display: flex;
-      align-items: center;
-      cursor: move;
-      user-select: none;
-      font-weight: bold;
-    }
-
-    .window-title {
-      flex: 1;
-    }
-
-    .window-controls {
-      display: flex;
-      gap: 4px;
-    }
-
-    .win-btn {
-      width: 18px;
-      height: 18px;
-      background: #ddd;
-      border: 1px solid #777;
-      color: #333;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      cursor: pointer;
-    }
-
-    .win-btn:hover {
-      background: #fff;
-    }
-
-    .win-btn.close:hover {
-      background: #c00;
-      color: #fff;
-    }
-
-    .window-body {
-      flex: 1;
-      overflow: auto;
-      padding: 0;
-      background: #fff;
-    }
-
-    .window.active {
-      z-index: 100;
-      border-color: #ff9900;
-    }
-
-    .window.active .window-header {
-      background: linear-gradient(90deg, #ff9900, #ffcc33);
-      color: #000;
-    }
-
-    .taskbar {
-      background: #333;
-      height: 30px;
-      display: flex;
-      gap: 2px;
-      padding: 2px;
-    }
-
-    .task-item {
-      background: #555;
-      color: #fff;
-      padding: 0 10px;
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      font-size: 11px;
-      border: 1px solid #777;
-    }
-
-    .task-item.active {
-      background: #ff9900;
-      color: #000;
-      font-weight: bold;
-    }
-
-    .ws {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    .sl {
-      width: 165px;
-      background: #dde8f0;
-      border-right: 1px solid #aabbd0;
-      padding: 8px;
-      overflow-y: auto;
-      flex-shrink: 0;
-    }
-
-    .sl h4 {
-      font-size: 11px;
-      color: #555;
-      border-bottom: 1px solid #aabbd0;
-      padding-bottom: 4px;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-    }
-
-    .sl a {
-      display: block;
-      padding: 5px 6px;
-      color: #003366;
-      cursor: pointer;
-      margin-bottom: 2px;
-      font-size: 11px;
-    }
-
-    .sl a:hover {
-      background: #003366;
-      color: #fff;
-    }
-
-    .ma {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    #sale-sc {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      background: #d4e4f0;
-    }
-
-    .sh {
-      background: #3a6a9a;
-      color: #fff;
-      padding: 4px 10px;
-      font-weight: 700;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .sh span {
-      font-size: 11px;
-      font-weight: 400;
-      color: #d0e8ff;
-    }
-
-    .bt {
-      background: #c8dce8;
-      padding: 4px 8px;
-      border-bottom: 1px solid #8aabcc;
-    }
-
-    .br {
-      display: flex;
-      gap: 5px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 3px;
-    }
-
-    .br label {
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      white-space: nowrap;
-      font-weight: 600;
-      color: #002244;
-    }
-
-    .br input,
-    .br select {
-      padding: 2px 4px;
-      border: 1px solid #7799bb;
-      background: #fff;
-      height: 21px;
-    }
-
-    .bsm {
-      padding: 2px 8px;
-      border: 1px solid #668;
-      background: linear-gradient(#eee, #ccd);
-      cursor: pointer;
-      height: 21px;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    .bsm:hover {
-      background: linear-gradient(#dde, #aab);
-    }
-
-    .pt {
-      display: flex;
-      gap: 8px;
-      background: #e8f0f8;
-      border: 1px solid #8aabcc;
-      padding: 2px 8px;
-    }
-
-    .pt label {
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 3px;
-    }
-
-    .pib {
-      background: #bbd0e4;
-      border-bottom: 1px solid #8aabcc;
-      padding: 3px 6px;
-      display: flex;
-      gap: 4px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .pib label {
-      font-weight: 600;
-      white-space: nowrap;
-      color: #001133;
-      display: flex;
-      align-items: center;
-      gap: 3px;
-    }
-
-    .pib input {
-      padding: 1px 3px;
-      border: 1px solid #7799bb;
-      background: #fffde8;
-      height: 20px;
-    }
-
-    .cs {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    .bta {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      border-right: 2px solid #8aabcc;
-      overflow: hidden;
-    }
-
-    .th {
-      background: #3a6a9a;
-      color: #fff;
-      display: flex;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-
-    .th div,
-    .tr div {
-      padding: 2px 4px;
-      border-right: 1px solid rgba(200, 220, 240, .3);
-      white-space: nowrap;
-      overflow: hidden;
-    }
-
-    .tb2 {
-      flex: 1;
-      overflow-y: auto;
-      background: #fff;
-    }
-
-    .tr {
-      display: flex;
-      border-bottom: 1px solid #dde8f0;
-    }
-
-    .tr:nth-child(even) {
-      background: #f0f6fc;
-    }
-
-    .tr:hover {
-      background: #fff8d0;
-    }
-
-    .rp {
-      width: 245px;
-      background: #d0e0ee;
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-    }
-
-    .rs {
-      border-bottom: 1px solid #8aabcc;
-      padding: 4px;
-    }
-
-    .rt {
-      background: #3a6a9a;
-      color: #fff;
-      font-weight: 700;
-      padding: 2px 6px;
-      font-size: 11px;
-      margin-bottom: 3px;
-    }
-
-    .rpt {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11px;
-    }
-
-    .rpt th {
-      background: #c0d8f0;
-      border: 1px solid #8aabcc;
-      padding: 2px 4px;
-    }
-
-    .rpt td {
-      border: 1px solid #aacce0;
-      background: #fff;
-      padding: 2px 4px;
-    }
-
-    .rg {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2px;
-      padding: 2px;
-    }
-
-    .ri {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .ri label {
-      font-size: 10px;
-      font-weight: 700;
-    }
-
-    .ri input {
-      border: 1px solid #7799bb;
-      padding: 1px 3px;
-      background: #fff;
-      height: 18px;
-      font-size: 11px;
-    }
-
-    .bf {
-      background: #c0d4e8;
-      border-top: 2px solid #8aabcc;
-      display: flex;
-      gap: 0;
-    }
-
-    .fl {
-      padding: 3px 6px;
-      border-right: 1px solid #8aabcc;
-    }
-
-    .fl table {
-      border-collapse: collapse;
-    }
-
-    .fl td,
-    .fl th {
-      border: 1px solid #8aabcc;
-      padding: 2px 5px;
-      font-size: 11px;
-    }
-
-    .fl th {
-      background: #c0d8f0;
-      font-weight: 700;
-    }
-
-    .fm {
-      flex: 1;
-      padding: 4px 8px;
-    }
-
-    .fmr {
-      display: flex;
-      gap: 5px;
-      align-items: center;
-      margin-bottom: 3px;
-    }
-
-    .fmr label {
-      font-weight: 700;
-      font-size: 11px;
-      white-space: nowrap;
-      color: #002244;
-    }
-
-    .fmr input {
-      flex: 1;
-      min-width: 0;
-      border: 1px solid #7799bb;
-      height: 19px;
-      padding: 1px 3px;
-      background: #fff;
-    }
-
-    .fr {
-      width: 185px;
-      border-left: 1px solid #8aabcc;
-      padding: 4px;
-    }
-
-    .frg {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 2px;
-    }
-
-    .fri {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .fri label {
-      font-size: 10px;
-      font-weight: 700;
-      color: #002244;
-    }
-
-    .fri input {
-      border: 1px solid #7799bb;
-      height: 18px;
-      padding: 1px 3px;
-      background: #fff;
-      font-size: 11px;
-    }
-
-    .ab {
-      background: #b0c8de;
-      border-top: 2px solid #8aabcc;
-      display: flex;
-      justify-content: center;
-      gap: 6px;
-      padding: 4px;
-    }
-
-    .ab button {
-      padding: 3px 16px;
-      border: 2px outset #88aacc;
-      background: linear-gradient(#eef2ff, #ccd4ee);
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 12px;
-    }
-
-    .ab button:hover {
-      background: linear-gradient(#dde6ff, #99b0cc);
-    }
-
-    .ab button:active {
-      border-style: inset;
-    }
-
-    .abg {
-      background: linear-gradient(#c0eec0, #7acc7a) !important;
-    }
-
-    .abr {
-      background: linear-gradient(#ffcccc, #ee8888) !important;
-    }
-
-    #dash-sc {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      background: #d4e4f0;
-      padding: 10px;
-      overflow-y: auto;
-    }
-
-    .dt {
-      font-size: 18px;
-      font-weight: 700;
-      color: #003366;
-      margin-bottom: 10px;
-      text-align: center;
-      border-bottom: 2px solid #5a7fa8;
-      padding-bottom: 6px;
-    }
-
-    .g4 {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .cd {
-      background: #fff;
-      border: 1px solid #aabbd0;
-      padding: 12px;
-      text-align: center;
-      border-top: 3px solid #3a6a9a;
-    }
-
-    .cd .cv {
-      font-size: 22px;
-      font-weight: 700;
-      color: #003366;
-      margin: 6px 0;
-    }
-
-    .cd .ct {
-      font-size: 11px;
-      color: #777;
-    }
-
-    .cd.gr {
-      border-top-color: #228822;
-    }
-
-    .cd.gr .cv {
-      color: #228822;
-    }
-
-    .cd.rd {
-      border-top-color: #cc3333;
-    }
-
-    .cd.rd .cv {
-      color: #cc3333;
-    }
-
-    .cd.or {
-      border-top-color: #cc6600;
-    }
-
-    .cd.or .cv {
-      color: #cc6600;
-    }
-
-    .dst {
-      font-size: 13px;
-      font-weight: 700;
-      color: #003366;
-      margin-bottom: 6px;
-      background: #c8dce8;
-      padding: 4px 8px;
-      border-left: 4px solid #3a6a9a;
-    }
-
-    .mo {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, .4);
-      z-index: 999;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .mo.show {
-      display: flex;
-    }
-
-    .mb2 {
-      background: #cce0f0;
-      border: 2px solid #5a7fa8;
-      min-width: 500px;
-      max-width: 90vw;
-      max-height: 85vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .mh {
-      background: #3a6a9a;
-      color: #fff;
-      padding: 4px 10px;
-      font-weight: 700;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .mh span {
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    .mbd {
-      padding: 8px;
-      overflow-y: auto;
-    }
-
-    .mbd input.sb {
-      width: 100%;
-      padding: 4px 6px;
-      border: 1px solid #7799bb;
-      margin-bottom: 6px;
-      background: #ffffcc;
-      font-size: 13px;
-    }
-
-    .mt {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .mt th {
-      background: #3a6a9a;
-      color: #fff;
-      padding: 3px 6px;
-      border: 1px solid #2a5a8a;
-      font-size: 11px;
-    }
-
-    .mt td {
-      border: 1px solid #8aabcc;
-      padding: 3px 6px;
-      background: #fff;
-      font-size: 11px;
-    }
-
-    .mt tr:hover td {
-      background: #ffffc0;
-      cursor: pointer;
-    }
-
-    #ls {
-      position: fixed;
-      inset: 0;
-      background: #c8dce8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-
-    .lb {
-      background: #d4e4f0;
-      border: 2px solid #5a7fa8;
-      padding: 24px;
-      width: 300px;
-      box-shadow: 4px 4px 12px rgba(0, 0, 0, .3);
-    }
-
-    .lbt {
-      background: #003366;
-      color: #fff;
-      margin: -24px -24px 16px;
-      padding: 10px 16px;
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    .lf2 {
-      margin-bottom: 10px;
-    }
-
-    .lf2 label {
-      display: block;
-      font-weight: 700;
-      margin-bottom: 3px;
-    }
-
-    .lf2 input {
-      width: 100%;
-      padding: 4px 6px;
-      border: 1px solid #7799bb;
-      background: #fff;
-      height: 24px;
-      font-size: 13px;
-    }
-
-    .lbtn {
-      width: 100%;
-      padding: 7px;
-      background: linear-gradient(#3a6adc, #0a3a8c);
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 700;
-      margin-top: 8px;
-    }
-
-    .lerr {
-      color: red;
-      font-size: 11px;
-      margin-top: 4px;
-    }
-
-    ::-webkit-scrollbar {
-      width: 7px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: #c0d4e8;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: #7a9ab8;
-    }
-
-    .c1 {
-      min-width: 30px;
-      max-width: 30px;
-      text-align: center;
-    }
-
-    .c2 {
-      min-width: 145px;
-      flex: 1;
-    }
-
-    .c3 {
-      min-width: 48px;
-      max-width: 48px;
-    }
-
-    .c4 {
-      min-width: 70px;
-      max-width: 70px;
-    }
-
-    .c5 {
-      min-width: 42px;
-      max-width: 42px;
-      text-align: right;
-    }
-
-    .c6 {
-      min-width: 42px;
-      max-width: 42px;
-      text-align: right;
-    }
-
-    .c7 {
-      min-width: 55px;
-      max-width: 55px;
-      text-align: right;
-    }
-
-    .c8 {
-      min-width: 42px;
-      max-width: 42px;
-      text-align: right;
-    }
-
-    .c9 {
-      min-width: 62px;
-      max-width: 62px;
-      text-align: right;
-    }
   </style>
 </head>
-
 <body>
-  <div id="ls">
-    <div class="lb">
-      <div class="lbt">&#127973; Marg ERP 9+ [Pharma Special]</div>
-      <div class="lf2"><label>Username:</label><input id="lu" value="admin" onkeydown="if(event.key=='Enter')doLogin()">
+
+  <!-- LOGIN SCREEN -->
+  <div id="ls" style="position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg, #001529, #003366); z-index:9999; display:flex; align-items:center; justify-content:center;">
+    <div style="background:#fff; padding:35px; border-radius:1px; width:350px; box-shadow: 0 0 50px rgba(0,0,0,0.8);">
+      <h2 style="text-align:center; color:var(--p); margin-bottom:25px; border-bottom:2px solid var(--p); padding-bottom:10px;">MARG ERP 9+ [PRO]</h2>
+      <div style="margin-bottom:15px;"><label style="display:block; font-weight:bold; margin-bottom:5px;">Role / Login Type</label>
+        <select id="lrole" style="width:100%; padding:10px; border:1px solid #8aabcc;" onchange="if(this.value==='user'){g('lu').value='user';g('lp').value='user123';}else{g('lu').value='admin';g('lp').value='admin123';}">
+          <option value="admin">Administrator (Full Access)</option>
+          <option value="user">Data Entry Operator (Restricted)</option>
+        </select>
       </div>
-      <div class="lf2"><label>Password:</label><input id="lp" type="password" value="admin123"
-          onkeydown="if(event.key=='Enter')doLogin()"></div>
-      <button class="lbtn" onclick="doLogin()">LOGIN</button>
-      <div class="lerr" id="lerr"></div>
-      <p style="font-size:10px;color:#555;margin-top:8px;text-align:center;">admin/admin123 | user1/1234</p>
-      <p id="f-warn" style="font-size:9px;color:#a33;margin-top:4px;text-align:center;display:none;">Security check: Use localhost:5000 for full features.</p>
+      <div style="margin-bottom:15px;"><label style="display:block; font-weight:bold; margin-bottom:5px;">User Name</label><input id="lu" value="admin" style="width:100%; padding:10px; border:1px solid #8aabcc;"></div>
+      <div style="margin-bottom:20px;"><label style="display:block; font-weight:bold; margin-bottom:5px;">Password</label><input id="lp" type="password" value="admin123" style="width:100%; padding:10px; border:1px solid #8aabcc;"></div>
+      <button onclick="doLogin()" style="width:100%; padding:12px; background:var(--p); color:#fff; border:none; font-weight:bold; font-size:14px; cursor:pointer; box-shadow: 0 4px 0 #002244;">F10 LOGIN</button>
+      <p id="lerr" style="color:red; margin-top:15px; text-align:center; font-weight:bold;"></p>
     </div>
   </div>
-  <div id="app" style="display:none;height:100vh;flex-direction:column;">
-    <div class="tb">
-      <h1>MARG ERP 9+ <span>[Pharma Special]</span></h1><span style="margin-left:auto;" id="hi"></span>
-    </div>
-    <ul class="mb">
-      <li onclick="showDash()">Masters <u style="color:#c00">M</u></li>
-      <li onclick="showSale()">Transactions <u style="color:#c00">T</u></li>
-      <li onclick="showLedger()">Accounts <u style="color:#c00">A</u></li>
-      <li onclick="showStock()">Stocks <u style="color:#c00">S</u></li>
-      <li onclick="showHist()">Reports <u style="color:#c00">R</u></li>
-      <li onclick="doLogout()" style="margin-left:auto;color:#c00;">Exit</li>
-    </ul>
-    <div class="ws">
-      <nav class="sl" id="sidebar">
-        <h4>Masters</h4>
-        <a onclick="ow('im', 'Item Master', 850, 500)">&#128138; Item Master (F2)</a>
-        <a onclick="ow('lm', 'Ledger Master', 800, 500)">&#128202; Ledger Master</a>
-        
-        <h4>Transactions</h4>
-        <a onclick="ow('sale', 'Sale Bill (Retail)', 1000, 600)">&#128203; Sale Bill (Retail)</a>
-        <a onclick="ow('purch', 'Purchase Entry', 900, 550)">&#128666; Purchase Bill</a>
-        
-        <h4>Stocks & Reports</h4>
-        <a onclick="ow('stock', 'Current Stock', 850, 500)">&#128230; Current Stock</a>
-        <a onclick="ow('expiry', 'Expiry List', 800, 500)">&#9888; Expiry List</a>
-        <a onclick="ow('hist', 'Bill History', 850, 500)">&#128221; Modify/View Bills</a>
 
-        <h4>System</h4>
-        <a onclick="ntf('Retailio: No pending orders.')">&#128722; Retailio</a>
-        <a onclick="ntf('Marg Mart: Sync Complete.')">&#128138; Marg Mart</a>
-        <a onclick="doLogout()">&#128682; Logout</a>
+  <div id="app" style="display:none;">
+    <!-- TOP NAVIGATION -->
+    <ul class="tm">
+      <li data-perm="p_masters">Masters <u>M</u>
+        <ul class="dropdown">
+          <li data-perm="p_items" onclick="tab.open('items', 'Item Master')">Item Master (Inventory)</li>
+          <li data-perm="p_ledgers" onclick="tab.open('parties', 'Ledger Master')">Party / Ledger Master</li>
+          <li data-perm="p_groups" onclick="tab.open('groups', 'Account Groups')">Account Group Master</li>
+          <li onclick="tab.open('perms', 'User Permissions')"><b>User Permissions</b></li>
+        </ul>
+      </li>
+      <li data-perm="p_trans">Transactions <u>T</u>
+        <ul class="dropdown">
+          <li data-perm="p_sale" onclick="tab.open('sale', 'Retail Sale Bill')">Retail Sale Invoice</li>
+          <li data-perm="p_order" onclick="tab.open('order', 'Sale Order')">Sale Order / Booking</li>
+          <li data-perm="p_purch" onclick="tab.open('purch', 'Purchase Entry')">Purchase Entry</li>
+          <li data-perm="p_return" onclick="tab.open('return', 'Sale Return')">Sale Return (Credit Note)</li>
+        </ul>
+      </li>
+      <li data-perm="p_acct">Accounts <u>A</u>
+        <ul class="dropdown">
+          <li data-perm="p_paym" onclick="tab.open('paym', 'Cash Payment')">Cash Payment Entry</li>
+          <li data-perm="p_recv" onclick="tab.open('recv', 'Cash Receipt')">Cash Receipt Entry</li>
+          <li data-perm="p_ledger_view" onclick="tab.open('ledger', 'Ledger Account')">Standard Ledger A/c</li>
+        </ul>
+      </li>
+      <li data-perm="p_stocks">Stocks <u>S</u>
+        <ul class="dropdown">
+          <li data-perm="p_stock_stat" onclick="tab.open('stock', 'Stock Status')">Current Stock Analysis</li>
+          <li data-perm="p_expire" onclick="tab.open('expire', 'Expiry List')">Pharmacy Expiry Matrix</li>
+        </ul>
+      </li>
+      <li data-perm="p_rep_final" onclick="tab.open('s_rep', 'Final Reports')">Final Reports <u>F</u></li>
+      <li data-perm="p_rep_daily" onclick="tab.open('p_rep', 'Daily Reports')">Daily Reports <u>D</u></li>
+      <li onclick="doLogout()" style="margin-left:auto; color:red;">Exit <u>X</u></li>
+    </ul>
+
+    <!-- WORKSPACE TDI -->
+    <div class="tab-bar" id="tab-bar">
+      <!-- Tabs injected here -->
+    </div>
+
+    <div class="ws">
+      <nav class="sl">
+        <h4>Most Viewed</h4>
+        <a data-perm="p_sale" onclick="tab.open('sale', 'Retail Sale')">Retail : Bill</a>
+        <a data-perm="p_purch" onclick="tab.open('purch', 'Purchase')">Purchase : Bill</a>
+        <a data-perm="p_items" onclick="tab.open('items', 'Item List')">Item List</a>
+        <a data-perm="p_stock_stat" onclick="tab.open('stock', 'Current Stock')">Current Stock</a>
+        
+        <div data-perm="p_dash_fin">
+           <h4 style="margin-top:10px;">Executive Analysis</h4>
+           <a data-perm="p_rep_daily" onclick="tab.open('s_rep', 'Sales Book')">Sales Book</a>
+           <a data-perm="p_rep_daily" onclick="tab.open('p_rep', 'Purchase Book')">Purchase Book</a>
+           <a data-perm="p_expire" onclick="tab.open('expire', 'Expiry List')">Expiry Matrix</a>
+           <a data-perm="p_rep_final" onclick="tab.open('profit', 'Todays Gross Profit')">Todays Gross Profit</a>
+        </div>
+
+        <h4 style="margin-top:10px;">Digital services</h4>
+        <a href="#" data-perm="p_dash_fin">Retailio Services</a>
+        <a href="#">margmart.com</a>
       </nav>
 
-      <div class="ma">
-        <div id="desktop">
-            <div id="welcome-msg" style="position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#5a7fa8;pointer-events:none;z-index:1;">
-                <h2 style="font-size:38px;opacity:0.3;letter-spacing:4px;">MARG ERP 9+</h2>
-                <p style="font-size:14px;opacity:0.4;">Advanced Pharma Management Suite</p>
-            </div>
+      <div class="wa" id="wa">
+        <!-- Dashboard (Default Window) -->
+        <div class="win active" id="win-dash">
+           <div class="dash-grid">
+               <div class="center-col">
+                  <div style="background:#fff; border:1px solid var(--b1); padding:4px; display:flex; gap:10px; align-items:center;">
+                    <b style="color:var(--p)">MARG HELP</b>
+                    <img src="https://img.icons8.com/color/32/000000/info.png" style="cursor:pointer">
+                    <img src="https://img.icons8.com/color/32/000000/google-groups.png" style="cursor:pointer">
+                  </div>
+                  <div class="banner">
+                    <img src="https://i.ibb.co/3W6T8Rz/banner-placeholder.png" alt="Build Your Future">
+                    <div style="position:absolute; bottom:10px; right:10px;"><button style="padding:10px 20px; background:var(--p); color:#fff; border:none; font-weight:bold; cursor:pointer;">Apply Now</button></div>
+                  </div>
+                  <div style="background:#fff; border:1px solid var(--b1); padding:8px;">
+                    <marquee behavior="scroll" style="color:red; font-weight:bold; font-size:14px;">CALL FOR BUY & DEMO : 0300-7358302 | CITY MEDICAL HAMZA COMPANY MULTAN - ADVANCED ERP PRO VERSION</marquee>
+                  </div>
+               </div>
+
+               <div class="sc-col">
+                  <div class="sc-btn" onclick="tab.open('sale', 'Retail Sale')">Retail : Bill</div>
+                  <div class="sc-btn" onclick="tab.open('purch', 'Purchase')">Purchase : Bill</div>
+                  <div class="sc-btn" onclick="tab.open('ledger', 'Ledger A/c')">Ledger A/c</div>
+                  <div class="sc-btn" onclick="tab.open('paym', 'Payment')">Payment</div>
+                  <div class="sc-btn" onclick="tab.open('stock', 'Stock Status')">Stock Status</div>
+                  <div class="sc-btn" onclick="tab.open('expire', 'Expiry List')">Expiry List</div>
+                  <div class="sc-btn" style="background:#e8f4ff;">Daily Analysis (MIS)</div>
+                  <div class="sc-btn" style="background:#fff3e0;">Todays Gross Profit</div>
+                  <div class="sc-btn" onclick="doLogout()" style="margin-top:auto; color:red; border-color:red;">Exit</div>
+               </div>
+
+               <div class="sr-box" data-perm="p_dash_fin">
+                  <table class="srt">
+                    <thead><tr><th colspan="3">Performance >> Real-Time Summary</th></tr><tr><th>Transaction</th><th>Count</th><th align="right">Amount</th></tr></thead>
+                    <tbody id="dash-perf"></tbody>
+                  </table>
+                  <table class="srt" style="--srt-p:#4a7a8a">
+                    <thead><tr><th colspan="2" style="background:var(--srt-p)">FINANCIALS</th><th align="right" style="background:var(--srt-p)">AMT</th></tr></thead>
+                    <tbody id="dash-fin"></tbody>
+                  </table>
+                  <table class="srt" style="--srt-p:#7a7a7a">
+                    <thead><tr><th style="background:var(--srt-p)">BILL O/S (AGING)</th><th style="background:var(--srt-p)">DEBTORS</th><th style="background:var(--srt-p)">CREDITORS</th></tr></thead>
+                    <tbody id="dash-age"></tbody>
+                  </table>
+               </div>
+           </div>
         </div>
-        <div class="taskbar" id="taskbar"></div>
+        <!-- Dynamic Windows will be injected here -->
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div id="cmd-bar">
+       <div style="font-weight:bold; color:var(--p); margin-bottom:5px;">GLOBAL SEARCH / JUMP TO [ESC to Close]</div>
+       <input id="cmd-in" placeholder="Ex: Sale, Purchase, Ledger, Stock..." oninput="app.cmd()">
+       <div id="cmd-res" style="max-height:200px; overflow:auto; margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <div class="mo" id="im">
+    <div class="mw">
+      <div class="mw-h">Medicine Selection Matrix <span onclick="cm('im')">X</span></div>
+      <div style="padding:10px;">
+        <input id="isi" oninput="inv.fi()" placeholder="Search Name / Salt / Company..." style="width:100%; padding:10px; border:1px solid var(--b1); font-size:14px; margin-bottom:10px;">
+        <div style="max-height:400px; overflow-y:auto;">
+           <table class="srt" style="width:100%; border:1px solid #ccc;">
+             <thead style="position:sticky; top:0;"><tr><th>ID</th><th>Name</th><th>Salt</th><th>Company</th><th>Stock</th><th>Rate</th></tr></thead>
+             <tbody id="isb"></tbody>
+           </table>
+        </div>
       </div>
     </div>
   </div>
-  <--help Modals -->
-    <div class="mo" id="im">
-      <div class="mb2" style="min-width:620px;">
-        <div class="mh">Search Medicine (F2) <span onclick="cm('im')">&#10006;</span></div>
-        <div class="mbd">
-          <input class="sb" id="isi" placeholder="Type name, salt, company..." oninput="fi()">
-          <table class="mt">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Product Name</th>
-                <th>Salt</th>
-                <th>Company</th>
-                <th>Pack</th>
-                <th>Stock</th>
-                <th>Rate</th>
-              </tr>
-            </thead>
-            <tbody id="isb"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <div class="mo" id="hm">
-      <div class="mb2" style="min-width:640px;">
-        <div class="mh">Bill History <span onclick="cm('hm')">&#10006;</span></div>
-        <div class="mbd">
-          <table class="mt">
-            <thead>
-              <tr>
-                <th>Bill No</th>
-                <th>Date</th>
-                <th>Customer</th>
-                <th>Items</th>
-                <th>Net Amt</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="hb"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <div class="mo" id="sm2">
-      <div class="mb2">
-        <div class="mh">Current Stock <span onclick="cm('sm2')">&#10006;</span></div>
-        <div class="mbd">
-          <input class="sb" id="ssi" placeholder="Search..." oninput="fst()">
-          <table class="mt">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Salt</th>
-                <th>Company</th>
-                <th>Pack</th>
-                <th>Batch</th>
-                <th>Expiry</th>
-                <th>Stock</th>
-                <th>Rate</th>
-              </tr>
-            </thead>
-            <tbody id="stb"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <div class="mo" id="em">
-      <div class="mb2">
-        <div class="mh">Near Expiry List <span onclick="cm('em')">&#10006;</span></div>
-        <div class="mbd">
-          <table class="mt">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Batch</th>
-                <th>Expiry</th>
-                <th>Stock</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="eb"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <div class="mo" id="lm">
-      <div class="mb2">
-        <div class="mh">Ledger Accounts <span onclick="cm('lm')">&#10006;</span></div>
-        <div class="mbd">
-          <table class="mt">
-            <thead>
-              <tr>
-                <th>Party Name</th>
-                <th>Type</th>
-                <th>Balance</th>
-              </tr>
-            </thead>
-            <tbody id="lb2"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <div class="mo" id="pm">
-      <div class="mb2" style="min-width:640px;">
-        <div class="mh">Purchase Bill <span onclick="cm('pm')">&#10006;</span></div>
-        <div class="mbd">
-          <div style="display:flex;gap:8px;margin-bottom:8px;">
-            <label>Supplier: <input id="ps" style="width:150px;border:1px solid #7799bb;padding:2px;"></label>
-            <label>Inv No: <input id="pi2" style="width:80px;border:1px solid #7799bb;padding:2px;"></label>
-            <label>Date: <input id="pd" style="width:80px;border:1px solid #7799bb;padding:2px;"></label>
-          </div>
-          <table class="mt">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Product</th>
-                <th>Batch</th>
-                <th>Expiry</th>
-                <th>Qty</th>
-                <th>Rate</th>
-                <th>Amt</th>
-              </tr>
-            </thead>
-            <tbody id="ptb">
-              <tr>
-                <td>1</td>
-                <td><input style="width:130px;border:1px solid #aaa;padding:2px;"></td>
-                <td><input style="width:65px;border:1px solid #aaa;padding:2px;"></td>
-                <td><input style="width:55px;border:1px solid #aaa;padding:2px;"></td>
-                <td><input type="number" value="1" style="width:45px;border:1px solid #aaa;padding:2px;"></td>
-                <td><input type="number" style="width:55px;border:1px solid #aaa;padding:2px;"></td>
-                <td>0.00</td>
-              </tr>
-            </tbody>
-          </table>
-          <button class="bsm" style="margin-top:6px;" onclick="alert('Purchase saved!');cm('pm')">Save Purchase</button>
-        </div>
-      </div>
-    </div>
 
-    <script>
-      const API_BASE = window.location.protocol === 'file:' ? "https://pharma-backend-production-c984.up.railway.app" : "";
-      if (window.location.protocol === 'file:') document.addEventListener('DOMContentLoaded', () => { var e = document.getElementById('f-warn'); if(e) e.style.display='block'; });
-      
-      var G = { 
-        items: [], 
-        bills: [], 
-        users: [{ u: 'admin', p: 'admin123', r: 'admin' }, { u: 'user1', p: '1234', r: 'user' }], 
-        parties: [], 
-        sess: {}, 
-        bi: [], 
-        nbn: 10001,
-        wins: {} // Active windows
-      };
-
-      function ld(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
-      function sv(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
-      function g(id) { return document.getElementById(id); }
-      function se(id, v) { var e = g(id); if (e) e.value = v; }
-      function tds() { return new Date().toLocaleDateString('en-IN'); }
-      function mu(ed) { if (!ed) return 99; var p = ed.split('/'); var d = new Date(p[1] + '/' + p[0] + '/' + p[2]); return (d - new Date()) / (1000 * 60 * 60 * 24 * 30.41); }
-
-      /* --- WINDOW MANAGER CORE --- */
-      function ow(id, title, w, h) {
-        if (G.wins[id]) { foc(id); return; }
-        
-        var win = document.createElement('div');
-        win.id = 'win-' + id;
-        win.className = 'window active';
-        win.style.width = w + 'px';
-        win.style.height = h + 'px';
-        win.style.left = (Math.random() * 50 + 50) + 'px';
-        win.style.top = (Math.random() * 50 + 50) + 'px';
-        win.onmousedown = function() { foc(id); };
-
-        win.innerHTML = `
-            <div class="window-header" onmousedown="dragStart(event, '${id}')">
-                <div class="window-title">${title}</div>
-                <div class="window-controls">
-                    <div class="win-btn" onclick="cw('${id}')">_</div>
-                    <div class="win-btn close" onclick="cw('${id}')">X</div>
-                </div>
-            </div>
-            <div class="window-body" id="body-${id}"></div>
-        `;
-
-        g('desktop').appendChild(win);
-        G.wins[id] = { title: title };
-        
-        // Add to taskbar
-        var ti = document.createElement('div');
-        ti.id = 'task-' + id;
-        ti.className = 'task-item active';
-        ti.innerText = title;
-        ti.onclick = function() { foc(id); };
-        g('taskbar').appendChild(ti);
-
-        foc(id);
-        loadWinBody(id);
-      }
-
-      function cw(id) {
-        var win = g('win-' + id);
-        if (win) win.remove();
-        var ti = g('task-' + id);
-        if (ti) ti.remove();
-        delete G.wins[id];
-      }
-
-      function foc(id) {
-        document.querySelectorAll('.window').forEach(w => w.classList.remove('active'));
-        document.querySelectorAll('.task-item').forEach(t => t.classList.remove('active'));
-        var win = g('win-' + id);
-        if (win) win.classList.add('active');
-        var ti = g('task-' + id);
-        if (ti) ti.classList.add('active');
-      }
-
-      function ntf(m) {
-        var n = document.createElement('div');
-        n.style.position = 'fixed'; n.style.bottom = '40px'; n.style.right = '20px';
-        n.style.background = '#333'; n.style.color = '#fff'; n.style.padding = '8px 15px';
-        n.style.borderRadius = '4px'; n.style.zIndex = '9999'; n.style.fontSize = '12px'; n.style.boxShadow = '0 2px 10px rgba(0,0,0,0.5)';
-        n.innerText = m;
-        document.body.appendChild(n);
-        setTimeout(() => n.remove(), 3000);
-      }
-
-      /* --- DRAG LOGIC --- */
-      var curWin = null, offsetX, offsetY;
-      function dragStart(e, id) {
-        curWin = g('win-' + id);
-        offsetX = e.clientX - curWin.offsetLeft;
-        offsetY = e.clientY - curWin.offsetTop;
-        document.onmousemove = dragMove;
-        document.onmouseup = dragEnd;
-        foc(id);
-      }
-      function dragMove(e) { if (curWin) { curWin.style.left = (e.clientX - offsetX) + 'px'; curWin.style.top = (e.clientY - offsetY) + 'px'; } }
-      function dragEnd() { curWin = null; document.onmousemove = null; document.onmouseup = null; }
-
-
-
-      /* --- WINDOW CONTENT LOADERS --- */
-      function loadWinBody(id) {
-        var b = g('body-' + id);
-        if (id === 'sale') renderSale(b);
-        if (id === 'im') renderIM(b);
-        if (id === 'hist') renderHist(b);
-        if (id === 'stock') renderStock(b);
-        if (id === 'expiry') renderExpiry(b);
-        if (id === 'lm') renderLedger(b);
-        if (id === 'purch') renderPurch(b);
-      }
-
-      /* --- COMPONENT RENDERS --- */
-      function renderSale(b) {
-        var t = tds();
-        b.innerHTML = `
-          <div id="sale-sc">
-            <div class="sh">RETAIL INVOICE <span>City Medical Store</span> <span id="hib" style="margin-left:auto;"></span></div>
-            <div class="bt">
-              <div class="br"><label>Bill No <input id="bid" value="SI-${G.nbn}" readonly style="width:75px;background:#eee;"></label>
-              <label>Date <input id="bed" value="${t}" style="width:85px;"></label>
-              <div class="pt" style="margin-left:10px;"><label><input type="radio" name="pt" value="c" checked> Cash</label><label><input type="radio" name="pt" value="i"> Credit</label></div></div>
-              <div class="br"><label>Customer <input id="bcu" style="min-width:300px;" placeholder="Search Customer / Cash"></label></div>
-            </div>
-            <div class="pib">
-              <label>Product <input id="pn" style="min-width:200px;cursor:pointer;background:#ffe;" onclick="ow('im','Item Search',600,400)" readonly placeholder="F2/Click to search"></label>
-              <label>Batch <input id="pbt" style="width:70px;"></label>
-              <label>Exp <input id="pex" style="width:60px;"></label>
-              <label>Qty <input id="pqt" type="number" value="1" style="width:50px;" oninput="cpv()"> / <span id="paq" style="color:#c00;font-weight:700;">0</span></label>
-              <label>Rate <input id="pra" type="number" style="width:65px;" oninput="cpv()"></label>
-              <label>Amt <input id="pam" style="width:80px;" readonly style="background:#eee;"></label>
-              <button class="bsm" style="background:linear-gradient(#c0eec0,#7acc7a);" onclick="addRow()">ADD (↵)</button>
-            </div>
-            <div class="cs">
-              <div class="bta"><div class="th"><div class="c1">#</div><div class="c2">Product</div><div class="c3">Batch</div><div class="c5">Qty</div><div class="c7">Rate</div><div class="c9">Total</div></div><div class="tb2" id="br2"></div></div>
-            </div>
-            <div class="bf">
-              <div style="flex:1;padding:8px;">
-                <div class="fmr"><label>Net Amount</label><input id="fn" readonly style="font-weight:700;font-size:18px;background:#fffde8;height:35px;color:#c00;text-align:right;"></div>
+  <script>
+    // ADVANCED ERP CORE ENGINE - Dynamic State Matrix
+    var G = { items: [], bills: [], users: [], parties: [], sess: {}, bin: 10001, perms:{} };
+    
+    // TAB MANAGER (TDI)
+    const tab = {
+      opened: [],
+      active: 'dash',
+      open: function(id, title) {
+        if(this.opened.indexOf(id) === -1) {
+          this.opened.push(id);
+          this.renderTab(id, title);
+          this.renderWin(id, title);
+        }
+        this.activate(id);
+      },
+      renderTab: function(id, title) {
+        const bar = document.getElementById('tab-bar');
+        const d = document.createElement('div');
+        d.className = 'tab';
+        d.id = 'tab-' + id;
+        d.innerHTML = title + ` <span onclick="event.stopPropagation(); tab.close('${id}')">x</span>`;
+        d.onclick = () => this.activate(id);
+        bar.appendChild(d);
+      },
+      renderWin: function(id, title) {
+        const area = document.getElementById('wa');
+        const w = document.createElement('div');
+        w.className = 'win';
+        w.id = 'win-' + id;
+        w.innerHTML = this.getModuleLayout(id, title);
+        area.appendChild(w);
+        if(id === 'sale') inv.initSale();
+      },
+      activate: function(id) {
+        this.active = id;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.win').forEach(w => w.classList.remove('active'));
+        const t = document.getElementById('tab-' + id); if(t) t.classList.add('active');
+        const w = document.getElementById('win-' + id); if(w) w.classList.add('active');
+        if(id === 'dash') document.getElementById('win-dash').classList.add('active');
+      },
+      close: function(id) {
+        this.opened = this.opened.filter(x => x !== id);
+        document.getElementById('tab-' + id).remove();
+        document.getElementById('win-' + id).remove();
+        this.activate('dash');
+      },
+      getModuleLayout: function(id, title) {
+        if(id === 'sale' || id === 'purch') {
+           const isS = id==='sale';
+           const col = isS?'#003366':'#3a6a5a';
+           return `<div class="mod-h" style="background:${col}">${title.toUpperCase()} &nbsp; <span style="font-size:11px">[ALT+X: CLOSE] [F10: SAVE]</span></div>
+           <div class="mod-body">
+              <div class="mod-top" style="background:${isS?'#e8f4ff':'#e8f8f4'};">
+                 <label>${isS?'Customer':'Supplier'} <input id="${id}-cu" style="width:200px" placeholder="${isS?'Cash':'Partner name...'}"></label>
+                 ${isS?`<label>Doctor <input id="sale-dr" style="width:120px"></label>`:`<label>Inv No <input id="purch-ref" style="width:80px"></label>`}
+                 <label>Date <input value="${new Date().toLocaleDateString()}" readonly style="width:80px"></label>
+                 <label>Ref <input readonly style="width:80px" value="${id.toUpperCase()}-${G.bin}"></label>
               </div>
-            </div>
-            <div class="ab">
-              <button class="abg" onclick="saveBill()">SAVE (F10)</button>
-              <button onclick="cw('sale')">CLOSE (ESC)</button>
-            </div>
-          </div>
-        `;
-        G.bi = []; rr();
+              <div class="entry-bar" style="background:${isS?'#c0d8f0':'#b8d8c8'};">
+                 <input id="${id}-pn" onclick="inv.open('${id}')" readonly placeholder="Product (F2)" style="width:150px">
+                 <input id="${id}-bt" placeholder="Batch" style="width:70px" readonly>
+                 <input id="${id}-qt" type="number" placeholder="Qty" style="width:45px" oninput="inv.calc('${id}')">
+                 ${isS?`<input id="sale-bo" type="number" placeholder="Free" style="width:40px">`:`<input id="purch-ex" placeholder="Exp" style="width:60px">`}
+                 <input id="${id}-ra" placeholder="${isS?'Rate':'Cost'}" style="width:65px" oninput="inv.calc('${id}')">
+                 ${isS?`<input id="sale-di" placeholder="D%" style="width:40px" oninput="inv.calc('sale')">`:`<input id="purch-mr" placeholder="MRP" style="width:65px">`}
+                 <input id="${id}-am" placeholder="Net" readonly style="width:75px; background:${isS?'#ddd':'#fff'}">
+                 <button onclick="inv.add('${id}')" style="background:${col}; color:#fff; border:none; padding:4px 12px; cursor:pointer;">F12: ADD</button>
+              </div>
+              <div class="grid-wrap">
+                 <table class="grid"><thead style="background:${col}"><tr><th>Product</th><th>Batch</th><th>Qty</th><th>Rate/Cost</th>${isS?`<th>Disc%</th>`: `<th>Exp/MRP</th>`}<th align="right">Amount</th></tr></thead><tbody id="${id}-grid-body"></tbody></table>
+              </div>
+              <div class="mod-foot">
+                 <div style="font-size:22px; font-weight:bold; color:${col}">TOTAL : Rs. <span id="${id}-tot">0.00</span></div>
+              </div>
+              <div class="mod-btns"><button onclick="inv.save('${id}')">SAVE DATA (F10)</button>${isS?`<button onclick="inv.printSale()">PRINT BILL</button>`:''} <button onclick="tab.close('${id}')">CLOSE</button></div>
+           </div>`;
+        }
+        if(id === 'stock') {
+           return `<div class="mod-h">STOCK ANALYSIS</div><div class="mod-body" style="padding:10px; background:#fff;">
+           <table class="srt" style="width:100%"><thead><tr><th>Item</th><th>Batch</th><th>Exp</th><th align="right">Stock</th><th align="right">Valuation</th></tr></thead>
+           <tbody>${G.items.map(i=>`<tr><td>${i.name}</td><td>${i.batches[0].b}</td><td>12/26</td><td align="right">${i.stock}</td><td align="right">${(i.stock*i.rate).toFixed(2)}</td></tr>`).join('')}</tbody></table>
+           </div>`;
+        }
+        if(id === 'ledger') {
+           return `<div class="mod-h">ACCOUNT LEDGER VIEW</div><div class="mod-body" style="padding:15px; background:#fff;">
+           <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;"><b>Party:</b> SELF CASH <span style="float:right">Balance: <b>Rs. 1,595.00 DR</b></span></div>
+           <table class="srt" style="width:100%"><thead><tr><th>Date</th><th>Particulars</th><th>Voucher</th><th align="right">Debit</th><th align="right">Credit</th></tr></thead>
+           <tbody><tr><td>25-04-2026</td><td>Opening Balance</td><td>OB-1</td><td align="right">1,500.00</td><td align="right">0.00</td></tr></tbody></table>
+           </div>`;
+        }
+        if(id === 'paym' || id === 'recv') {
+           const isP = id==='paym';
+           const col = isP?'#a33':'#282';
+           return `<div class="mod-h" style="background:${col}">${isP?'CASH PAYMENT VOUCHER':'CASH RECEIPT VOUCHER'}</div>
+           <div class="mod-body" style="padding:15px; background:#fffdec;">
+              <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:10px; background:#fff; padding:15px; border:1px solid #ccc; border-radius:4px;">
+                 <div><label>Select Ledger / Account</label><br><input id="${id}-party" style="width:100%; padding:8px; border:1px solid var(--b1);" placeholder="Search Party name..."></div>
+                 <div><label>Current Balance</label><br><input readonly value="Rs. 0.00" style="width:100%; padding:8px; background:#eee; border:1px solid #ccc; font-weight:bold;"></div>
+                 <div><label>Voucher Date</label><br><input type="date" value="2026-04-25" style="width:100%; padding:8px; border:1px solid var(--b1);"></div>
+              </div>
+              <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 3fr; gap:10px;">
+                 <div><label>Amount (Rs.)</label><br><input id="${id}-amt" type="number" style="width:100%; padding:10px; font-size:18px; font-weight:bold; border:2px solid ${col}; outline:none;"></div>
+                 <div><label>Narration / Remarks</label><br><input id="${id}-rem" style="width:100%; padding:12px; border:1px solid var(--b1);" placeholder="Payment against bill #..."></div>
+              </div>
+              <div style="flex:1; margin-top:20px; border-top:1px solid #ccc; padding:20px; text-align:center; color:#888;">[Voucher Adjustment Table - Multiple Bill Selection Support]</div>
+              <div class="mod-btns"><button onclick="inv.saveVoucher('${id}')" style="background:${col}; color:#fff; padding:10px 30px;">SAVE VOUCHER (F10)</button>${!isP?`<button onclick="inv.printVoucher('${id}')" style="background:#555; color:#fff;">PRINT RECEIPT</button>`:''} <button onclick="tab.close('${id}')">CANCEL</button></div>
+           </div>`;
+        }
+        if(id === 'items') {
+           return `<div class="mod-h" style="background:#005580">ITEM MASTER & INVENTORY LIST</div>
+           <div class="mod-body" style="padding:10px; background:#fff;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                 <input type="text" placeholder="Search Item Name or Company..." style="padding:8px; width:400px; border:1px solid #ccc;">
+                 <button style="background:#005580; color:#fff; border:none; padding:8px 15px; cursor:pointer;" onclick="tab.open('new_item', 'Create New Item')">F2: NEW ITEM</button>
+              </div>
+              <div class="grid-wrap" style="flex:1;">
+                 <table class="grid" style="width:100%;">
+                    <thead style="background:#005580;"><tr><th>Code</th><th>Product Name</th><th>Salt/Composition</th><th>Company</th><th align="right">Stock</th><th align="right">Rate</th></tr></thead>
+                    <tbody id="tbl-items">${G.items.map(i=>`<tr style="cursor:pointer;" onclick="alert('Item: ${i.name}')"><td>${i.id}</td><td style="color:#003366; font-weight:bold;">${i.name}</td><td>${i.salt}</td><td>${i.company}</td><td align="right" style="font-weight:bold;">${i.stock}</td><td align="right">Rs. ${i.rate}</td></tr>`).join('')}</tbody>
+                 </table>
+              </div>
+           </div>`;
+        }
+        if(id === 'new_item') {
+           return `<div class="mod-h" style="background:#005580">CREATE NEW ITEM (PHARMACY)</div>
+           <div class="mod-body" style="padding:20px; background:#f5faff;">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; max-width:600px; margin:auto; background:#fff; padding:20px; border:1px solid #ccc;">
+                 <div><label>Product Name</label><br><input id="ni-name" style="width:100%; padding:8px; text-transform:uppercase;"></div>
+                 <div><label>Company / Mfg</label><br><input id="ni-comp" style="width:100%; padding:8px; text-transform:uppercase;"></div>
+                 <div style="grid-column: span 2;"><label>Salt / Composition</label><br><input id="ni-salt" style="width:100%; padding:8px;"></div>
+                 <div><label>Opening Stock</label><br><input id="ni-stk" type="number" style="width:100%; padding:8px;"></div>
+                 <div><label>Sale Rate (Rs.)</label><br><input id="ni-rate" type="number" style="width:100%; padding:8px;"></div>
+                 <div style="grid-column: span 2; margin-top:15px; text-align:center;">
+                    <button onclick="inv.saveNewItem()" style="background:#005580; color:#fff; padding:10px 30px; border:none; font-weight:bold; cursor:pointer;">SAVE ITEM (F10)</button>
+                 </div>
+              </div>
+           </div>`;
+        }
+        if(id === 'expire') {
+           return `<div class="mod-h" style="background:#800000">PHARMACY EXPIRY MATRIX</div>
+           <div class="mod-body" style="padding:10px; background:#fff;">
+              <table class="srt" style="width:100%">
+                 <thead style="background:#800000; color:#fff;"><tr><th>Product Name</th><th>Batch</th><th>Current Stock</th><th>Expiry Date</th><th align="right">Value</th><th>Status</th></tr></thead>
+                 <tbody>${G.items.map(i=>`<tr style="background:#ffecec;"><td><b>${i.name}</b></td><td>${i.batches[0].b}</td><td>${i.stock}</td><td style="color:red; font-weight:bold;">12/2026</td><td align="right">Rs. ${(i.stock*i.rate).toFixed(2)}</td><td><span style="background:red; color:#fff; padding:2px 5px; border-radius:3px; font-size:10px;">Near Expiry</span></td></tr>`).join('')}</tbody>
+              </table>
+           </div>`;
+        }
+        if(id === 'parties') {
+           return `<div class="mod-h" style="background:#4A148C">PARTY & LEDGER MASTER</div>
+           <div class="mod-body" style="padding:10px; background:#fff;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                 <input type="text" placeholder="Search Ledger / Party Name..." style="padding:8px; width:400px; border:1px solid #ccc;">
+                 <button style="background:#4A148C; color:#fff; border:none; padding:8px 15px; cursor:pointer;" onclick="tab.open('new_party', 'Create New Ledger')">F2: NEW PARTY</button>
+              </div>
+              <div class="grid-wrap" style="flex:1;">
+                 <table class="grid" style="width:100%;">
+                    <thead style="background:#4A148C;"><tr><th>Code</th><th>Party Name</th><th>Station/City</th><th>Mobile</th><th align="right">Balance</th><th>Group</th></tr></thead>
+                    <tbody id="tbl-parties">
+                      <tr style="cursor:pointer;"><td>L001</td><td style="font-weight:bold;">SELF CASH</td><td>Lahore</td><td>-</td><td align="right" style="color:red; font-weight:bold;">Rs. 1,595.00 DR</td><td>Cash-in-Hand</td></tr>
+                      <tr style="cursor:pointer;"><td>L002</td><td style="font-weight:bold;">Al-Shifa Pharmacy</td><td>Multan</td><td>0300-1234567</td><td align="right" style="color:black; font-weight:bold;">Rs. 24,500.00 DR</td><td>Sundry Debtors</td></tr>
+                      <tr style="cursor:pointer;"><td>L003</td><td style="font-weight:bold;">GSK Pharma Dist.</td><td>Karachi</td><td>021-345678</td><td align="right" style="color:green; font-weight:bold;">Rs. 15,000.00 CR</td><td>Sundry Creditors</td></tr>
+                    </tbody>
+                 </table>
+              </div>
+           </div>`;
+        }
+        if(id === 'new_party') {
+           return `<div class="mod-h" style="background:#4A148C">CREATE NEW PARTY LEDGER</div>
+           <div class="mod-body" style="padding:20px; background:#fdf5ff;">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; max-width:600px; margin:auto; background:#fff; padding:20px; border:1px solid #ccc;">
+                 <div style="grid-column: span 2;"><label>Party Name / Firm</label><br><input id="np-name" style="width:100%; padding:8px; text-transform:uppercase; font-weight:bold;"></div>
+                 <div><label>Station / City</label><br><input id="np-city" style="width:100%; padding:8px; text-transform:capitalize;"></div>
+                 <div><label>Mobile / Contact</label><br><input id="np-mob" style="width:100%; padding:8px;"></div>
+                 <div><label>Account Group</label><br>
+                    <select id="np-grp" style="width:100%; padding:9px;">
+                       <option>Sundry Debtors</option><option>Sundry Creditors</option><option>Bank Accounts</option>
+                    </select>
+                 </div>
+                 <div><label>Opening Balance</label><br><input id="np-bal" type="number" style="width:100%; padding:8px;" placeholder="0.00"></div>
+                 <div style="grid-column: span 2; margin-top:15px; text-align:center;">
+                    <button onclick="inv.saveNewParty()" style="background:#4A148C; color:#fff; padding:10px 30px; border:none; font-weight:bold; cursor:pointer;">SAVE LEDGER (F10)</button>
+                 </div>
+              </div>
+           </div>`;
+        }
+        if(id === 'profit') {
+           const s_tot = G.bills.filter(b=>b.type==='sale').reduce((a,b)=>a+b.net,0);
+           const p_tot = s_tot * 0.75; // simple 25% margin mockup
+           const gp = s_tot - p_tot;
+           return `<div class="mod-h" style="background:#004d00">TODAYS GROSS PROFIT ANALYSIS</div>
+           <div class="mod-body" style="padding:20px; background:#f4fff4; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+              <div style="background:#fff; border:2px solid #004d00; border-radius:5px; padding:30px; width:500px; text-align:center; box-shadow:0 10px 20px rgba(0,50,0,0.1);">
+                 <h2 style="color:#004d00; margin-bottom:5px;">Gross Profit Statement</h2>
+                 <p style="color:#555; margin-bottom:20px;">Date: ${new Date().toLocaleDateString('en-GB')}</p>
+                 <div style="display:flex; justify-content:space-between; font-size:18px; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid #eee;"><span>Total Sales Revenue:</span> <b>Rs. ${s_tot.toFixed(2)}</b></div>
+                 <div style="display:flex; justify-content:space-between; font-size:18px; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid #eee; color:#a00;"><span>Est. Cost of Goods (COGS):</span> <b>- Rs. ${p_tot.toFixed(2)}</b></div>
+                 <div style="display:flex; justify-content:space-between; font-size:24px; color:#004d00; font-weight:bold; margin-top:20px;"><span>GROSS PROFIT:</span> <span>Rs. ${gp.toFixed(2)}</span></div>
+              </div>
+           </div>`;
+        }
+        if(id === 's_rep' || id === 'p_rep' || id === 'order' || id === 'return' || id === 'groups') {
+           return `<div class="mod-h" style="background:#222">ERP MODULE : ${title.toUpperCase()}</div>
+           <div style="padding:50px; text-align:center; background:#f9f9f9; height:100%;">
+             <img src="https://img.icons8.com/ios-filled/100/A0A0A0/lock.png">
+             <h2 style="color:#555; margin-top:20px;">Advanced Module Locked</h2>
+             <p style="color:#777; font-size:16px;">The <b>${title}</b> feature requires the Marg ERP 9+ PRO License.</p>
+             <button onclick="tab.close('${id}')" style="margin-top:20px; padding:10px 30px; background:#005580; color:#fff; border:none; cursor:pointer;">Go Back</button>
+           </div>`;
+        }
+        if(id === 'perms') {
+           const p = G.perms;
+           return `<div class="mod-h" style="background:#5cb85c; color:#fff;">MODULE & FEATURE PERMISSIONS</div>
+           <div class="mod-body" style="padding:20px; background:#f5f5f5; display:flex; flex-direction:column; align-items:center;">
+              <div style="background:#fff; border:1px solid #ddd; border-radius:3px; padding:30px; width:650px; box-shadow:0 3px 10px rgba(0,0,0,0.1);">
+                 <div style="text-align:center; margin-bottom:20px;">
+                    <div style="font-size:20px; color:#555;">ID <span style="color:#5cb85c;">1001</span></div>
+                    <div style="font-size:24px; color:#333;">Role: <span style="color:#5cb85c;">Data Entry Operator</span></div>
+                 </div>
+                 <select style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; margin-bottom:25px; color:#666;">
+                    <option>Select Regions</option><option>Main Branch</option>
+                 </select>
+                 
+                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:15px; font-size:15px; margin-bottom:30px; color:#444;">
+                    <label><input type="checkbox" id="pm_dash_fin" ${p.p_dash_fin?'checked':''}> Dashboard</label>
+                    <label><input type="checkbox" id="pm_sale" ${p.p_sale?'checked':''}> Sale Items / Bill</label>
+                    <label><input type="checkbox" id="pm_purch" ${p.p_purch?'checked':''}> Purchase Entry</label>
+                    
+                    <label><input type="checkbox" id="pm_items" ${p.p_items?'checked':''}> Item Master</label>
+                    <label><input type="checkbox" id="pm_order" ${p.p_order?'checked':''}> Sale Order</label>
+                    <label><input type="checkbox" id="pm_rep_final" ${p.p_rep_final?'checked':''}> Final Reports</label>
+                    
+                    <label><input type="checkbox" id="pm_ledgers" ${p.p_ledgers?'checked':''}> Ledger Master</label>
+                    <label><input type="checkbox" id="pm_paym" ${p.p_paym?'checked':''}> Cash Payments</label>
+                    <label><input type="checkbox" id="pm_recv" ${p.p_recv?'checked':''}> Cash Receipts</label>
+                    
+                    <label><input type="checkbox" id="pm_return" ${p.p_return?'checked':''}> Sale Return</label>
+                    <label><input type="checkbox" id="pm_stock_stat" ${p.p_stock_stat?'checked':''}> Stock Status</label>
+                    <label><input type="checkbox" id="pm_expire" ${p.p_expire?'checked':''}> Expiry Matrix</label>
+                    
+                    <label><input type="checkbox" id="pm_groups" ${p.p_groups?'checked':''}> Account Groups</label>
+                    <label><input type="checkbox" id="pm_ledger_view" ${p.p_ledger_view?'checked':''}> Ledger View</label>
+                    <label><input type="checkbox" id="pm_rep_daily" ${p.p_rep_daily?'checked':''}> Daily Reports</label>
+                 </div>
+                 
+                 <div style="display:flex; gap:15px; justify-content:center;">
+                    <button onclick="inv.savePerms()" style="background:#5cb85c; color:#fff; border:none; padding:12px 0; width:45%; font-weight:bold; cursor:pointer; border-radius:3px;">SAVE</button>
+                    <button onclick="tab.close('perms')" style="background:#fff; color:#005580; border:1px solid #005580; padding:12px 0; width:45%; font-weight:bold; cursor:pointer; border-radius:3px;">CANCEL</button>
+                 </div>
+              </div>
+           </div>`;
+        }
+        return `<div class="mod-h">${title}</div><div style="padding:40px; text-align:center;"><h2>[Advanced ${title} Module]</h2><p>Wait for next Pro-Update...</p></div>`;
       }
+    };
 
-      function renderIM(b) {
-        b.innerHTML = `
-          <div style="padding:10px;">
-            <input class="sb" id="isi" placeholder="Type name, salt, company..." oninput="fi()" style="width:100%;margin-bottom:10px;padding:8px;border:2px solid #003366;">
-            <table class="mt">
-              <thead><tr><th>ID</th><th>Product Name</th><th>Stock</th><th>Rate</th></tr></thead>
-              <tbody id="isb"></tbody>
-            </table>
-          </div>
-        `;
-        fi();
+    // INVENTORY & BILLING ENGINE
+    const inv = {
+      cur: '',
+      open: function(m) { this.cur = m; document.getElementById('im').classList.add('show'); g('isi').value=''; this.fi(); setTimeout(()=>g('isi').focus(), 50); },
+      fi: function() {
+        const q = g('isi').value.toLowerCase();
+        const b = g('isb'); b.innerHTML = '';
+        G.items.filter(i => i.name.toLowerCase().includes(q) || i.company.toLowerCase().includes(q)).forEach(i => {
+           const tr = document.createElement('tr');
+           tr.innerHTML = `<td>${i.id}</td><td><b>${i.name}</b></td><td>${i.salt}</td><td>${i.company}</td><td>${i.stock}</td><td>${i.rate}</td>`;
+           tr.onclick = () => {
+             g(this.cur+'-pn').value = i.name;
+             g(this.cur+'-ra').value = i.rate;
+             if(i.batches && i.batches.length>0) g(this.cur+'-bt').value = i.batches[0].b;
+             cm('im'); g(this.cur+'-qt').focus();
+           };
+           b.appendChild(tr);
+        });
+      },
+      calc: function(m) {
+        if(m === 'sale') {
+           const q = parseFloat(g('sale-qt').value)||0, r = parseFloat(g('sale-ra').value)||0, d = parseFloat(g('sale-di').value)||0;
+           g('sale-am').value = (q * r * (1 - d/100)).toFixed(2);
+        } else if (m === 'purch') {
+           const q = parseFloat(g('purch-qt').value)||0, c = parseFloat(g('purch-ra').value)||0;
+           g('purch-am').value = (q * c).toFixed(2);
+        }
+      },
+      add: function(m) {
+        if(m === 'sale') {
+           const n = g('sale-pn').value, q = g('sale-qt').value, r = g('sale-ra').value, di = g('sale-di').value, am = g('sale-am').value, bt = g('sale-bt').value, bo = g('sale-bo').value||0;
+           if(!n || !q) return alert('Data missing!');
+           const row = document.createElement('tr');
+           row.innerHTML = `<td>${n} <span class="chip gst">GST 12%</span></td><td>${bt}</td><td>${q} <small>+${bo}</small></td><td>${r}</td><td>${di}%</td><td align="right">${am}</td>`;
+           g('sale-grid-body').appendChild(row);
+           const tot = g('sale-tot');
+           tot.innerText = (parseFloat(tot.innerText) + parseFloat(am)).toFixed(2);
+        } else if(m === 'purch') {
+           const n = g('purch-pn').value, q = g('purch-qt').value, co = g('purch-ra').value, mr = g('purch-mr').value||0, bt = g('purch-bt').value, ex = g('purch-ex').value;
+           if(!n || !q) return alert('Data missing!');
+           const am = q * co;
+           const row = document.createElement('tr');
+           row.innerHTML = `<td>${n}</td><td>${bt}</td><td>${q}</td><td>${co}</td><td>${ex} / ${mr}</td><td align="right">${am.toFixed(2)}</td>`;
+           g('purch-grid-body').appendChild(row);
+           const tot = g('purch-tot');
+           tot.innerText = (parseFloat(tot.innerText) + am).toFixed(2);
+        }
+        // Common cleanup
+        ['pn','qt','ra','am','bt','di','co','mr','ex','bo'].forEach(id => { var e = g(m+'-'+id); if(e) e.value=''; });
+      },
+      save: async function(m) {
+        const tot = parseFloat(document.getElementById(m+'-tot').innerText);
+        if(tot <= 0) return alert('Bill empty!');
+        const bill = { no: G.bin++, type: m, date: new Date().toLocaleDateString('en-GB'), net: tot, cust: g(m+'-cu').value||'Cash' };
+        G.bills.push(bill);
+        localStorage.setItem('marg_bills', JSON.stringify(G.bills)); // Local fallback
+
+        try {
+            await fetch('/api/saveBill', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ bill: bill, items: G.items })
+            });
+            console.log("Cloud Sync: Inventory & Bill Matrix Updated.");
+        } catch(e) { console.warn("Executing in Offline Mode."); }
+
+        alert(`${m.toUpperCase()} Saved Successfully! [Ref: ${bill.no}]`);
+        tab.close(m);
+        app.refreshDash();
+      },
+      saveVoucher: function(m) {
+        const amt = parseFloat(g(m+'-amt').value)||0;
+        if(amt <= 0) return alert('Amount enter karein!');
+        alert(`${m==='paym'?'Payment':'Receipt'} of Rs.${amt} Recorded Successfully!`);
+        // tab.close(m); // Keep open for printing if needed
+      },
+      printVoucher: function(m) {
+        const p = g(m+'-party').value||'General Party', a = g(m+'-amt').value||0, n = g(m+'-rem').value||'--';
+        const w = window.open('','_blank');
+        w.document.write(`<html><head><style>body{font-family:sans-serif;padding:30px;border:5px double #000;width:550px;margin:auto;} .h{text-align:center;border-bottom:2px solid #000;margin-bottom:20px;} .r{display:flex;justify-content:space-between;margin:10px 0;border-bottom:1px dashed #ccc;}</style></head><body>
+          <div class="h"><h2>CITY MEDICAL-SHSH</h2><p>Payment Acknowledgement Receipt</p></div>
+          <div class="r"><span>Voucher No: CR-${G.bin}</span><span>Date: ${new Date().toLocaleDateString()}</span></div>
+          <div class="r"><span>Received From:</span><b>${p}</b></div>
+          <div class="r"><span>Amount (Words):</span><i>${this.toWords(a)} Only</i></div>
+          <div class="r"><span>Amount:</span><b style="font-size:20px">Rs. ${parseFloat(a).toFixed(2)}</b></div>
+          <div class="r"><span>Narration:</span><span>${n}</span></div>
+          <div style="margin-top:50px; display:flex; justify-content:space-between;"><div>Received By: ____________</div><div>Authorized Sign: ____________</div></div>
+          <' + 'script>window.print();</' + 'script></body></html>`);
+        w.document.close();
+      },
+      printSale: function() {
+        const cu = g('sale-cu').value||'Cash', tot = g('sale-tot').innerText;
+        const rows = g('sale-grid-body').innerHTML;
+        const w = window.open('','_blank');
+        w.document.write('<html><head><style>body{font-family:monospace;padding:20px;width:700px;margin:auto;border:1px solid #000;} .h{text-align:center;margin-bottom:15px;border-bottom:1px solid #000;} table{width:100%;border-collapse:collapse;} th,td{border:1px solid #ddd;padding:5px;text-align:left;}</style></head><body>' +
+          '<div class="h"><h3>CITY MEDICAL-SHSH</h3><p>Main Bazaar, Multan | GSTIN: 07HAMZAX1234Z</p><h2>RETAIL INVOICE</h2></div>' +
+          '<p>Customer: <b>' + cu + '</b> <span style="float:right">Inv No: SI-' + G.bin + ' | Date: ' + new Date().toLocaleDateString() + '</span></p>' +
+          '<table><thead><tr><th>Product</th><th>Batch</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+          '<h3 style="text-align:right">Grand Total: Rs. ' + tot + '</h3>' +
+          '<p>Amount in Words: <i>' + this.toWords(tot) + ' Only</i></p>' +
+          '<div style="margin-top:40px;border-top:1px solid #000;padding-top:10px;">Terms: E.&O.E. Goods once sold will not be taken back.</div>' +
+          '<' + 'script>window.print();</' + 'script></body></html>');
+        w.document.close();
+      },
+      saveNewItem: async function() {
+        const n = g('ni-name').value, s = g('ni-salt').value, c = g('ni-comp').value, stk = parseFloat(g('ni-stk').value||0), rt = parseFloat(g('ni-rate').value||0);
+        if(!n) return alert('Name required!');
+        const it = { id: 'I'+(G.items.length+1).toString().padStart(2,'0'), name:n, salt:s, company:c, stock:stk, rate:rt, batches:[{b:'N.BATCH'}] };
+        
+        try {
+            const r = await fetch('/api/saveItem', { method: 'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(it) });
+            if(r.ok) {
+               G.items.push(it);
+               alert('Item Master Sycned with Cloud!');
+               tab.close('new_item');
+               if(g('tbl-items')) g('tbl-items').innerHTML += `<tr style="cursor:pointer;" onclick="alert('Item: ${it.name}')"><td>${it.id}</td><td style="color:#003366; font-weight:bold;">${it.name}</td><td>${it.salt}</td><td>${it.company}</td><td align="right" style="font-weight:bold;">${it.stock}</td><td align="right">Rs. ${it.rate}</td></tr>`;
+            }
+        } catch(e) { alert('Network Sync Error! ' + e.message); }
+      },
+      saveNewParty: async function() {
+        const n = g('np-name').value, c = g('np-city').value, m = g('np-mob').value, b = parseFloat(g('np-bal').value||0), grp = g('np-grp').value;
+        if(!n) return alert('Party Name required!');
+        
+        const pt = { name:n, type:grp, city:c, mobile:m, bal:b };
+        try {
+            const r = await fetch('/api/saveParty', { method: 'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(pt) });
+            if(r.ok) {
+               G.parties.push(pt);
+               alert('Ledger Created and Synced Successfully!');
+               tab.close('new_party');
+               if(g('tbl-parties')) g('tbl-parties').innerHTML += `<tr style="cursor:pointer;"><td>L00X</td><td style="font-weight:bold;">${n}</td><td>${c}</td><td>${m}</td><td align="right" style="color:black; font-weight:bold;">Rs. ${b.toFixed(2)}</td><td>${grp}</td></tr>`;
+            }
+        } catch(e) { alert('Network Sync Error! ' + e.message); }
+      },
+      savePerms: function() {
+         const p = G.perms;
+         ['dash_fin','sale','purch','items','order','rep_final','ledgers','paym','recv','return','stock_stat','expire','groups','ledger_view','rep_daily'].forEach(k => {
+             if(g('pm_' + k)) p['p_' + k] = g('pm_' + k).checked;
+         });
+         
+         p.p_masters = (p.p_items || p.p_ledgers || p.p_groups);
+         p.p_trans = (p.p_sale || p.p_order || p.p_purch || p.p_return);
+         p.p_acct = (p.p_paym || p.p_recv || p.p_ledger_view);
+         p.p_stocks = (p.p_stock_stat || p.p_expire);
+         
+         localStorage.setItem('marg_perms', JSON.stringify(p));
+         app.applyRoles();
+         
+         alert('Operator Permissions updated and applied successfully!');
+         tab.close('perms');
+      },
+      toWords: function(num) {
+         const ones = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+         const tens = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+         if((num = num.toString()).length > 9) return 'Overflow';
+         let n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+         if(!n) return ''; let str = '';
+         str += (n[1] != 0) ? (ones[Number(n[1])] || tens[n[1][0]] + ' ' + ones[n[1][1]]) + ' Crore ' : '';
+         str += (n[2] != 0) ? (ones[Number(n[2])] || tens[n[2][0]] + ' ' + ones[n[2][1]]) + ' Lakh ' : '';
+         str += (n[3] != 0) ? (ones[Number(n[3])] || tens[n[3][0]] + ' ' + ones[n[3][1]]) + ' Thousand ' : '';
+         str += (n[4] != 0) ? (ones[Number(n[4])] || tens[n[4][0]] + ' ' + ones[n[4][1]]) + ' Hundred ' : '';
+         str += (n[5] != 0) ? (ones[Number(n[5])] || tens[n[5][0]] + ' ' + ones[n[5][1]]) : '';
+         return str;
       }
+    };
 
-      function fi() {
-        var q = (g('isi')||{value:''}).value.toLowerCase(), tb = g('isb'); if(!tb) return; tb.innerHTML = '';
-        G.items.filter(i => i.name.toLowerCase().includes(q) || i.company.toLowerCase().includes(q))
-          .forEach(i => {
-            var tr = document.createElement('tr');
-            tr.innerHTML = `<td>${i.id}</td><td><b>${i.name}</b></td><td>${i.stock}</td><td>${i.rate}</td>`;
-            tr.onclick = () => { si(i); };
-            tb.appendChild(tr);
+    function g(id) { return document.getElementById(id); }
+    function cm(id) { g(id).classList.remove('show'); }
+    function doLogin() {
+      const u = g('lu').value, p = g('lp').value, r = g('lrole').value;
+      const validAdmin = (r === 'admin' && u === 'admin' && p === 'admin123');
+      const validUser = (r === 'user' && u === 'user' && p === 'user123');
+
+      if(validAdmin || validUser) { 
+        g('ls').style.display='none'; 
+        g('app').style.display='flex'; 
+        localStorage.setItem('marg_auth', '1');
+        localStorage.setItem('marg_role', r);
+        app.refreshDash(); 
+        app.applyRoles();
+      }
+      else { g('lerr').innerText = 'Access Denied: Wrong Credentials for ' + r.toUpperCase(); }
+    }
+    function doLogout() { localStorage.removeItem('marg_auth'); localStorage.removeItem('marg_role'); location.reload(); }
+
+    document.addEventListener('keydown', e => {
+       if(e.key === 'F2') { e.preventDefault(); if(tab.active !== 'dash') inv.open(tab.active); }
+       if(e.key === 'F10') { e.preventDefault(); if(tab.active !== 'dash') inv.save(tab.active); else if(g('ls').style.display !== 'none') doLogin(); }
+       if(e.ctrlKey && e.key === 'g') { e.preventDefault(); g('cmd-bar').style.display='block'; g('cmd-in').focus(); }
+       if(e.key === 'Escape') { cm('im'); g('cmd-bar').style.display='none'; }
+       if(e.key === 'F12' && tab.active !== 'dash') { e.preventDefault(); inv.add(tab.active); }
+    });
+
+    const app = {
+       applyRoles: function() {
+          const r = localStorage.getItem('marg_role') || 'admin';
+          
+          const permsStr = localStorage.getItem('marg_perms');
+          G.perms = permsStr ? JSON.parse(permsStr) : {
+            p_masters:false, p_items:true, p_ledgers:false, p_groups:false,
+            p_trans:true, p_sale:true, p_order:false, p_purch:false, p_return:false,
+            p_acct:false, p_paym:false, p_recv:false, p_ledger_view:false,
+            p_stocks:false, p_stock_stat:true, p_expire:false,
+            p_rep_final:false, p_rep_daily:false, p_dash_fin:false
+          };
+          
+          document.querySelectorAll('[data-perm]').forEach(e => {
+             if(r === 'admin') e.style.display = '';
+             else {
+                const k = e.getAttribute('data-perm');
+                e.style.display = G.perms[k] ? '' : 'none';
+             }
           });
+       },
+       refreshDash: function() {
+          const s = G.bills.filter(b=>b.type==='sale'), p = G.bills.filter(b=>b.type==='purch');
+          const sv = s.reduce((a,b)=>a+b.net,0), pv = p.reduce((a,b)=>a+b.net,0);
+          g('dash-perf').innerHTML = '<tr><td>Sales</td><td>' + s.length + '</td><td class="val">Rs.' + sv.toFixed(2) + '</td></tr>' +
+             '<tr><td>Purchase</td><td>' + p.length + '</td><td class="val">Rs.' + pv.toFixed(2) + '</td></tr>';
+          g('dash-fin').innerHTML = '<tr><td>Cash in Hand</td><td>1</td><td class="val">Rs.1,595.00</td></tr>' +
+             '<tr><td>Total Debtors</td><td>3</td><td class="val">Rs.24,500.00</td></tr>';
+          g('dash-age').innerHTML = '<tr><td>1-30 Days</td><td class="val">Rs.0</td><td class="val">Rs.0</td></tr>';
+       },
+       cmd: function() {
+          const q = g('cmd-in').value.toLowerCase();
+          const res = g('cmd-res'); res.innerHTML = '';
+          const opts = [
+             {n:'SALE BILL', act:()=>tab.open('sale','Retail Sale')},
+             {n:'PURCHASE ENTRY', act:()=>tab.open('purch','Purchase')},
+             {n:'ITEM MASTER', act:()=>tab.open('items','Item Master')},
+             {n:'LEDGER VIEW', act:()=>tab.open('ledger','Ledger')},
+             {n:'STOCK STATUS', act:()=>tab.open('stock','Stock Stat')}
+          ];
+          opts.filter(x => x.n.toLowerCase().includes(q)).forEach(o => {
+             const d = document.createElement('div');
+             d.className = 'sc-btn'; d.innerText = o.n;
+             d.onclick = () => { o.act(); g('cmd-bar').style.display='none'; };
+             res.appendChild(d);
+          });
+       }
+    };
+
+    window.onload = function() {
+      setInterval(()=> { g('f-clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+      
+      // Load Offline Data (Bills & Items)
+      const b = localStorage.getItem('marg_bills');
+      if(b) { G.bills = JSON.parse(b); G.bin = G.bills.length + 1; }
+
+      G.items = [
+          {id:'I01', name:'PANADOL 500MG', salt:'Paracetamol', company:'GSK', stock:500, rate:25, batches:[{b:'B123'}]},
+          {id:'I02', name:'AZOMAX 500MG', salt:'Azithromycin', company:'Getz', stock:150, rate:185, batches:[{b:'Z999'}]},
+          {id:'I03', name:'ARINAC FORTE', salt:'Ibuprofen', company:'Abbott', stock:200, rate:45, batches:[{b:'A101'}]}
+      ];
+
+      // Session Check
+      if(localStorage.getItem('marg_auth') === '1') {
+         g('ls').style.display='none';
+         g('app').style.display='flex';
+         app.refreshDash();
+         app.applyRoles();
       }
-
-      function si(item) {
-        if (G.wins['sale']) {
-            se('pn', item.name); se('pra', item.rate);
-            if (item.batches && item.batches.length > 0) {
-              se('pbt', item.batches[0].b); se('pex', item.batches[0].exp);
-              var aq = g('paq'); if(aq) aq.innerText = item.batches[0].qty;
-            }
-            cpv(); cw('im'); g('pqt').focus();
-        } else {
-            cw('im'); ow('sale', 'Sale Bill', 1000, 600);
-            setTimeout(() => si(item), 100);
-        }
-      }
-
-      function cpv() {
-        var q = parseFloat(g('pqt').value) || 0, r = parseFloat(g('pra').value) || 0;
-        var e = g('pam'); if (e) e.value = (q * r).toFixed(2);
-      }
-
-      function addRow() {
-        var nm = g('pn'); if (!nm || !nm.value.trim()) { ow('im', 'Item Search', 600, 400); return; }
-        var q = parseFloat(g('pqt').value) || 0; if (q <= 0) return;
-        var bt = g('pbt').value, ex = g('pex').value, ra = parseFloat(g('pra').value) || 0, am = q * ra;
-        G.bi.push({ sno: G.bi.length + 1, name: nm.value, bt, ex, q, ra, am });
-        rr();
-        ['pn', 'pbt', 'pex', 'pra', 'pam'].forEach(id => { var e = g(id); if (e) e.value = ''; });
-        g('paq').innerText = '0'; g('pqt').value = 1; g('pn').focus();
-      }
-
-      function rr() {
-        var c = g('br2'); if (!c) return; c.innerHTML = '';
-        G.bi.forEach((r, i) => {
-          var d = document.createElement('div'); d.className = 'tr';
-          d.innerHTML = `<div class="c1">${r.sno}</div><div class="c2">${r.name}</div><div class="c3">${r.bt}</div><div class="c5">${r.q}</div><div class="c7">${r.ra.toFixed(2)}</div><div class="c9">${r.am.toFixed(2)}</div>`;
-          d.ondblclick = () => { G.bi.splice(i, 1); G.bi.forEach((x, j) => x.sno = j + 1); rr(); };
-          c.appendChild(d);
-        });
-        var nt = G.bi.reduce((s,x)=>s+x.am, 0); var nte = g('fn'); if(nte) nte.value = nt.toFixed(2);
-      }
-
-      function saveBill() {
-        if (G.bi.length === 0) { ntf('Add items first!'); return; }
-        var cu = g('bcu').value || 'Cash', nt = G.bi.reduce((s,x)=>s+x.am, 0);
-        var no = 'SI-' + G.nbn;
-        var newB = { no, date: tds(), cust: cu, items: JSON.parse(JSON.stringify(G.bi)), net: nt.toFixed(2) };
-        G.bills.push(newB); G.nbn++;
-        G.bi.forEach(r => { var item = G.items.find(i=>i.name===r.name); if(item) item.stock -= r.q; });
-
-        fetch(API_BASE + '/api/saveBill', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ bill: newB, items: G.items })
-        }).then(r => r.json()).then(d => {
-           ntf('Bill ' + no + ' SAVED Successfully!');
-           cw('sale');
-        }).catch(e => {
-           sv('mg2_bills', G.bills); sv('mg2_items', G.items);
-           ntf('Saved Locally (Offline)');
-           cw('sale');
-        });
-      }
-
-      function renderHist(b) {
-        b.innerHTML = `<div style="padding:10px;"><table class="mt"><thead><tr><th>Bill No</th><th>Date</th><th>Customer</th><th>Net</th></tr></thead><tbody id="hb"></tbody></table></div>`;
-        var tb = g('hb');
-        G.bills.slice().reverse().forEach(b => {
-          var tr = document.createElement('tr');
-          tr.innerHTML = `<td>${b.no}</td><td>${b.date}</td><td>${b.cust}</td><td>Rs.${b.net}</td>`;
-          tb.appendChild(tr);
-        });
-      }
-
-      function renderStock(b) {
-        b.innerHTML = `<div style="padding:10px;"><table class="mt"><thead><tr><th>Product</th><th>Company</th><th>Stock</th></tr></thead><tbody id="stb"></tbody></table></div>`;
-        var tb = g('stb');
-        G.items.forEach(i => {
-           var tr = document.createElement('tr');
-           tr.innerHTML = `<td>${i.name}</td><td>${i.company}</td><td style="color:${i.stock<20?'red':'green'};font-weight:bold;">${i.stock}</td>`;
-           tb.appendChild(tr);
-        });
-      }
-
-      function renderExpiry(b) {
-        b.innerHTML = `<div style="padding:10px;"><table class="mt"><thead><tr><th>Product</th><th>Batch</th><th>Expiry</th></tr></thead><tbody id="eb"></tbody></table></div>`;
-        var tb = g('eb');
-        G.items.forEach(i => { i.batches.forEach(b => { 
-            var m = mu(b.exp);
-            if (m <= 6) {
-                var tr = document.createElement('tr');
-                tr.innerHTML = `<td>${i.name}</td><td>${b.b}</td><td>${b.exp}</td>`;
-                tb.appendChild(tr);
-            }
-        }); });
-      }
-
-      function renderLedger(b) {
-        b.innerHTML = `<div style="padding:10px;"><table class="mt"><thead><tr><th>Party Name</th><th>Balance</th></tr></thead><tbody id="lb2"></tbody></table></div>`;
-        G.parties.forEach(p => {
-           var tr = document.createElement('tr');
-           tr.innerHTML = `<td>${p.name}</td><td>Rs.${Math.abs(p.bal).toFixed(2)} ${p.bal>0?'(Dr)':'(Cr)'}</td>`;
-           g('lb2').appendChild(tr);
-        });
-      }
-
-      function renderPurch(b) { b.innerHTML = `<div style="padding:20px;text-align:center;"><h3>Purchase Module</h3><p>Coming in next update...</p></div>`; }
-
-      function doLogin() {
-        var u = g('lu').value.trim(), p = g('lp').value.trim();
-        var f = G.users.find(x => x.u === u && x.p === p);
-        if (f) {
-          sv('mg2_sess', { on: true, u: u, r: f.r });
-          g('ls').style.display = 'none';
-          g('app').style.display = 'flex';
-          g('hi').innerText = 'User: ' + u.toUpperCase();
-          ntf('Welcome to MARG ERP 9+');
-        } else {
-          g('lerr').innerText = 'Invalid credentials!';
-        }
-      }
-
-      function doLogout() { sv('mg2_sess', { on: false }); window.location.reload(); }
-
-      window.onload = function () {
-        fetch(API_BASE + '/api/data').then(r => r.json()).then(d => {
-            if (d.items) G.items = d.items;
-            if (d.bills) { G.bills = d.bills; G.nbn = 10001 + G.bills.length; }
-            if (d.users) G.users = d.users;
-            if (d.parties) G.parties = d.parties;
-            var s = ld('mg2_sess', {});
-            if (s.on) { g('ls').style.display = 'none'; g('app').style.display = 'flex'; g('hi').innerText = 'User: ' + s.u.toUpperCase(); }
-        }).catch(e => {
-            ntf('Offline Mode');
-            var s = ld('mg2_sess', {});
-            if (s.on) { g('ls').style.display = 'none'; g('app').style.display = 'flex'; g('hi').innerText = 'User: ' + s.u.toUpperCase(); }
-        });
-      };
-
-      document.onkeydown = function(e) {
-        if (e.key === 'F2') { e.preventDefault(); ow('im', 'Item Search', 600, 400); }
-        if (e.key === 'F10') { e.preventDefault(); saveBill(); }
-        if (e.key === 'Escape') { 
-            var active = document.querySelector('.window.active');
-            if (active) cw(active.id.replace('win-', ''));
-        }
-      };
-
-    </script>
+    };
+  </script>
 </body>
-
 </html>

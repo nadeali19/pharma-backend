@@ -8,7 +8,8 @@ app = Flask(__name__)
 CORS(app)
 
 # New Connection String
-MONGO_URI = "mongodb+srv://nadeali:alinade1926@cluster0.hgwzx4r.mongodb.net/pharma_db?retryWrites=true&w=majority"
+# Load from environment variable
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://nadeali:alinade1926@cluster0.hgwzx4r.mongodb.net/pharma_db?retryWrites=true&w=majority")
 try:
     print("Connecting to MongoDB Atlas...")
     client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000, tlsAllowInvalidCertificates=True)
@@ -120,6 +121,32 @@ def save_bill():
                 {"$set": {"stock": item["stock"]}}
             )
             
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/saveItem', methods=['POST'])
+def save_item():
+    if db is None:
+        return jsonify({"error": "Database not connected"}), 503
+    try:
+        item = request.json
+        if not item or 'id' not in item:
+            return jsonify({"error": "Invalid item data"}), 400
+        db.items.insert_one(item)
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/saveParty', methods=['POST'])
+def save_party():
+    if db is None:
+        return jsonify({"error": "Database not connected"}), 503
+    try:
+        party = request.json
+        if not party or 'name' not in party:
+            return jsonify({"error": "Invalid party data"}), 400
+        db.parties.insert_one(party)
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
